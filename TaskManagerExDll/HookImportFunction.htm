@@ -1,0 +1,161 @@
+<html>
+
+<head>
+<title>HookImportFunctionByName v1.0</title>
+</head>
+
+<body>
+
+<p align="left"><font color="#000000" size="6" face="Arial"><strong>HookImportFunctionByName
+v1.0</strong></font></p>
+
+<p><font color="#000000" size="3" face="Arial">Enclosed is MFC source code for a
+function which can be used to hook any imported function call which your
+application makes. Since most of the Win32 API is implemented using import
+functions in dlls, this means that you hook Win32 API calls. This is useful when
+for example you want to be called for every call to the file system
+(::CreateFile &amp;&amp; CloseHandle) which your app makes. This example of
+hooking the file system calls your app makes could form the basis of code to
+ensure you do not have any handle leaks in your application. You could also use
+this code to spy on COM port activity in remote processes by injecting the DLL
+into the remote process.</font></p>
+
+<p><font face="Arial">The code is based on the code developed by <a href="mailto:john@jprobbins.com"><b>John
+Robbins</b></a> for his &quot;BugSlayer&quot;articles in the <a href="http://www.microsoft.com/msj"><b>MSJ</b></a>
+magazine. I have removed the dependencies on his other DLL functions, converted
+the code to MFC and addition of numerous ASSERT's</font></p>
+
+<p>&nbsp;</p>
+
+<table border="0">
+<TBODY>
+  <tr>
+    <td><font size="5" face="Arial"><strong>Contents</strong></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#History">History</a></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a class="normal" href="#API">API</a></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#Enhancements">Planned Enhancements</a></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#Contact">Contacting the Author</a></font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><big><a name="History"></a></big><font color="#000000" size="5"><strong>History</strong></font></font></p>
+
+<p><font color="#000000" size="3" face="Arial"><b>V1.0 (24 December 1999)</b></font>
+
+<ul>
+  <li><font face="Arial"><font size="3"><font color="#000000">Initial</font></font><font
+    color="#000000" size="3"> Public Release.</font><big> </big></font></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<h2 class="rh1"><font face="Arial"><a name="API"></a>API</font></h2>
+
+<p class="rh1"><font face="Arial">The API consists of the single global function</font></p>
+
+<p class="rh1">&nbsp;</p>
+
+<p class="rh1"><font face="Arial"><b><a href="#HookImportFunctionsByName">HookImportFunctionsByName</a></b></font></p>
+
+<p class="rh1">&nbsp;</p>
+
+<font size="2">
+
+<p><a name="HookImportFunctionsByName"></a><font face="Arial" size="4"><b>HookImportFunctionsByName</b></font></font></p>
+
+<p><font face="Arial" size="3"><b>BOOL HookImportFunctionsByName(HMODULE </b><i>hModule</i><b>, LPCSTR
+</b><i>szImportMod</i><b>, UINT </b><i>uiCount</i><b>,                               LPHOOKFUNCDESC
+</b><i>paHookArray</i><b>, PROC* </b><i>paOrigFuncs</i><b>, UINT* </b><i>puiHooked</i><b>);</b></font></p>
+
+<p class="label"><b><font face="Arial" size="3">Return Value</font></b></p>
+
+<p><font face="Arial" size="3">TRUE if the specified API call(s) were hooked
+otherwise FALSE. <font face="Arial">To get extended error information, call
+::GetLastError</font></font></p>
+
+<p class="label"><b><font face="Arial" size="3">Parameters</font></b></p>
+
+<p class="dt"><font face="Arial" size="3"><i>hModule </i>This is the instance
+handle of the process calling the function. Normally in MFC you can obtain this
+from the function <i>&quot;AfxGetInstanceHandle()&quot;</i></font></p>
+
+<p class="dt"><font face="Arial"><i>szImportMod</i> This is the name of the
+module which contains the functions which you want to hook. e.g. for hooking
+file system calls, this would be &quot;KERNEL32.DLL&quot;.</font></p>
+
+<p class="dt"><font face="Arial" size="3"><i>uiCount </i>This is the size of the
+paHookArray parameter.</font></p>
+
+<p class="dt"><font face="Arial" size="3"><i>paHookArray</i></font><font face="Arial" size="3"><i> </i>This
+is the size of the paHookArray parameter.</font></p>
+
+<p class="dt"><font face="Arial" size="3"><i>paHookArray </i>This is an array
+which specifies what functions to hook. The members of the HOOKFUNCDESC are <i>&quot;szFunc&quot;</i>
+which is the name of your function to hook and &quot;pProc&quot; is a function
+pointer to the function which you want to have called instead of normal unhooked
+case.</font></p>
+
+<p class="dt"><font face="Arial" size="3"><i>paOrigFuncs</i> Upon successful
+return this will contain the original unhooked function pointers. These would be
+useful if you want to pass the request onto the original function after your
+hook function has been called.</font></p>
+
+<p class="dt"><font face="Arial" size="3"><i>puiHooked</i> Upon return this will
+contain the number of functions which were hooked. This will be less than or
+equal to <i>&quot;uiCount&quot;</i>.</font></p>
+
+<p class="label"><b><font face="Arial" size="3">Remarks</font></b></p>
+
+<p class="spacing"><font face="Arial">If you are hooked standard Win32 API calls
+then make sure that your hook function is using the right calling convention
+namely &quot;STDCALL&quot;. This is one of the most common problems encountered
+when using the hooking function.</font></p>
+
+<p class="spacing">&nbsp;</p>
+
+<p class="spacing">&nbsp;</p>
+
+<p><a name="Enhancements"></a><font color="#000000" face="Arial" size="4"><strong>PLANNED
+ENHANCEMENTS</strong></font>
+<ul>
+  <li><font face="Arial">Provide a sample app. I started using this code for a
+    number of private contracts which I have been working on. Some ideas for
+    sample apps would be a serial port monitor, a file system monitor to do the
+    same as the <a href="http://www.sysinternals.com/filemon.htm"><b>Filemon</b></a>
+    application on the <a href="http://www.sysinternals.com"><b>System Internals</b></a>
+    Web site.</font></li>
+  <li><font color="#000000" face="Arial" size="3">If you have any other
+    suggested improvements, please let me know so that I can incorporate them
+    into the next release</font></li>
+</ul>
+
+<p class="spacing">&nbsp;</p>
+
+<p class="spacing">&nbsp;</p>
+
+<p class="spacing">&nbsp;</p>
+
+<p><font face="Arial"><a name="Contact"></a><font color="#000000" size="5"><strong>Contacting
+the Author</strong></font></font></p>
+
+<p><font color="#000000" size="3" face="Arial">PJ Naughter<br>
+Email: </font><font color="#000000" size="3" face="Arial"><a href="mailto:pjn@indigo..ie">pjn@indigo..ie</a><br>
+Web: </font><font color="#000000" size="3" face="Arial"><a href="http://indigo.ie/~pjn">http://indigo.ie/~pjn</a><br>
+24 November 1999</font></p>
+</body>
+</html>
