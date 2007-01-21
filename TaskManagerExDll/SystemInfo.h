@@ -10,9 +10,9 @@
 #ifndef SYSTEMINFO_H_INCLUDED
 #define SYSTEMINFO_H_INCLUDED
 
-#ifndef WINNT
-#error You need Windows NT to use this source code. Define WINNT!
-#endif
+//#ifndef WINNT
+//#error You need Windows NT to use this source code. Define WINNT!
+//#endif
 
 #if _MSC_VER > 1000
 #pragma once
@@ -23,18 +23,26 @@
 
 #include <afxtempl.h>
 
-//////////////////////////////////////////////////////////////////////////////////////
-//
-// Typedefs
-//
+#include "SystemInfoListCtrl.h"
+#include "WindowsCore.h"
+#include "VMQuery.h"
+#include "WinObjects.h"
+
 //////////////////////////////////////////////////////////////////////////////////////
 
-typedef struct _UNICODE_STRING
-{
-	WORD  Length;
-	WORD  MaximumLength;
-	PWSTR Buffer;
-} UNICODE_STRING;
+#define PID_SYSTEM_WIN_NT4		2
+#define PID_SYSTEM_WIN_2K		4
+#define PID_SYSTEM_WIN_XP		8
+
+#define IS_PID_SYSTEM(pid)		((pid) == PID_SYSTEM_WIN_NT4 || \
+								 (pid) == PID_SYSTEM_WIN_2K || \
+								 (pid) == PID_SYSTEM_WIN_XP )
+
+#define ALL_PROCESSES	((DWORD)-1)
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+BOOL beginsi( const CString& s, const CString& strBegin );
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
@@ -62,41 +70,23 @@ public:
 	static BOOL GetDeviceFileName( LPCTSTR, CString& );
 	static BOOL GetFsFileName( LPCTSTR, CString& );
 
+	static CString DecodeModuleName( const CString& strFullName );
+
 	//////////////////////////////////////////////////////////////////////////////////
 	// Information functions
 
-	static DWORD GetNTMajorVersion();
+	static OSVERSIONINFO GetNTVersion();
 };
 
 //////////////////////////////////////////////////////////////////////////////////////
-//
-// INtDll
-//
-//////////////////////////////////////////////////////////////////////////////////////
 
-class INtDll
-{
-public:
-	typedef DWORD (WINAPI *PNtQueryObject)( HANDLE, DWORD, VOID*, DWORD, VOID* );
-	typedef DWORD (WINAPI *PNtQuerySystemInformation)( DWORD, VOID*, DWORD, ULONG* );
-	typedef DWORD (WINAPI *PNtQueryInformationThread)(HANDLE, ULONG, PVOID,	DWORD, DWORD* );
-	typedef DWORD (WINAPI *PNtQueryInformationFile)(HANDLE, PVOID,	PVOID, DWORD, DWORD );
-	typedef DWORD (WINAPI *PNtQueryInformationProcess)(HANDLE, DWORD, PVOID, DWORD, PVOID );
-	
-public:
-	static PNtQuerySystemInformation	NtQuerySystemInformation;
-	static PNtQueryObject				NtQueryObject;
-	static PNtQueryInformationThread	NtQueryInformationThread;
-	static PNtQueryInformationFile		NtQueryInformationFile;
-	static PNtQueryInformationProcess	NtQueryInformationProcess;
+extern OSVERSIONINFO	NTVersion;
+extern DWORD			dwNTMajorVersion;
+extern DWORD			dwNTMinorVersion;
+extern DWORD			dwNTVersion; //  0x00050000 - Win2000, 0x00050001 - WinXP
 
-	static BOOL							NtDllStatus;
-
-	static DWORD						dwNTMajorVersion;
-
-protected:
-	static BOOL Init();
-};
+#define	OSVERSION_2000		0x00050000
+#define	OSVERSION_XP		0x00050001
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
@@ -104,94 +94,64 @@ protected:
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-class SystemProcessInformation : public INtDll
+class SystemProcessInformation : INtDll, IPsapi
 {
 public:
-	typedef LARGE_INTEGER   QWORD;
 
-	typedef struct _PROCESS_BASIC_INFORMATION {
-			DWORD ExitStatus;
-			PVOID PebBaseAddress;
-			DWORD AffinityMask;
-			DWORD BasePriority;
-			DWORD UniqueProcessId;
-			DWORD InheritedFromUniqueProcessId;
-		} PROCESS_BASIC_INFORMATION;
+	struct PROCESS_INFO // short name because m_ProcessInfos produces too long identifier warning in debug configuration
+	{
+		DWORD	processId;
 
-	typedef struct _VM_COUNTERS
-		{
-		DWORD PeakVirtualSize;
-		DWORD VirtualSize;
-		DWORD PageFaultCount;
-		DWORD PeakWorkingSetSize;
-		DWORD WorkingSetSize;
-		DWORD QuotaPeakPagedPoolUsage;
-		DWORD QuotaPagedPoolUsage;
-		DWORD QuotaPeakNonPagedPoolUsage;
-		DWORD QuotaNonPagedPoolUsage;
-		DWORD PagefileUsage;
-		DWORD PeakPagefileUsage;
-		} VM_COUNTERS;
+		SYSTEM_THREAD_INFORMATION*	pThreads;	// INtDll::NtQuerySystemInformation: SystemProcessInformation
 
-	typedef struct _SYSTEM_THREAD
-		{
-		DWORD        u1;
-		DWORD        u2;
-		DWORD        u3;
-		DWORD        u4;
-		DWORD        ProcessId;
-		DWORD        ThreadId;
-		DWORD        dPriority;
-		DWORD        dBasePriority;
-		DWORD        dContextSwitches;
-		DWORD        dThreadState;      // 2=running, 5=waiting
-		DWORD        WaitReason;
-		DWORD        u5;
-		DWORD        u6;
-		DWORD        u7;
-		DWORD        u8;
-		DWORD        u9;
-		} SYSTEM_THREAD;
+		// PID, Parent PID, BasePriority, ProcessName, ftCreation, ftKernel, ftUser,
+		// PROCESS_MEMORY_COUNTERS, IO_COUNTERS, ThreadCount, HandleCount:
+		SYSTEM_PROCESS_INFORMATION	spi;		// INtDll::NtQuerySystemInformation: SystemProcessInformation
 
-	typedef struct _SYSTEM_PROCESS_INFORMATION
-		{
-		DWORD          dNext;
-		DWORD          dThreadCount;
-		DWORD          dReserved01;
-		DWORD          dReserved02;
-		DWORD          dReserved03;
-		DWORD          dReserved04;
-		DWORD          dReserved05;
-		DWORD          dReserved06;
-		QWORD          qCreateTime;
-		QWORD          qUserTime;
-		QWORD          qKernelTime;
-		UNICODE_STRING usName;
-		DWORD	       BasePriority;
-		DWORD          dUniqueProcessId;
-		DWORD          dInheritedFromUniqueProcessId;
-		DWORD          dHandleCount;
-		DWORD          dReserved07;
-		DWORD          dReserved08;
-		VM_COUNTERS    VmCounters;
-		DWORD          dCommitCharge;
-		SYSTEM_THREAD  Threads[1];
-		} SYSTEM_PROCESS_INFORMATION;
+		// PID, Parent PID, BasePriority, AffinityMask, ExitStatus, PPEB:
+		// PPEB (current process only???): debugger, sessionId, OSVersion, ImageSubSystem,
+		//      HeapCount, HeapAddresses, NumberOfProcessors,
+		//      LoaderData: ModuleLists (by load, by memory, by init), bInitialized
+		//      ProcessParameters: CurrentDirectory, DllSearchPaths, ImagePath, CommandLine,
+		//           pEnvironment, WindowTitle?, DesktopName,
+		// etc, etc, etc...
+		PROCESS_BASIC_INFORMATION	pi;			// INtDll::NtQueryInformationProcess: ProcessBasicInformation
+
+		PROCESS_MEMORY_COUNTERS		pmc;		// IPsapi::GetProcessMemoryInfo, see also SYSTEM_PROCESS_INFORMATION
+		//IO_COUNTERS				ioc;		// Windows 2000+ (GetProcessIoCounters), see also SYSTEM_PROCESS_INFORMATION
+
+		BOOL		bDisablePriorityBoost;		// GetProcessPriorityBoost
+		DWORD		dwProcessAffinity;			// GetProcessAffinityMask
+		DWORD		dwSystemAffinity;			// GetProcessAffinityMask
+		//DWORD		dwDefaultLayout;			// Windows 2000+ (GetProcessDefaultLayout)
+		FILETIME	ftCreation;					// GetProcessTimes, see also SYSTEM_PROCESS_INFORMATION
+		FILETIME	ftExit;						// GetProcessTimes
+		FILETIME	ftKernel;					// GetProcessTimes, see also SYSTEM_PROCESS_INFORMATION
+		FILETIME	ftUser;						// GetProcessTimes, see also SYSTEM_PROCESS_INFORMATION
+		DWORD		dwVersion;					// GetProcessVersion
+		SIZE_T		minWorkSet;					// GetProcessWorkingSetSize
+		SIZE_T		maxWorkSet;					// GetProcessWorkingSetSize
+
+		TCHAR		szExe[MAX_PATH];			// IPsapi::GetModuleFileNameEx( NULL )
+	};
 
 	enum { BufferSize = 0x10000 };
 
 public:
-	SystemProcessInformation( BOOL bRefresh = FALSE );
+	SystemProcessInformation( DWORD processId, BOOL bAdditionalInfo, BOOL bRefresh );
 	virtual ~SystemProcessInformation();
 
 	BOOL Refresh();
 
+	static BOOL GetAdditionalInfo( PROCESS_INFO& info );
+
 public:
-	CMap< DWORD, DWORD&, SYSTEM_PROCESS_INFORMATION*, SYSTEM_PROCESS_INFORMATION*> m_ProcessInfos;
-	SYSTEM_PROCESS_INFORMATION* m_pCurrentProcessInfo;
+	CMap< DWORD, DWORD&, PROCESS_INFO, PROCESS_INFO&> m_ProcessInfos;
 
 protected:
-	UCHAR*						m_pBuffer;
+	DWORD		m_processId;
+	BOOL		m_bAdditionalInfo;
+	UCHAR*		m_pBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -200,31 +160,32 @@ protected:
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-class SystemThreadInformation : public INtDll
+class SystemThreadInformation : INtDll, IPsapi
 {
 public:
-	typedef struct _THREAD_INFORMATION
-		{
-		DWORD		ProcessId;
-		DWORD		ThreadId;
-		HANDLE		ThreadHandle;	
-		} THREAD_INFORMATION;
 
-	
-	typedef struct _BASIC_THREAD_INFORMATION {
-		DWORD u1;
-		DWORD u2;
-		DWORD u3;
-		DWORD ThreadId;
-		DWORD u5;
-		DWORD u6;
-		DWORD u7;
-	} BASIC_THREAD_INFORMATION;
+	struct THREAD_INFORMATION
+	{
+		//DWORD		ThreadId;
+		DWORD		ProcessId;
+		HANDLE		ThreadHandle;
+		DWORD		HandleProcessId;
+		//SYSTEM_THREAD st;
+		SYSTEM_THREAD_INFORMATION sti;
+		//THREADENTRY32	te;
+		TCHAR		Module[MAX_PATH];
+
+		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
+		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+	};
 
 public:
-	SystemThreadInformation( DWORD pID = (DWORD)-1, BOOL bRefresh = FALSE );
+	SystemThreadInformation( DWORD pID, BOOL bRefresh );
 
 	BOOL Refresh();
+
+	// Returns the HMODULE that contains the specified memory address
+	static BOOL ModuleFromAddressEx( DWORD processId, PVOID pv, LPTSTR szModuleName, int cbSize );
 
 public:
 	CList< THREAD_INFORMATION, THREAD_INFORMATION& > m_ThreadInfos;
@@ -238,81 +199,44 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-class SystemHandleInformation : public INtDll
+class SystemHandleInformation : INtDll
 {
 public:
-	enum {
-		OB_TYPE_UNKNOWN = 0,
-		OB_TYPE_TYPE = 1,
-		OB_TYPE_DIRECTORY,
-		OB_TYPE_SYMBOLIC_LINK,
-		OB_TYPE_TOKEN,
-		OB_TYPE_PROCESS,
-		OB_TYPE_THREAD,
-		OB_TYPE_UNKNOWN_7,
-		OB_TYPE_EVENT,
-		OB_TYPE_EVENT_PAIR,
-		OB_TYPE_MUTANT,
-		OB_TYPE_UNKNOWN_11,
-		OB_TYPE_SEMAPHORE,
-		OB_TYPE_TIMER,
-		OB_TYPE_PROFILE,
-		OB_TYPE_WINDOW_STATION,
-		OB_TYPE_DESKTOP,
-		OB_TYPE_SECTION,
-		OB_TYPE_KEY,
-		OB_TYPE_PORT,
-		OB_TYPE_WAITABLE_PORT,
-		OB_TYPE_UNKNOWN_21,
-		OB_TYPE_UNKNOWN_22,
-		OB_TYPE_UNKNOWN_23,
-		OB_TYPE_UNKNOWN_24,
-		//OB_TYPE_CONTROLLER,
-		//OB_TYPE_DEVICE,
-		//OB_TYPE_DRIVER,
-		OB_TYPE_IO_COMPLETION,
-		OB_TYPE_FILE                        
-	} SystemHandleType;
 
-public:
-	typedef struct _SYSTEM_HANDLE
+	struct HANDLE_INFORMATION
 	{
-		DWORD	ProcessID;
-		WORD	HandleType;
-		WORD	HandleNumber;
-		DWORD	KernelAddress;
-		DWORD	Flags;
-	} SYSTEM_HANDLE;
+		SYSTEM_HANDLE sh;
 
-	typedef struct _SYSTEM_HANDLE_INFORMATION
-	{
-		DWORD			Count;
-		SYSTEM_HANDLE	Handles[1];
-	} SYSTEM_HANDLE_INFORMATION;
+		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
+		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+
+		static void InsertFileColumns( CSystemInfoListCtrl& list, BOOL bPid );
+		int InsertFile( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount,
+			LPCTSTR szDevice, LPCTSTR szPath ) const;
+	};
 
 protected:
 	typedef struct _GetFileNameThreadParam
 	{
 		HANDLE		hFile;
 		CString*	pName;
-		ULONG		rc;
+		NTSTATUS	rc;
 	} GetFileNameThreadParam;
 
 public:
-	SystemHandleInformation( DWORD pID = (DWORD)-1, BOOL bRefresh = FALSE, LPCTSTR lpTypeFilter = NULL );
+	SystemHandleInformation( DWORD pID, BOOL bRefresh, LPCTSTR lpTypeFilter /* = NULL*/ );
 	~SystemHandleInformation();
 
 	BOOL SetFilter( LPCTSTR lpTypeFilter, BOOL bRefresh = TRUE );
 	const CString& GetFilter();
-	
+
 	BOOL Refresh();
 
 public:
 	//Information functions
-	static BOOL GetType( HANDLE, WORD&, DWORD processId = GetCurrentProcessId() );
+	static BOOL GetType( HANDLE, OB_TYPE_ENUM& type, DWORD processId = GetCurrentProcessId() );
 	static BOOL GetTypeToken( HANDLE, CString&, DWORD processId = GetCurrentProcessId() );
-	static BOOL GetTypeFromTypeToken( LPCTSTR typeToken, WORD& type );
-	static BOOL GetNameByType( HANDLE, WORD, CString& str, DWORD processId = GetCurrentProcessId());
+	static BOOL GetNameByType( HANDLE, OB_TYPE_ENUM type, CString& str, DWORD processId = GetCurrentProcessId());
 	static BOOL GetName( HANDLE, CString&, DWORD processId = GetCurrentProcessId() );
 
 	//Thread related functions
@@ -330,12 +254,24 @@ public:
 	static HANDLE OpenProcess( DWORD processId );
 	static HANDLE DuplicateHandle( HANDLE hProcess, HANDLE hRemote );
 
+	static HANDLE DuplicateHandle( DWORD processId, HANDLE hRemote )
+	{
+		HANDLE hLocal = NULL;
+		HANDLE hProcess = OpenProcess( processId );
+		if( hProcess != NULL )
+		{
+			hLocal = DuplicateHandle( hProcess, hRemote );
+			CloseHandle( hProcess );
+		}
+		return hLocal;
+	}
+
 protected:
-	static void GetFileNameThread( PVOID /* GetFileNameThreadParam* */ );
+	static UINT __stdcall GetFileNameThread( PVOID /* GetFileNameThreadParam* */ );
 	BOOL IsSupportedHandle( SYSTEM_HANDLE& handle );
 
 public:
-	CList< SYSTEM_HANDLE, SYSTEM_HANDLE& > m_HandleInfos;
+	CList< HANDLE_INFORMATION, HANDLE_INFORMATION& > m_HandleInfos;
 	DWORD	m_processId;
 
 protected:
@@ -348,41 +284,27 @@ protected:
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-class SystemModuleInformation
+class SystemModuleInformation: IPsapi, IToolhelp32
 {
 public:
+
 	typedef struct _MODULE_INFO
 	{
 		DWORD	ProcessId;
-		TCHAR	FullPath[_MAX_PATH];
-		TCHAR	Name[_MAX_PATH];
+		TCHAR	FullPath[MAX_PATH];		// module full name
+		TCHAR	FileFullPath[MAX_PATH];	// module real file name
+		TCHAR	Name[MAX_PATH];
 		HMODULE Handle;
+		MODULEINFO info;
+		MEMORY_BASIC_INFORMATION mbi;
+		MODULEENTRY32 me32;
+
+		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
+		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
 	} MODULE_INFO;
 
 public:
-	typedef DWORD (WINAPI *PEnumProcessModules)(
-				HANDLE hProcess,      // handle to process
-				HMODULE *lphModule,   // array of module handles
-				DWORD cb,             // size of array
-				LPDWORD lpcbNeeded    // number of bytes required
-			);
-
-	typedef DWORD (WINAPI *PGetModuleFileNameEx)(
-				HANDLE hProcess,    // handle to process
-				HMODULE hModule,    // handle to module
-				LPTSTR lpFilename,  // path buffer
-				DWORD nSize         // maximum characters to retrieve
-			);
-
-	typedef DWORD (WINAPI *PGetModuleBaseName)(
-				HANDLE hProcess,    // handle to process
-				HMODULE hModule,    // handle to module
-				LPTSTR lpBasename,  // name buffer
-				DWORD nSize         // maximum characters to retrieve
-			);
-
-public:
-	SystemModuleInformation( DWORD pID = (DWORD)-1, BOOL bRefresh = FALSE );
+	SystemModuleInformation( DWORD pID, BOOL bRefresh );
 
 	BOOL Refresh();
 
@@ -394,10 +316,71 @@ public:
 	CList< MODULE_INFO, MODULE_INFO& > m_ModuleInfos;
 
 protected:
-	PEnumProcessModules		m_EnumProcessModules;
-	PGetModuleFileNameEx	   m_GetModuleFileNameEx;
-	PGetModuleBaseName      m_GetModuleBaseName;
 };
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// SystemKernelModuleInformation
+//
+//////////////////////////////////////////////////////////////////////////////////////
+
+class SystemKernelModuleInformation: IPsapi
+{
+public:
+
+	struct KERNEL_MODULE_INFORMATION
+	{
+		LPVOID	pBaseAddress;
+		TCHAR	FullPath[MAX_PATH];
+		TCHAR	Name[MAX_PATH];
+
+		static void InsertColumns( CSystemInfoListCtrl& list );
+		int Insert( CSystemInfoListCtrl& list, int iItem, int iItemCount ) const;
+	};
+
+public:
+	SystemKernelModuleInformation( BOOL bRefresh );
+
+	BOOL Refresh();
+
+public:
+	CList< KERNEL_MODULE_INFORMATION, KERNEL_MODULE_INFORMATION& > m_KernelModuleInfos;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// SystemMemoryMapInformation
+//
+//////////////////////////////////////////////////////////////////////////////////////
+
+class SystemMemoryMapInformation: IPsapi
+{
+public:
+
+	struct MEMORY_INFORMATION
+	{
+		BOOL		bRegion; // else block, part of region
+		VMQUERY		vmq;
+		TCHAR		Module[MAX_PATH];
+		TCHAR		MappedFile[MAX_PATH];
+
+		static void InsertColumns( CSystemInfoListCtrl& list );
+		int Insert( CSystemInfoListCtrl& list, int iItem, int iItemCount, BOOL bExpandRegions ) const;
+	};
+
+public:
+	SystemMemoryMapInformation( DWORD pID, BOOL bExpandRegions, BOOL bRefresh );
+
+	static BOOL FileFromAddress( DWORD processId, PVOID pv, LPTSTR szFileName, int cbSize );
+	BOOL Refresh( BOOL bExpandRegions );
+
+	BOOL AddMemoryInfo( DWORD processId, HANDLE hProcess, BOOL bRegion, PVMQUERY pVmq );
+public:
+	DWORD m_processId;
+	CList< MEMORY_INFORMATION, MEMORY_INFORMATION& > m_MemoryInfos;
+};
+
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
@@ -418,16 +401,18 @@ public:
 	} WINDOW_INFO;
 
 public:
-	SystemWindowInformation( DWORD pID = (DWORD)-1, BOOL bRefresh = FALSE );
+	SystemWindowInformation( DWORD pID, BOOL bRefresh );
 
 	BOOL Refresh();
 
 protected:
 	static BOOL CALLBACK EnumerateWindows( HWND hwnd, LPARAM lParam );
-	
+
 public:
 	DWORD m_processId;
 	CList< WINDOW_INFO, WINDOW_INFO& > m_WindowInfos;
 };
+
+//////////////////////////////////////////////////////////////////////////////////////
 
 #endif

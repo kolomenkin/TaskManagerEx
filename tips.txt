@@ -1,0 +1,20 @@
+English:
+
+You should start Windows Task Manager to get the power of Task Manager Extension.
+You can start Windows Task Manager by pressing Ctrl+Shift+Esc.
+You can look for used file in all processes by choosing menu option Extension\Find used file...
+You can look for used module in all processes by choosing menu option Extension\Find used module...
+If you want to know all loaded drivers you should choose menu option Extension\Show loaded drivers...
+You can setup Task Manager Extension to be automatically loaded after user logon. You should choose menu option Extension\Options, check "Run during logon" checkbox and press OK button.
+You can get a lot of process information by right mouse click on particular process item. You can get information about files, modules, handles, access right, windows, threads, memory map ant etc.
+
+
+Russian:
+
+Вам необходимо запустить Windows Task Manager, чтобы ознакомиться с Task Manager Extension.
+Вы можете запустить Windows Task Manager нажатием Ctrl+Shift+Esc.
+Вы можете найти используемый файл выбрав пункт меню Расширение\Найти используемый файл...
+Вы можете найти используемый модуль выбрав пункт меню Расширение\Найти используемый модуль...
+Чтобы увидеть все загруженные драйвера, выберите пункт Расширение\Показать загруженные драйвера...
+Вы можете настроить Task Manager Extension для запуска сразу после входа пользователя в систему. Для этого выберите пункт меню Расширение\Настройки, выбрать пункт "Загружаться во время старта Windows" и нажать кнопку ОК.
+Вы можете получить массу информации о процессе из всплывающего меню. Нажмите на процессе правой клавишей мыши и вы сможете увидеть используемые файлы, модули, описатели, права доступа, окна, потоки, карту памяти о много другое.

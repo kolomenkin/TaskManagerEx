@@ -37,6 +37,7 @@ BOOL IsNT();
 BOOL HookImportFunctionsByName(HMODULE hModule, LPCSTR szImportMod, UINT uiCount, 
                                LPHOOKFUNCDESC paHookArray, PROC* paOrigFuncs, UINT* puiHooked)
 {
+  UINT i;
   // Double check the parameters.
   ASSERT(szImportMod);
   ASSERT(uiCount);
@@ -49,7 +50,7 @@ BOOL HookImportFunctionsByName(HMODULE hModule, LPCSTR szImportMod, UINT uiCount
     ASSERT(!IsBadWritePtr(puiHooked, sizeof(UINT)));
 
   //Check each function name in the hook array.
-  for (UINT i = 0; i<uiCount; i++)
+  for( i = 0; i<uiCount; i++)
   {
     ASSERT(paHookArray[i].szFunc);
     ASSERT(*paHookArray[i].szFunc != _T('\0'));
@@ -95,7 +96,7 @@ BOOL HookImportFunctionsByName(HMODULE hModule, LPCSTR szImportMod, UINT uiCount
   //  Should each item in the hook array be checked in release builds?
 
   if (paOrigFuncs)
-    memset(paOrigFuncs, NULL, sizeof(PROC)*uiCount); // Set all the values in paOrigFuncs to NULL.
+    my_memset(paOrigFuncs, 0, sizeof(PROC)*uiCount); // Set all the values in paOrigFuncs to NULL.
 
   if (puiHooked)
     *puiHooked = 0; // Set the number of functions hooked to zero.
@@ -142,10 +143,10 @@ BOOL HookImportFunctionsByName(HMODULE hModule, LPCSTR szImportMod, UINT uiCount
       //  uiCount coming into this function should be rather
       //  small but it is called for each function imported by
       //  szImportMod.
-      for (UINT i = 0; i<uiCount; i++)
+      for ( i = 0; i<uiCount; i++)
       {
         if ((paHookArray[i].szFunc[0] == pByName->Name[0]) &&
-            (strcmpi(paHookArray[i].szFunc, (char*)pByName->Name) == 0))
+            (_strcmpi(paHookArray[i].szFunc, (char*)pByName->Name) == 0))
         {
           // If the proc is NULL, kick out, otherwise go
           //  ahead and hook it.
@@ -169,7 +170,7 @@ BOOL HookImportFunctionsByName(HMODULE hModule, LPCSTR szImportMod, UINT uiCount
           paOrigFuncs[i] = (PROC)pRealThunk->u1.Function;
 
         // Do the actual hook.
-        pRealThunk->u1.Function = (PDWORD)paHookArray[i].pProc;
+        pRealThunk->u1.Function = (DWORD)(PVOID)paHookArray[i].pProc;
 
         // Change the protection back to what it was before I blasted.
         DWORD dwOldProtect;
@@ -240,7 +241,7 @@ PIMAGE_IMPORT_DESCRIPTOR GetNamedImportDescriptor(HMODULE hModule, LPCSTR szImpo
   {
     PSTR szCurrMod = MakePtr(PSTR, pDOSHeader, pImportDesc->Name);
 
-    if (stricmp(szCurrMod, szImportMod) == 0)
+    if (_stricmp(szCurrMod, szImportMod) == 0)
       break; // Found it.
 
     // Look at the next one.
@@ -258,7 +259,7 @@ PIMAGE_IMPORT_DESCRIPTOR GetNamedImportDescriptor(HMODULE hModule, LPCSTR szImpo
 BOOL IsNT()
 {
   OSVERSIONINFO stOSVI;
-  memset(&stOSVI, NULL, sizeof(OSVERSIONINFO));
+  my_memset(&stOSVI, 0, sizeof(OSVERSIONINFO));
   stOSVI.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 
   BOOL bRet = GetVersionEx(&stOSVI);

@@ -1,0 +1,534 @@
+.LOG
+
+================================================================
+===  Known Bugs:  ==============================================
+================================================================
+
+1) Redrawing information dialog (with listview) sometimes redraws
+  window incorrectly. May be this bug appears because of resizing
+  of dialog and controls. It seems that this bug goes from the
+  very first version of TaskManagerEx.
+
+2) I didn't tested TaskManagerEx on Windows NT4.
+3) In Windows 2000 there is an empty field "Exe file:" in
+   process information dialog.
+   Function GetMappedFileName doesn't work properly
+   for loaded modules addresses. It seems to be a Microsoft bug.
+   Most likely this is a bug from MSDN article 
+   "GetMappedFileName() Generates an ERROR_NOACCESS Response".
+   This bug was fixed in Windows XP SP1 by replacing psapi.dll.
+
+================================================================
+
+Signs meaning:
+? XXXXXXXXX - TODO
+~? XXXXXXXXXX - TODO for future (just before release 2.0)
+~~? XXXXXXXXXX - TODO for far future (for version 3.0 for example)
++ XXXXXXXXXX - Something added
+- XXXXXXXXXX - Something removed
+
+================================================================
+====  Features TODO:
+================================================================
+
+~~? Run any resource viewer for processes & modules
+
+Global:
+
+? Better splash screen.
+
+================================================================
+====  Update log:
+================================================================
+
+9:35 22.03.2005
+
++ SystemInfo.cpp - changed SystemInfoUtils::LPCWSTR2CString()
+  to work through WideCharToMultiByte
+
+11:33 22.03.2005
+
++ DllVersion.cpp was rewritten. Function GetModuleVersion() didn't worked before.
+
+12:16 22.03.2005
+
++ Added VERSION_INFO resources
++ Added ICON to TaskManagerEx.exe
++ Added dll version reading to CAboutExtensions
++ Added Maximize buttons to "Find used files/module" and
+  "Files/Modules/Handles/Windows" windows
+
+13:12 22.03.2005
+
++ Removed limitation for one instance of taskmgr.exe.
++ Added prefix "Local\" to mutexes. It will protect
+  TaskManagerEx instances from each other in different
+  session of Terminal Services.
+
+13:34 22.03.2005
+
++ Added initialization of thread's message queue. It will
+  change mouse cursor from IDC_WAIT to IDC_ARROW after
+  TaskManagerEx.exe start.
+
+14:06 22.03.2005
+
+23:45 22.03.2005
+
+2:08 23.03.2005
++ Explored lots of ProcessesItemData members (WinXP sp1)
+
+13:37 23.03.2005
++ Added more information into MODULE_INFO structure
++ Added module Length column. This column shows module length in memory.
++ Show more module information in Find used module window.
++ Changed Resize window behaviour. Columns may be thinner
+  and the whole window can be wider now.
+
+1:54 24.03.2005
++ Added Toolhelp32 interface.
++ Show module usage counter (Windows 2000+)
+
+12:10 24.03.2005
+
+12:47 24.03.2005
+- Bug with sorting after refresh
+? Sometimes bug with drawing list control (it doesn't)
+
++ Added possibility of up to 8 arguments for remote function
+  in LoadDllForRemoteThread().
++ Added handle operations: Exit process, terminate process, 
+  suspend thread, resume thread, terminate thread,
+  assign window station, switch desktop.
+
+13:12 24.03.2005
+
+23:05 25.03.2005
+
+23:40 25.03.2005
++ Removed bug with sorting after refresh:
+  after refresh new items are sorted in the same way,
+  scrolling and selected item don't change.
+
+0:19 26.03.2005
++ Added arror to listview header to indicate sort direction
+
+1:47 26.03.2005
++ Added status bar to files/handles/modules/etc window.
+
+11:09 26.03.2005
+
+14:09 26.03.2005
++ Added File Properties for processes
++ Added File Properties for modules
+
+0:51 27.03.2005
++ Added Run Dependecy Walker for processes
++ Added Run Dependecy Walker for modules
+
+0:54 27.03.2005
+
+12:10 28.03.2005
+
+12:42 28.03.2005
++ Some refactoring before integration "Find used ..."
+  and "Process windows/handles/etc" windows. Some MFC classes
+  renamed, CFindUsedDlg and CSystemInfoDlg were made to
+  be more similar. 
+
+4:44 29.03.2005
++ Added TaskManagerEx.exe command line arguments:
+  TaskManagerEx.exe	- start TaskManagerEx monitor
+  TaskManagerEx.exe /?	- display help
+  TaskManagerEx.exe /u	- stop TaskManagerEx monitor
+  TaskManagerEx.exe /r	- restart TaskManagerEx monitor
+
++ Added integration "Find used ..." and "Process windows/handles/etc"
+  windows. Now only CSystemInfoDlg exists.
+
+
+12:01 29.03.2005
+12:36 29.03.2005
+
+- Removed Bug with Windows 2000 Prof Russian. TaskManager has russian caption.
+  This caption exists in string resource 10003, but
+  TaskManagerEx don't see it, because it think that he know the caption
+  better better than resources. 8-)
+
+0:04 30.03.2005
++ Added Unicode configuration. Changed intermediate files location.
+- Removed CFindUsedDlg from VC project and deleted (not permanently)
+  from Source Safe.
+
+11:18 30.03.2005
++ Refactoring of SystemInfo.cpp + SystemInfo.h. Created WindowsCore.h
+  and WindowsCore.cpp. Added wrapper structures over system ones for
+  process, handle information.
+
+1:14 31.03.2005
++ Continue refactoring of WindowsCore.h and SystemInfo.cpp. Defined some
+  system enums, structures. Removed bug in NtQueryInformationFile call.
+  However detected that call to NtQueryInformationFile is not used. 8-)
+  Improved some query information calls to use UNICODE_STRING, instead
+  of hoping that string body is placed exactly after main buffer.
+
+2:00 31.03.2005
++ Changed the way of resizing columns in application tab. PID column is
+  visible to user now.
+
+23:47 31.03.2005
++ Added file name resolution in window with hadles of the process.
++ Added exe file name to the windows caption.
+
+12:10 01.04.2005
+- Removed bug with hung up during generating files list. This bug was
+  found and removed by previous author Zoltan Csizmadia, but I commented
+  his code, because it seemed doing nothing. 8-)
+
+14:33 03.04.2005
+
+15:18 03.04.2005
++ Show process threads
+
+17:48 03.04.2005
++ Improved handle lookup of process threads.
++ Removed bug (found accidentally in the code) that called function
+  in remote thread twice. First call was without any arguments. May be 
+  some stack problems occured before.
++ Improved delays after handle & etc. operations. Now delays are much smaller.
++ Some other refactoring.
+
+1:08 05.04.2005
++ Added icons for services and unknown processes. These icons where inserted into resources
+  by previous author, but he didn't added code for drawing them.
+
+1:25 05.04.2005
+
+2:34 05.04.2005
++ Added IDC_WAIT cursor during refresh system info list.
++ Changed Refresh toolbar icon.
++ Changed ListView taskbar icon.
++ Changed TaskManagerEx own icon
++ Added tooltips to toolbar.
++ Added Accelerator table
++ Added F5 - Refresh accel.
+
+
+2:43 05.04.2005
+
+22:58 05.04.2005
+
+0:33 06.04.2005
+
+0:43 06.04.2005
+
+12:36 06.04.2005
++ Added Find text and Find next toolbar icons
++ Added Tooltips to toolbar items
+
+2:11 07.04.2005
++ Added find text capability for window with listview.
+
+2:55 07.04.2005
++ Added find previous text function. Removed some bugs in find text algorithm.
+
+11:44 07.04.2005
++ Added Taskmgr.h with hardcoded information about Taskmgr.exe.
++ Found and removed one strange bug, when my menu item with code WM_USER+26 (1050)
+  somehow caused command "End Process" in Taskmgr.exe.
+
+1:41 08.04.2005
++ Added process name column to "Find used..." lists.
++ Resize list window after Find.
+
+2:02 08.04.2005
+
+11:54 08.04.2005
++ Added TaskManagerEx.h with hardcoded information about this project.
+
+13:01 08.04.2005
++ Added "Show all windows handles" function.
+
+13:48 08.04.2005
++ Improved Listview window redraw, window resize, columns resize,
+  show window before refresh, display resfresh status in statusbar.
+
+22:51 08.04.2005
++ Added Show loaded drivers
+
+23:38 08.04.2005
++ Added Registry value for TaskManagerEx.exe to load extension dll once only.
+
+1:16 09.04.2005
+- Removed some small bugs.
++ Module list for System process is redirected to loaded kernel modules now.
+
+
+1:30 09.04.2005
+- Removed bug, when service and default process icons didn't displayed on Windows 2000.
+
+1:32 09.04.2005
+
+11:48 09.04.2005
+- Removed find used toolbar from resources. Now there is only one toolbar, that is
+  adapted to the particular window.
+
+16:36 09.04.2005
++ Added Memory map for processes
++ Improved sort algorithm to use item indent information.
+
+17:19 09.04.2005
+
+0:08 11.04.2005
++ Added Test project for testing and debugging TaskManagerEx.dll
++ Removed bug in memory map. In detailed view (regions + blocks)
+  blocks' addresses, sizes, protection, etc. fields were the same
+  in one region.
+
+0:32 11.04.2005
+
+11:47 11.04.2005
+
+12:07 11.04.2005
+
+13:18 11.04.2005
++ Added thread info: start address module.
+- Removed Bug: When process is debugged, icon idexes in application listview are may have holes.
+
+X Version 1.9
+
+5:00 12.04.2005
++ Added common headers for resources' VERSIONINFO
++ Added menus in resources instead dynamically created.
++ Added Russian resource localization.
+
+12:54 12.04.2005
+- Removed bug with incorrect TaskManagerEx version in About window.
+
+2:56 14.04.2005
++ Manual resources loading for Windows locale.
+- Removed bug with incorrect background color in some icons resources of TaskManagerEx.
+
+12:04 14.04.2005
+
+12:14 14.04.2005
+
+12:45 14.04.2005
+- Removed bug: some garbage between icons in process list in Windows 2000 Prof.
+
+2:53 15.04.2005
++ Added "Tip of the day" support.
+
+3:17 15.04.2005
++ Added Options Property Sheet.
+
+3:20 15.04.2005
+
+3:54 15.04.2005
++ Improved language selection while loading file VERSIONINFO. Specially for About dialog.
+
+23:04 15.04.2005
+
+3:20 16.04.2005
++ Added Options "Load at startup", choosing different colors.
+
+4:01 16.04.2005
++ Added Tooltips to Options Property Sheet and "Tip of the day".
+
+4:02 16.04.2005
+
+10:53 16.04.2005
+
+15:56 16.04.2005
+
+12:17 18.04.2005
++ Moved almost all strings to resources. Most of resources have russian version now.
+  These occurences are loaded only in localized russian version of Windows. It means
+  that if Windows supports russian and have russian locale, then the may be NOT loaded.
+  It must be localized during Windows compilation. In this case Task Manager would have
+  russian resources too and localized Task Manager Extension would look very native. :-)
+
+12:27 18.04.2005
+
+12:51 18.04.2005
+
+12:53 18.04.2005
+
+13:02 18.04.2005
+
+14:19 18.04.2005
+
+14:22 18.04.2005
+
+13:45 18.04.2005
+
+- Removed Bug: some accelerators did't work. There was an error in my loading of
+  accelerator table.
+
+0:46 19.04.2005
+
+3:15 19.04.2005
++ Full Russian localization done. Other languages may be added by adding copies 
+  of resources for another languages.
+
+0:44 20.04.2005
+
+1:22 20.04.2005
+- Removed bug: Icon space didn't disappear if you uncheck "Show process icons".
+
+
+2:14 20.04.2005
++ Improved thread info for [System] process (module column).
+
+3:26 20.04.2005
+
+13:55 20.04.2005
++ Added Process Information dialog content.
++ Added resizing to dialog with process information.
+
+0:34 21.04.2005
+X Version 1.9.5 build 236
+
+11:05 21.04.2005
+
+2:50 22.04.2005
++ Added transparent splash screen with product name, version, copyrights.
+X Version 1.9.6 build 237
+
+3:04 22.04.2005
+
+4:01 22.04.2005
+
+11:04 22.04.2005
+
+18:02 23.04.2005
+- I removed a bug with crash. Anyway I think so. For some purpose Zoltan allocated
+  memory in one function, that always started from a certain address. I changed
+  that place to allocate different buffer & I couldn't produce that bug anymore.
+
+23:18 23.04.2005
+- Removed bug: window icon in tray didn't change in time.
+
+0:18 24.04.2005
+- Removed bug: Window with listview didn't redraw sometimes after creation.
+  Seems that this bug happened since the very first version.
+
+0:57 24.04.2005
+? Bug: if you look process file properties for several times you can get a crash. 8-(
+
+
+1:47 24.04.2005
+
+2:02 24.04.2005
+
+2:15 24.04.2005
+- Removed Bug with Process Information dialog resizing: If you make window too small and
+  then make it bigger, then listview size will become incorrect.
+
+2:31 24.04.2005
++ Added actual tips of the day. They are in two languages.
++ Added Extension menu item to show Tip of the Day.
+
+2:39 24.04.2005
+
+21:55 24.04.2005
+  It seems that crash problems occure because of some problem in my Windows - some other
+  procsesses from Taskmgr.exe crashes in common way (access violation in ntdll.dll).
+
+22:11 24.04.2005
+- Removed Bug: Process Info window don't display correctly Russian-formatted
+  date in russian Windows 2000 Prof. In Windows XP Prof English with
+  russian locale there is no such bug.
+  This bug occured because font for listview was created with ANSI_CHARSET
+  charset instead of DEFAULT_CHARSET.
+
+22:29 24.04.2005
+
+23:00 24.04.2005
+? Bug: Exe file name doesn't shows in Process Information window in Windows 2000 Prof.
+
+1:45 27.04.2005
++ Added security information for processes
+
+2:58 27.04.2005
++ Added thread and handle security. But these features doesn't work.
++ Added module file security info. It works strange. May because of FAT (not NTFS).
+
+3:07 27.04.2005
++ Module file security info looks much better on NTFS!
+
+3:08 27.04.2005
++ Show user names better in security information dialog.
+
+0:49 29.04.2005
+
+
+1:12 01.05.2005
+- Removed bug: thread's handles didn't not showed!
++ Improved security information dialog. Object rights maps are better now.
+
+
+1:39 01.05.2005
++ Improved object type recognition for security information.
+
+1:41 01.05.2005
+
+16:27 02.12.2006
+- [this bug was reopened later] Fixed bug with multiple Task Manager windows - TaskMgr.exe didn't find it's previous window.
+
+16:34 02.12.2006
+ Reduced splash screen show time from 3 seconds to 1 second.
+
+18:21 02.12.2006
+ Added IAdvapi32 support
+ Added Service list to Process Information dialog.
+ Fixed Process Information dialog resize bug.
+
+22:47 02.12.2006
+Build 242
+
+1:15 03.12.2006
+ Added Command Line information to Process Information dialog.
+
+1:30 03.12.2006
+ Added Environment information to Process Information dialog.
+ Build 243
+
+1:57 05.12.2006
+ Build 244:
+ Fixed TaskManagerEx windows to be TOP_MOST when main TaskManager is TOP_MOST.
+ Fixed bug with multiple Task Manager windows - TaskMgr.exe didn't find it's previous window.
+
+23:33 05.12.2006
+ I've found TaskMgr.exe sources!!!!!!!!!!
+ They are from Windows 2000 sources.
+ Here is lots o thing that were hardly disassemblyed and reversed.
+
+23:51 05.12.2006
+ Removed bug when EXE and DLL pdb files has the same folder and name:
+  Renamed TaskManagerEx.dll to TaskManagerExDll.dll. It is possible
+  to debug both modules now.
+
+11:59 06.12.2006
+ Updated Find Used File (& Module too): It will search empty string as *.
+ Find Used File will look for string more correctly and will return more files.
+
+16:10 06.12.2006
+ Projects were optimized for MS Visual Studio 2005. They will give no warning during
+ compilation and work OK during run-time.
+
+3:36 07.12.2006
+ Build 245: (v.2.0.5)
+
+0:27 11.12.2006
+ Some SystemInfoDlg refactoring: possibility to run all such dialogs
+   in the main Taskmgr thread (there is a bug with it - see "BUG!").
+ Dialog updating has minor changed that may remove a redraw bug...
+
+0:35 11.12.2006
+ Uninstall Feature: Unload TaskManagerEx.exe, close TaskMgr.exe, remove from startup.
+ Build 246 (pre-release)
+
+12:15 16.01.2007
+During last week I was writing a new article for Task Manager Extension.
+I'm going to create and label 2.1 release today.

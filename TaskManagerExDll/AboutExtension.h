@@ -1,53 +1,66 @@
-#if !defined(AFX_ABOUTEXTENSION_H__E0493685_3641_48FD_8855_2085BD5D5568__INCLUDED_)
-#define AFX_ABOUTEXTENSION_H__E0493685_3641_48FD_8855_2085BD5D5568__INCLUDED_
+#if !defined(AFX_CAboutExtension_H__E0493685_3641_48FD_8855_2085BD5D5568__INCLUDED_)
+#define AFX_CAboutExtension_H__E0493685_3641_48FD_8855_2085BD5D5568__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// AboutExtension.h : header file
+// CAboutExtension.h : header file
 //
 
 #include "resource.h"
+#include "TaskManagerExDllExport.h"
 
-class AboutExtensionThread : public CWinThread
+//class CAboutExtensionThread : public CWinThread
+//{
+//protected:
+//	DECLARE_DYNCREATE( CAboutExtensionThread )
+//
+//public:
+//   virtual BOOL InitInstance();
+//   static TASKMANAGEREXDLL_DEBUG_API CAboutExtensionThread* Start();
+//};
+
+class CAboutExtensionThread
 {
-protected:
-	DECLARE_DYNCREATE( AboutExtensionThread )
-
 public:
-   virtual BOOL InitInstance();
-   static AboutExtensionThread* Start();
+	static TASKMANAGEREXDLL_DEBUG_API int Start( CWnd* pParent );
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// AboutExtension dialog
+// CAboutExtension dialog
 
-class AboutExtension : public CDialog
+class CAboutExtension : public CDialog
 {
 // Construction
 public:
-	AboutExtension(CWnd* pParent = NULL);   // standard constructor
+	CAboutExtension(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
-	//{{AFX_DATA(AboutExtension)
+	//{{AFX_DATA(CAboutExtension)
 	enum { IDD = IDD_EXTENSION_ABOUT };
-		// NOTE: the ClassWizard will add data members here
+	CString	m_strVersion;
+	CString	m_strComments;
 	//}}AFX_DATA
 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(AboutExtension)
+	//{{AFX_VIRTUAL(CAboutExtension)
+	public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual int DoModal();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
 protected:
+	CToolTipCtrlMine m_tooltip;
 
 	// Generated message map functions
-	//{{AFX_MSG(AboutExtension)
-		// NOTE: the ClassWizard will add member functions here
+	//{{AFX_MSG(CAboutExtension)
+	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
+	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -55,4 +68,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_ABOUTEXTENSION_H__E0493685_3641_48FD_8855_2085BD5D5568__INCLUDED_)
+#endif // !defined(AFX_CAboutExtension_H__E0493685_3641_48FD_8855_2085BD5D5568__INCLUDED_)

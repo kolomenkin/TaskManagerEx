@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TaskManagerEx", "TaskManagerEx\TaskManagerEx.vcproj", "{8578845C-17D4-4A8E-900F-57917B27DF05}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TaskManagerExDll", "TaskManagerExDll\TaskManagerExDll.vcproj", "{7146B562-702A-46E9-9BC5-97A1F953E5E1}"
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 3
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = TaskManagerEx\\TaskManagerEx.vcproj
+		SccProjectName1 = \u0022$/TaskManagerEx\u0022,\u0020BAAAAAAA
+		SccLocalPath1 = TaskManagerEx
+		SccProjectUniqueName2 = TaskManagerExDll\\TaskManagerExDll.vcproj
+		SccProjectName2 = \u0022$/TaskManagerExDll\u0022,\u0020HAAAAAAA
+		SccLocalPath2 = TaskManagerExDll
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Unicode|Win32 = Debug Unicode|Win32
+		Debug|Win32 = Debug|Win32
+		Release Unicode|Win32 = Release Unicode|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Debug|Win32.Build.0 = Debug|Win32
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Release|Win32.ActiveCfg = Release|Win32
+		{8578845C-17D4-4A8E-900F-57917B27DF05}.Release|Win32.Build.0 = Release|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Debug|Win32.Build.0 = Debug|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Release|Win32.ActiveCfg = Release|Win32
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

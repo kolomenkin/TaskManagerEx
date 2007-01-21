@@ -1,0 +1,118 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+#include "..\TaskManagerExDll\product.h"
+#include "Module.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_MESSAGEBOX_CAPTION  "Task Manager Extension"
+    IDS_REQUIRE_NT          "Task Manager Extension работает только под операционными системами Windows NT/2000/XP+!"
+    IDS_GETMODULEFILNAME_ERROR "Ошибка функции GetModuleFileName()"
+    IDS_COMMANDLINE_HELP    "Аргументы командной строки:\n\tTaskManagerEx.exe\t- запустить монитор Task Manager Extension\n\tTaskManagerEx.exe /?\t- показать данную справку\n\tTaskManagerEx.exe /u\t- остановить монитор Task Manager Extension\n\tTaskManagerEx.exe /r\t- перезапустить Task Manager Extension\n\tTaskManagerEx.exe /clean\t- очистить систему от Task Manager Extension (автозагрузка и память)"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "#include ""..\\TaskManagerExDll\\product.h""\r\n"
+    "#include ""Module.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "#include ""..\\TaskManagerExDll\\VerInfo.ver""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON    DISCARDABLE     "..\\TaskManagerExDll\\res\\General.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_MESSAGEBOX_CAPTION  "Task Manager Extension"
+    IDS_REQUIRE_NT          "Task Manager Extension can be run only on Windows NT/2000/XP+!"
+    IDS_GETMODULEFILNAME_ERROR "Function GetModuleFileName() failed"
+    IDS_COMMANDLINE_HELP    "Command line usage:\n\tTaskManagerEx.exe\t- start Task Manager Extension monitor\n\tTaskManagerEx.exe /?\t- display this help\n\tTaskManagerEx.exe /u\t- stop Task Manager Extension monitor\n\tTaskManagerEx.exe /r\t- restart Task Manager Extension monitor\n\tTaskManagerEx.exe /clean\t- uninstall Task Manager Extension (startup & memory)"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+#include "..\TaskManagerExDll\VerInfo.ver"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

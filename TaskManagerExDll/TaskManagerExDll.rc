@@ -8,9 +8,526 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
+#include "..\TaskManagerExDll\product.h"
+#include "Module.h"
+#include "TaskManagerExDllExport.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_INFORMATION DIALOG DISCARDABLE  0, 0, 320, 262
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+CAPTION "Информация"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Обновить",IDC_REFRESH,7,7,50,14
+    PUSHBUTTON      "Выход",IDC_EXIT,263,7,50,14
+    EDITTEXT        IDC_INFO,7,26,306,229,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+END
+
+IDD_FIND_TEXT DIALOG DISCARDABLE  0, 0, 268, 82
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Найти"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Текст:",IDC_STATIC,5,10,23,8
+    COMBOBOX        IDC_TEXT_COMBO,44,7,158,75,CBS_DROPDOWN | 
+                    CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Икать &полное слово",IDC_MATCH_WHOLE_WORD,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,28,85,10
+    CONTROL         "С учётом &регистра",IDC_MATCH_CASE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,41,79,10
+    GROUPBOX        "Направление",IDC_STATIC,115,30,87,39
+    CONTROL         "Вве&рх",IDC_DIRECTION_UP_RADIO,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,123,42,36,10
+    CONTROL         "Вни&з",IDC_DIRECTION_DOWN_RADIO,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,123,55,33,10
+    DEFPUSHBUTTON   "&Искать",IDOK,211,7,50,14
+    PUSHBUTTON      "&Отменить",IDCANCEL,211,24,50,14
+END
+
+IDD_TIP DIALOGEX 0, 0, 231, 164
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Совет дня"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_FRAME_RECT,"Static",SS_BLACKFRAME,7,7,217,127,
+                    WS_EX_TRANSPARENT
+    CONTROL         "",IDC_FRAME_INTERNAL,"Static",SS_WHITEFRAME,16,14,200,
+                    112
+    LTEXT           "Какая-то строка 8-)",IDC_TIPSTRING,28,63,177,60,0,
+                    WS_EX_TRANSPARENT
+    CONTROL         "&Дать совет в след. раз",IDC_TIP_STARTUP,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,146,95,10
+    PUSHBUTTON      "&След. совет",IDC_NEXTTIP,115,143,50,14,WS_GROUP
+    DEFPUSHBUTTON   "&Закрыть",IDOK,174,143,50,14,WS_GROUP
+END
+
+IDD_EXTENSION_ABOUT DIALOG DISCARDABLE  0, 0, 332, 92
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "О программе Task Manager Extension"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "ОК",IDOK,275,70,50,14
+    LTEXT           "Task Manager Extension",IDC_PRODUCT_VERSION_STATIC,43,7,
+                    282,10
+    LTEXT           "",IDC_COMMENTS_STATIC,43,23,282,41
+    ICON            IDI_SYSTEM_INFO_ICON,IDC_STATIC,7,7,20,20
+END
+
+IDD_OPTIONS_PROPPAGE_OTHER DIALOG DISCARDABLE  0, 0, 147, 90
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Цвета"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Цвет текста",IDC_STATIC,5,5,135,80
+    PUSHBUTTON      "Цвет имени &процесса",IDC_PROCESS_COLOR,20,20,105,16
+    PUSHBUTTON      "Цвет имени &сервиса",IDC_SERVICE_PROCESS_COLOR,20,40,
+                    105,16
+    PUSHBUTTON      "Цвет п&редупреждения",IDC_CPU_ALERT_COLOR,20,60,105,16
+END
+
+IDD_OPTIONS_PROPPAGE_GENERAL DIALOG DISCARDABLE  0, 0, 147, 90
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Основные"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Загрузка",IDC_STATIC,5,5,135,75
+    CONTROL         "Запускаться во время\n старта &Windows",
+                    IDC_AUTORUN_CHECK,"Button",BS_AUTOCHECKBOX | 
+                    BS_MULTILINE | WS_TABSTOP,15,20,115,15
+    CONTROL         "Показывать окно &логотипа",IDC_SHOW_SPLASH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,40,109,10
+    CONTROL         "Показывать Совет Дня после\n активации Task Manager",
+                    IDC_SHOW_TIPS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
+                    WS_TABSTOP,15,55,120,20
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_INFORMATION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 313
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 255
+    END
+
+    IDD_FIND_TEXT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 261
+        VERTGUIDE, 44
+        VERTGUIDE, 123
+        VERTGUIDE, 202
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 75
+    END
+
+    IDD_TIP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 157
+    END
+
+    IDD_EXTENSION_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 325
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 84
+    END
+
+    IDD_OPTIONS_PROPPAGE_OTHER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 140
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 82
+    END
+
+    IDD_OPTIONS_PROPPAGE_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 140
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 82
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_PROCESSES MENU DISCARDABLE 
+BEGIN
+    POPUP "Модули"
+    BEGIN
+        MENUITEM "&Загрузить",                  ID_MODULES_LOAD
+        MENUITEM "&Выгрузить",                  ID_MODULES_UNLOAD
+        MENUITEM "Просмотр &зависимотей...",    ID_MODULES_DEPENDENCY
+        , GRAYED
+        MENUITEM "&Права на файл...",           ID_MODULES_SECURITY
+        MENUITEM SEPARATOR
+        MENUITEM "&Свойства...",                ID_MODULES_FILEPROPERTIES
+    END
+    POPUP "Окна"
+    BEGIN
+        MENUITEM "&Закрыть",                    ID_WINDOWS_CLOSE
+    END
+    POPUP "Описатели"
+    BEGIN
+        MENUITEM "&Закрыть описатель",          ID_HANDLES_RELEASE
+        MENUITEM SEPARATOR
+        POPUP "Событие", GRAYED
+        BEGIN
+            MENUITEM "&Установить",                 ID_HANDLES_EVENT_SET
+            MENUITEM "&Сбросить",                   ID_HANDLES_EVENT_RESET
+            MENUITEM "&Импульс",                    ID_HANDLES_EVENT_PULSE
+        END
+        POPUP "Мьютекс", GRAYED
+        BEGIN
+            MENUITEM "&Освободить",                 ID_HANDLES_MUTANT_RELEASE
+
+        END
+        POPUP "Станция Windows", GRAYED
+        BEGIN
+            MENUITEM "&Назначить процессу",         ID_HANDLES_WINDOWSTATION_ASSIGNTOPROCESS
+
+        END
+        POPUP "Рабочий стол", GRAYED
+        BEGIN
+            MENUITEM "&Переключиться",              ID_HANDLES_DESKTOP_SWITHTO
+
+        END
+        POPUP "Процесс", GRAYED
+        BEGIN
+            MENUITEM "&Выйти из процесса",          ID_HANDLES_PROCESS_EXITPROCESS
+
+            MENUITEM "&Завершить процесс",          ID_HANDLES_PROCESS_TERMINATE
+
+        END
+        POPUP "Поток", GRAYED
+        BEGIN
+            MENUITEM "&Приостановить",              ID_HANDLES_THREAD_SUSPEND
+
+            MENUITEM "П&родолжить",                 ID_HANDLES_THREAD_RESUME
+            MENUITEM "&Завершить",                  ID_HANDLES_THREAD_TERMINATE
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Права на объект...",         ID_HANDLES_SECURITY
+    END
+    POPUP "Потоки"
+    BEGIN
+        MENUITEM "&Закрыть описатель",          ID_HANDLES_RELEASE, GRAYED
+        MENUITEM "&Приостановить",              ID_HANDLES_THREAD_SUSPEND
+        , GRAYED
+        MENUITEM "П&родолжить",                 ID_HANDLES_THREAD_RESUME
+        , GRAYED
+        MENUITEM "&Завершить",                  ID_HANDLES_THREAD_TERMINATE
+        MENUITEM "&Права на поток...",          ID_HANDLES_THREAD_SECURITY
+    END
+END
+
+IDR_EXTENSION MENU DISCARDABLE 
+BEGIN
+    POPUP "&Расширение"
+    BEGIN
+        MENUITEM "Найти используемый &файл...", ID_EXTENSION_FINDUSEDFILE
+        MENUITEM "Найти используемый &модуль...", 
+                                                ID_EXTENSION_FINDUSEDMODULE
+        MENUITEM "Показать &все описатели (длительная операция)...", 
+                                                ID_EXTENSION_ALL_HANDLES
+        MENUITEM "Показать загруженные &драйвера...", 
+                                                ID_EXTENSION_SHOW_DRIVERS
+        MENUITEM SEPARATOR
+        POPUP "&Предупреждение о загрузке процессора"
+        BEGIN
+            MENUITEM "Выключено",                   ID_EXTENSION_CPU00
+            MENUITEM "25%",                         ID_EXTENSION_CPU25
+            MENUITEM "50%",                         ID_EXTENSION_CPU50
+            MENUITEM "75%",                         ID_EXTENSION_CPU75
+        END
+        MENUITEM "&Показать иконки процессов",  ID_EXTENSION_PROCESSICONS
+        MENUITEM "&Скрыть сервисы",             ID_EXTENSION_HIDESERVICES
+        MENUITEM SEPARATOR
+        MENUITEM "Со&вет дня",                  ID_EXTENSION_TIP_OF_THE_DAY
+        MENUITEM "&О программе Task Manager Extension...", 
+                                                ID_EXTENSION_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Настройки...",               ID_EXTENSION_OPTIONS
+    END
+END
+
+IDR_PROCESS_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "_Process_POPUP_"
+    BEGIN
+        MENUITEM "&Файлы...",                   ID_PROCESSES_FILES
+        MENUITEM "&Модули...",                  ID_PROCESSES_MODULES
+        MENUITEM "&Описатели...",               ID_PROCESSES_HANDLES
+        MENUITEM "&Окна...",                    ID_PROCESSES_WINDOWS
+        MENUITEM "&Потоки...",                  ID_PROCESSES_THREADS
+        MENUITEM "&Карта памяти...",            ID_PROCESSES_MEMORY
+        MENUITEM "&Права на процесс...",        ID_PROCESSES_PROCESS_SECURITY
+
+        MENUITEM SEPARATOR
+        MENUITEM "TASKMGR_DEFAULT_ITEMS",       ID_TASKMGR_DEFAULT_ITEMS
+        MENUITEM SEPARATOR
+        MENUITEM "&Информация...",              ID_PROCESSES_INFO
+        MENUITEM "Просмотр &зависимотей...",    ID_PROCESSES_EXE_DEPENDENCY
+        MENUITEM SEPARATOR
+        MENUITEM "&Свойства...",                ID_PROCESSES_EXE_PROPERTIES
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EXTENSION_REFRESH    "Обновить (F5)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FIND_TEXT            "Поиск текста (Ctrl+F)"
+    ID_FIND_NEXT_TEXT       "Искать далее (F3)"
+    ID_FIND_PREV_TEXT       "Искать назад (Shift+F3)"
+    IDS_FIND_MODULE_EDIT    "Часть имени или пути модуля (EXE или DLL). Значение ""*"" включает в себя все модули. Регистр букв не имеет значения."
+    IDS_FIND_FILE_EDIT      "Часть имени или пути файла. Значение ""*"" включает в себя все файлы. Регистр букв не имеет значения."
+    IDS_FIND_MODULE_STATIC  "Часть имени модуля:"
+    IDS_FIND_FILE_STATIC    "Часть имени файла:"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_LIST_NO_ITEMS       "Список элементов пуст"
+    ID_MEMORY_EXPAND        "Показать внутренние блоки регионов памяти (Ctrl + '+')"
+    ID_MEMORY_COMPACT       "Скрыть внутренние блоки регионов памяти (Ctrl + '-')"
+    IDS_OPTIONS_PROPSHT_CAPTION "Свойства Task Manager Extension"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_PANE1      "Статус"
+    ID_INDICATOR_PANE2      "Количество элементов"
+    IDS_LANGID              "0x419"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_TIPS_DIDYOUKNOW     "А вы знали..."
+    IDS_TIPS_FILE_ABSENT    "Хранилище советов пусто!"
+    IDS_TIPS                "Вам необходимо запустить Windows Task Manager, чтобы ознакомиться с Task Manager Extension.\nВы можете запустить Windows Task Manager нажатием Ctrl+Shift+Esc.\nВы можете найти используемый файл выбрав пункт меню Расширение\\Найти используемый файл...\nВы можете найти используемый модуль выбрав пункт меню Расширение\\Найти используемый модуль...\nЧтобы увидеть все загруженные драйвера, выберите пункт Расширение\\Показать загруженные драйвера...\nВы можете настроить Task Manager Extension для запуска сразу после входа пользователя в систему. Для этого выберите пункт меню Расширение\\Настройки, выбрать пункт ""Загружаться во время старта Windows"" и нажать кнопку ОК.\nВы можете получить массу информации о процессе из всплывающего меню. Нажмите на процессе правой клавишей мыши и вы сможете увидеть используемые файлы, модули, описатели, права доступа, окна, потоки, карту памяти о много другое.\n"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_AUTORUN_CHECK       "Загружать Task Manager Extension после входа в систему любого пользователя"
+    IDC_SHOW_SPLASH         "Показывать окно с логотипом во время запуска Task Manager Extension"
+    IDC_PROCESS_COLOR       "Цвет обычных процессов"
+    IDC_SERVICE_PROCESS_COLOR "Цвет сервисных процессов"
+    IDC_CPU_ALERT_COLOR     "Цвет процессов, дающих слишком большую загрузку процессора"
+    IDC_NEXTTIP             "Следующий совет"
+    IDC_TIP_STARTUP         "Показывать Совет Дня во время активации Task Manager Extension"
+    IDC_SHOW_TIPS           "Показывать Совет Дня во время активации Task Manager Extension"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_TEXT_COMBO          "Искомый текст"
+    IDC_MATCH_WHOLE_WORD    "Искать слово целиком. Это значит, что искомое слово должно стоять отдельно в тескте, не быть чатью другого слова или выражения."
+    IDC_MATCH_CASE          "Учитывать регистр букв в тексте"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_DIRECTION_UP_RADIO  "Поиск назад"
+    IDC_DIRECTION_DOWN_RADIO "Поиск вперёд"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FIND_OK             "Начать поиск"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FIND_CANCEL         "Отменить поиск"
+    IDC_INFO_EXIT           "Закрыть окно (Esc)"
+    IDC_INFO_REFRESH        "Обновить информацию (Enter)"
+    IDS_TIPS_OK             "Закрыть окно с советами"
+    IDS_INFORMATION_RPOCESS "Информация о процессе"
+    IDS_SYSTEM_RPOCESS_OPERATION_DENIED 
+                            "Операция невозможна!\nЭто главный системный процесс.\nУ него нет главного исполняемого файла."
+    IDS_CANT_SHELL_EXECUTE  "Не могу выполнить операцию ""%s"" над файлом\n""%s"""
+    IDS_CAPTION_EXTENDED    " (Расширенный)"
+    IDS_MODULE_FIXED        "фикс."
+    IDS_MEMORY_THREAD_STACK "Стек потока"
+    IDS_COLUMN_PID          "PID"
+    IDS_COLUMN_PROCESS_NAME "Процесс"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_HANDLE       "Описатель"
+    IDS_COLUMN_HANDLE_PID   "PID описателя"
+    IDS_COLUMN_MODULE_BASE  "Базовый адрес"
+    IDS_COLUMN_MODULE_LENGTH "Длина"
+    IDS_COLUMN_MODULE_USAGE "Использование"
+    IDS_COLUMN_MODULE_NAME  "Имя"
+    IDS_COLUMN_MODULE_FILE_SIZE "Размер файла"
+    IDS_COLUMN_MODULE_VERSION "Версия"
+    IDS_COLUMN_MODULE_PATH  "Путь"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_DRIVER_NAME  "Базовое имя"
+    IDS_COLUMN_DRIVER_ADDRESS "Адрес загрузки"
+    IDS_COLUMN_DRIVER_TYPE  "Расширение"
+    IDS_COLUMN_DRIVER_PATH  "Путь"
+    IDS_COLUMN_DRIVER_FILE_SIZE "Размер файла"
+    IDS_COLUMN_DRIVER_FULL_NAME "Имя файла"
+    IDS_COLUMN_MEMORY_ADDRESS "Базовый адрес"
+    IDS_COLUMN_MEMORY_SIZE  "Размер"
+    IDS_COLUMN_MEMORY_TYPE  "Тип"
+    IDS_COLUMN_MEMORY_BLOCKS "Блоки"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_MEMORY_PROTECT "Защита"
+    IDS_COLUMN_MEMORY_DESCRIPTION "Описание"
+    IDS_COLUMN_MEMORY_TYPE_UNKNOWN "Неизвестный"
+    IDS_COLUMN_MEMORY_TYPE_FREE "Свободный"
+    IDS_COLUMN_MEMORY_TYPE_RESERVE "Зарезервированный"
+    IDS_COLUMN_MEMORY_TYPE_IMAGE "Образ"
+    IDS_COLUMN_MEMORY_TYPE_MAPPED "Проецированный"
+    IDS_COLUMN_MEMORY_TYPE_PRIVATE "Приватный"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_THREAD_TID   "ID потока"
+    IDS_COLUMN_THREAD_PRIORITY "Приоритет"
+    IDS_COLUMN_THREAD_START_ADDRESS "Стартовый адрес"
+    IDS_COLUMN_THREAD_MODULE "Модуль"
+    IDS_COLUMN_THREAD_STATE "Состояние"
+    IDS_COLUMN_THREAD_REASON "Причина ожидания"
+    IDS_COLUMN_THREAD_CONTEXT_SWITCHES "Переключения контекста"
+    IDS_COLUMN_THREAD_WAIT_TIME "Время ожидания"
+    IDS_COLUMN_HANDLE_ACCESS "Доступ"
+    IDS_COLUMN_HANDLE_TYPE  "Тип"
+    IDS_COLUMN_HANDLE_TYPE_NUMBER "Номер типа"
+    IDS_COLUMN_HANDLE_NAME  "Имя"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_FILE_NAME    "Имя"
+    IDS_COLUMN_FILE_PATH    "Путь"
+    IDS_COLUMN_FILE_DEVICE  "Устройство"
+    IDS_COLUMN_WINDOW_CAPTION "Заголовок окна"
+    IDS_COLUMN_WINDOW_CLASS "Класс"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_WINDOW_RECT  "Координаты"
+    IDS_COLUMN_WINDOW_STYLE "Стиль"
+    IDS_COLUMN_WINDOW_EX_STYLE "Расширенный стиль"
+    IDS_LIST_STATUS_READY   "Готов"
+    IDS_LIST_STATUS_BUSY    "Обновляю..."
+    IDS_LIST_CAPTION_FIND_USED_FILE "Поиск используемого файла"
+    IDS_LIST_CAPTION_FIND_USED_MODULE "Поиск используемого модуля"
+    IDS_LIST_CAPTION_ALL_HANDLES "Все описатели системы"
+    IDS_PID_SYSTEM_NAME     "[Система]"
+    IDS_LIST_CAPTION_KERNEL_PROCESS "Система"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_LIST_CAPTION_LOADED_KERNEL_MODULES "Загруженные модуля режима ядра"
+    IDS_LIST_CAPTION_KERNEL_MODULES "Модули режима ядра"
+    IDS_LIST_CAPTION_SUB_FILES "Файлы"
+    IDS_LIST_CAPTION_SUB_MODULES "Модули"
+    IDS_LIST_CAPTION_SUB_WINDOWS "Окна"
+    IDS_LIST_CAPTION_SUB_HANDLES "Описатели"
+    IDS_LIST_CAPTION_SUB_THREADS "Потоки"
+    IDS_LIST_CAPTION_SUB_MEMORY_MAP "Карта памяти"
+    IDS_LIST_STATUS_ITEMS   "%d элементов (%d выделено)"
+    IDS_PROCESS_IS_NOT_VALID 
+                            "Идентификатор процесса более не существует в системе.\nВы хотите закрыть окно с информацией процесса?"
+    IDS_CANT_FIND_TEXT      "Не могу найти строку '%s'."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CANT_RELEASE_HANDLE "Не могу освободить описатель"
+    IDS_CANT_LOAD_MODULE    "Не могу загрузить модуль"
+    IDS_CANT_UNLOAD_MODULE  "Не могу выгрузить модуль из памяти"
+    IDS_CANT_SET_EVENT      "Не могу установить событие"
+    IDS_CANT_RESET_EVENT    "Не могу сбросить событие"
+    IDS_CANT_PULSE_EVENT    "Не могу сделать импульс события"
+    IDS_CANT_RELEASE_MUTEX  "Не могу освободить мьютекс"
+    IDS_CANT_EXIT_PROCESS   "Не могу выйти из процесса"
+    IDS_CANT_TERMINATE_PROCESS "Не могу остановить процесс"
+    IDS_CANT_OPEN_PROCESS   "Не могу открыть процесс"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CANT_RESUME_THREAD  "Не могу продолжить выполнение потока"
+    IDS_CANT_SUSPEND_THREAD "Не могу приостановить выполнение потока"
+    IDS_CANT_TERMINATE_THREAD "Не могу завершить поток"
+    IDS_CANT_OPEN_THREAD    "Не могу открыть поток"
+    IDS_INVALID_THREAD_ID   "Идентификатор потока неверен!"
+    IDS_CANT_FIND_OPENTHREAD_FUNC 
+                            "Не могу найти функцию OpenThread в модуле kernel32.dll"
+    IDS_CANT_ASSIGN_WINSTATION "Не могу назначить станцию Windows"
+    IDS_CANT_SWITCH_DESKTOP "Не могу переключить Рабочий стол"
+    IDS_LIST_FIND_FILE_NAME "Имя файла:"
+    IDS_LIST_FIND_MODULE_NAME "Имя модуля:"
+    IDS_LIST_FIND_UNKNOWN_NAME "НЕИЗВЕСТНОЕ имя:"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
 
 /////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
@@ -26,36 +543,104 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_SYSTEMINFODLG DIALOG DISCARDABLE  0, 0, 374, 222
-STYLE WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+IDD_OPTIONS_PROPPAGE_GENERAL DIALOG DISCARDABLE  0, 0, 147, 90
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Loading",IDC_STATIC,5,5,135,75
+    CONTROL         "Run during &Windows logon",IDC_AUTORUN_CHECK,"Button",
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,15,20,101,10
+    CONTROL         "Display &splash screen",IDC_SHOW_SPLASH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,40,84,10
+    CONTROL         "Show &tip of the day after\n Task Manager activate",
+                    IDC_SHOW_TIPS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
+                    WS_TABSTOP,15,55,120,20
+END
+
+IDD_OPTIONS_PROPPAGE_OTHER DIALOG DISCARDABLE  0, 0, 147, 90
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Colors"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Text Color",IDC_STATIC,5,5,135,80
+    PUSHBUTTON      "&Process Name Color",IDC_PROCESS_COLOR,20,20,105,16
+    PUSHBUTTON      "&Service Name Color",IDC_SERVICE_PROCESS_COLOR,20,40,
+                    105,16
+    PUSHBUTTON      "&CPU Alert Color",IDC_CPU_ALERT_COLOR,20,60,105,16
+END
+
+IDD_SYSTEMINFODLG DIALOG DISCARDABLE  0, 0, 370, 220
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
 CAPTION "Dialog"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "List1",IDC_SYSTEMINFO,"SysListView32",LVS_REPORT | 
+    CONTROL         "List1",IDC_LISTVIEW,"SysListView32",LVS_REPORT | 
                     LVS_SHOWSELALWAYS | LVS_SORTASCENDING | WS_TABSTOP,0,0,
-                    185,130
+                    370,220
 END
 
-IDD_EXTENSION_ABOUT DIALOG DISCARDABLE  0, 0, 286, 90
+IDD_EXTENSION_ABOUT DIALOG DISCARDABLE  0, 0, 332, 92
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Task Manager Extension"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,229,69,50,14
-    LTEXT           "Task Manager Extension 1.0",IDC_STATIC,43,7,236,10
-    LTEXT           "Written by Zoltan Csizmadia (zoltan_csizmadia@yahoo.com)\n\nFreeware! If you'd like to get my resume, and your company is in Austin TX, please send me an e-mail!\n",
-                    IDC_STATIC,43,23,236,38
-    ICON            IDI_MAINICON,IDC_STATIC,7,7,20,20
+    DEFPUSHBUTTON   "OK",IDOK,275,70,50,14
+    LTEXT           "Task Manager Extension",IDC_PRODUCT_VERSION_STATIC,43,7,
+                    282,10
+    LTEXT           "",IDC_COMMENTS_STATIC,43,23,282,41
+    ICON            IDI_SYSTEM_INFO_ICON,IDC_STATIC,7,7,21,20
 END
 
-IDD_FINDUSEDDLG DIALOG DISCARDABLE  0, 0, 374, 222
-STYLE WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Dialog"
+IDD_FIND_TEXT DIALOG DISCARDABLE  0, 0, 268, 82
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Find"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "List1",IDC_FINDUSED,"SysListView32",LVS_REPORT | 
-                    LVS_SHOWSELALWAYS | LVS_SORTASCENDING | WS_TABSTOP,0,0,
-                    185,130
+    LTEXT           "Find what:",IDC_STATIC,5,10,34,8
+    COMBOBOX        IDC_TEXT_COMBO,44,7,158,75,CBS_DROPDOWN | 
+                    CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Match &whole word only",IDC_MATCH_WHOLE_WORD,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,28,89,10
+    CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,41,53,10
+    GROUPBOX        "Direction",IDC_STATIC,115,30,87,39
+    CONTROL         "&Up",IDC_DIRECTION_UP_RADIO,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,123,42,25,10
+    CONTROL         "&Down",IDC_DIRECTION_DOWN_RADIO,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,123,55,35,10
+    DEFPUSHBUTTON   "&Find Next",IDOK,211,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,211,24,50,14
+END
+
+IDD_INFORMATION DIALOG DISCARDABLE  0, 0, 320, 262
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+CAPTION "Information"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Refresh",IDC_REFRESH,7,7,50,14
+    PUSHBUTTON      "Exit",IDC_EXIT,263,7,50,14
+    EDITTEXT        IDC_INFO,7,26,306,229,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+END
+
+IDD_TIP DIALOGEX 0, 0, 231, 164
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Tip of the Day"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_FRAME_RECT,"Static",SS_BLACKFRAME,7,7,217,127,
+                    WS_EX_TRANSPARENT
+    CONTROL         "",IDC_FRAME_INTERNAL,"Static",SS_WHITEFRAME,16,14,200,
+                    112
+    LTEXT           "Some String",IDC_TIPSTRING,28,63,177,60,0,
+                    WS_EX_TRANSPARENT
+    CONTROL         "&Show Tips on StartUp",IDC_TIP_STARTUP,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,146,85,10
+    PUSHBUTTON      "&Next Tip",IDC_NEXTTIP,115,143,50,14,WS_GROUP
+    DEFPUSHBUTTON   "&Close",IDOK,174,143,50,14,WS_GROUP
 END
 
 
@@ -67,31 +652,192 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO DISCARDABLE 
 BEGIN
+    IDD_OPTIONS_PROPPAGE_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 140
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 82
+    END
+
+    IDD_OPTIONS_PROPPAGE_OTHER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 140
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 82
+    END
+
     IDD_SYSTEMINFODLG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 367
+        RIGHTMARGIN, 363
         TOPMARGIN, 7
-        BOTTOMMARGIN, 215
+        BOTTOMMARGIN, 213
     END
 
     IDD_EXTENSION_ABOUT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 279
+        RIGHTMARGIN, 325
         TOPMARGIN, 7
-        BOTTOMMARGIN, 83
+        BOTTOMMARGIN, 84
     END
 
-    IDD_FINDUSEDDLG, DIALOG
+    IDD_FIND_TEXT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 367
+        RIGHTMARGIN, 261
+        VERTGUIDE, 44
+        VERTGUIDE, 123
+        VERTGUIDE, 202
         TOPMARGIN, 7
-        BOTTOMMARGIN, 215
+        BOTTOMMARGIN, 75
+    END
+
+    IDD_INFORMATION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 313
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 255
+    END
+
+    IDD_TIP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 157
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_PROCESSES MENU DISCARDABLE 
+BEGIN
+    POPUP "Modules"
+    BEGIN
+        MENUITEM "&Load",                       ID_MODULES_LOAD
+        MENUITEM "&Unload",                     ID_MODULES_UNLOAD
+        MENUITEM "&View Dependencies...",       ID_MODULES_DEPENDENCY
+        , GRAYED
+        MENUITEM "File &Security...",           ID_MODULES_SECURITY
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...",              ID_MODULES_FILEPROPERTIES
+    END
+    POPUP "Windows"
+    BEGIN
+        MENUITEM "&Close",                      ID_WINDOWS_CLOSE
+    END
+    POPUP "Handles"
+    BEGIN
+        MENUITEM "&Close handle",               ID_HANDLES_RELEASE
+        MENUITEM SEPARATOR
+        POPUP "Event", GRAYED
+        BEGIN
+            MENUITEM "&Set",                        ID_HANDLES_EVENT_SET
+            MENUITEM "&Reset",                      ID_HANDLES_EVENT_RESET
+            MENUITEM "&Pulse",                      ID_HANDLES_EVENT_PULSE
+        END
+        POPUP "Mutant", GRAYED
+        BEGIN
+            MENUITEM "&Release",                    ID_HANDLES_MUTANT_RELEASE
+
+        END
+        POPUP "WindowStation", GRAYED
+        BEGIN
+            MENUITEM "&Assign to process",          ID_HANDLES_WINDOWSTATION_ASSIGNTOPROCESS
+
+        END
+        POPUP "Desktop", GRAYED
+        BEGIN
+            MENUITEM "&Swith to",                   ID_HANDLES_DESKTOP_SWITHTO
+
+        END
+        POPUP "Process", GRAYED
+        BEGIN
+            MENUITEM "&ExitProcess",                ID_HANDLES_PROCESS_EXITPROCESS
+
+            MENUITEM "&Terminate",                  ID_HANDLES_PROCESS_TERMINATE
+
+        END
+        POPUP "Thread", GRAYED
+        BEGIN
+            MENUITEM "&Suspend",                    ID_HANDLES_THREAD_SUSPEND
+
+            MENUITEM "&Resume",                     ID_HANDLES_THREAD_RESUME
+            MENUITEM "&Terminate",                  ID_HANDLES_THREAD_TERMINATE
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Object &Security...",         ID_HANDLES_SECURITY
+    END
+    POPUP "Threads"
+    BEGIN
+        MENUITEM "&Close handle",               ID_HANDLES_RELEASE, GRAYED
+        MENUITEM "&Suspend",                    ID_HANDLES_THREAD_SUSPEND
+        , GRAYED
+        MENUITEM "&Resume",                     ID_HANDLES_THREAD_RESUME
+        , GRAYED
+        MENUITEM "&Terminate",                  ID_HANDLES_THREAD_TERMINATE
+        MENUITEM "Thread &Security...",         ID_HANDLES_THREAD_SECURITY
+    END
+END
+
+IDR_EXTENSION MENU DISCARDABLE 
+BEGIN
+    POPUP "&Extension"
+    BEGIN
+        MENUITEM "Find used &file...",          ID_EXTENSION_FINDUSEDFILE
+        MENUITEM "Find used &module...",        ID_EXTENSION_FINDUSEDMODULE
+        MENUITEM "Show &all handles (long query)...", 
+                                                ID_EXTENSION_ALL_HANDLES
+        MENUITEM "Show loaded &drivers...",     ID_EXTENSION_SHOW_DRIVERS
+        MENUITEM SEPARATOR
+        POPUP "&CPU Usage Alert"
+        BEGIN
+            MENUITEM "Off",                         ID_EXTENSION_CPU00
+            MENUITEM "25%",                         ID_EXTENSION_CPU25
+            MENUITEM "50%",                         ID_EXTENSION_CPU50
+            MENUITEM "75%",                         ID_EXTENSION_CPU75
+        END
+        MENUITEM "&Show process icons",         ID_EXTENSION_PROCESSICONS
+        MENUITEM "&Hide services",              ID_EXTENSION_HIDESERVICES
+        MENUITEM SEPARATOR
+        MENUITEM "&Tip of the Day",             ID_EXTENSION_TIP_OF_THE_DAY
+        MENUITEM "&About Extension...",         ID_EXTENSION_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Options...",                 ID_EXTENSION_OPTIONS
+    END
+END
+
+IDR_PROCESS_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "_Process_POPUP_"
+    BEGIN
+        MENUITEM "&Files...",                   ID_PROCESSES_FILES
+        MENUITEM "&Modules...",                 ID_PROCESSES_MODULES
+        MENUITEM "&Handles...",                 ID_PROCESSES_HANDLES
+        MENUITEM "&Windows...",                 ID_PROCESSES_WINDOWS
+        MENUITEM "&Threads...",                 ID_PROCESSES_THREADS
+        MENUITEM "M&emory Map...",              ID_PROCESSES_MEMORY
+        MENUITEM "Process &Security...",        ID_PROCESSES_PROCESS_SECURITY
+
+        MENUITEM SEPARATOR
+        MENUITEM "TASKMGR_DEFAULT_ITEMS",       ID_TASKMGR_DEFAULT_ITEMS
+        MENUITEM SEPARATOR
+        MENUITEM "&Information...",             ID_PROCESSES_INFO
+        MENUITEM "&View Dependencies...",       ID_PROCESSES_EXE_DEPENDENCY
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...",              ID_PROCESSES_EXE_PROPERTIES
+    END
+END
 
 
 #ifdef APSTUDIO_INVOKED
@@ -108,12 +854,16 @@ END
 2 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "#include ""afxres.h""\r\n"
+    "#include ""..\\TaskManagerExDll\\product.h""\r\n"
+    "#include ""Module.h""\r\n"
+    "#include ""TaskManagerExDllExport.h""\r\n"
     "\0"
 END
 
 3 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "\r\n"
+    "#include ""..\\TaskManagerExDll\\VerInfo.ver""\r\n"
     "\0"
 END
 
@@ -127,14 +877,17 @@ END
 
 IDR_SYSTEMINFODLG TOOLBAR DISCARDABLE  16, 15
 BEGIN
+    BUTTON      ID_TOOLBAR_BUTTON1
+    BUTTON      ID_TOOLBAR_BUTTON2
     BUTTON      ID_EXTENSION_REFRESH
-END
-
-IDR_FINDUSEDDLG TOOLBAR DISCARDABLE  16, 15
-BEGIN
-    BUTTON      ID_BUTTON40027
-    BUTTON      ID_BUTTON40028
-    BUTTON      ID_EXTENSION_REFRESH
+    SEPARATOR
+    BUTTON      ID_FIND_TEXT
+    SEPARATOR
+    BUTTON      ID_FIND_PREV_TEXT
+    BUTTON      ID_FIND_NEXT_TEXT
+    SEPARATOR
+    BUTTON      ID_MEMORY_EXPAND
+    BUTTON      ID_MEMORY_COMPACT
 END
 
 
@@ -143,8 +896,8 @@ END
 // Bitmap
 //
 
-IDR_SYSTEMINFODLG       BITMAP  DISCARDABLE     "res/toolbar1.bmp"
-IDR_FINDUSEDDLG         BITMAP  DISCARDABLE     "res/bmp00001.bmp"
+IDR_SYSTEMINFODLG       BITMAP  DISCARDABLE     "res\\SystemInfoToolbar.bmp"
+IDB_LIGHTBULB           BITMAP  DISCARDABLE     "res\\litebulb.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -153,45 +906,238 @@ IDR_FINDUSEDDLG         BITMAP  DISCARDABLE     "res/bmp00001.bmp"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAINICON            ICON    DISCARDABLE     "res/icon1.ico"
-IDI_DEFAULTPROCESS      ICON    DISCARDABLE     "res/ico00001.ico"
-IDI_SERVICEPROCESS      ICON    DISCARDABLE     "res/ico00002.ico"
+IDI_DEFAULTPROCESS      ICON    DISCARDABLE     "res\\DefaultProcessIcon.ico"
+IDI_SERVICEPROCESS      ICON    DISCARDABLE     "res\\ServiceProcessIcon.ico"
+IDI_SYSTEM_INFO_ICON    ICON    DISCARDABLE     "res\\SystemInfo.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Menu
+// Accelerator
 //
 
-IDR_PROCESSES MENU DISCARDABLE 
+IDR_SYSTEM_INFO_ACCELERATOR ACCELERATORS DISCARDABLE 
 BEGIN
-    POPUP "Modules"
-    BEGIN
-        MENUITEM "Unload",                      ID_MODULES_UNLOAD
-    END
-    POPUP "Windows"
-    BEGIN
-        MENUITEM "Close",                       ID_WINDOWS_CLOSE
-    END
-    POPUP "Handles"
-    BEGIN
-        MENUITEM "Close",                       ID_HANDLES_RELEASE
-        MENUITEM SEPARATOR
-        POPUP "Event", GRAYED
-        BEGIN
-            MENUITEM "Set",                         ID_HANDLES_EVENT_SET
-            MENUITEM "Pulse",                       ID_HANDLES_EVENT_PULSE
-            MENUITEM "Reset",                       ID_HANDLES_EVENT_RESET
-        END
-        POPUP "Mutant", GRAYED
-        BEGIN
-            MENUITEM "Release",                     ID_HANDLES_MUTANT_RELEASE
+    "F",            ID_FIND_TEXT,           VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_MEMORY_EXPAND,       VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_FIND_NEXT_TEXT,      VIRTKEY, NOINVERT
+    VK_F3,          ID_FIND_PREV_TEXT,      VIRTKEY, SHIFT, NOINVERT
+    VK_F5,          ID_EXTENSION_REFRESH,   VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_MEMORY_COMPACT,      VIRTKEY, CONTROL, NOINVERT
+END
 
-        END
-    END
-    POPUP "Threads"
-    BEGIN
-        MENUITEM "Kill",                        ID_THREADS_KILL
-    END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EXTENSION_REFRESH    "Refresh (F5)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FIND_TEXT            "Find text (Ctrl+F)"
+    ID_FIND_NEXT_TEXT       "Find next text occurrence (F3)"
+    ID_FIND_PREV_TEXT       "Find previous text occurrence (Shift+F3)"
+    IDS_FIND_MODULE_EDIT    "Part of module (EXE or DLL) name. Special value ""*"" matches all modules. It may be a part of module's path. String is case insensitive."
+    IDS_FIND_FILE_EDIT      "Part of file name. Special value ""*"" matches all files. It may be a file's path. String is case insensitive."
+    IDS_FIND_MODULE_STATIC  "Part of module name:"
+    IDS_FIND_FILE_STATIC    "Part of file name:"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_LIST_NO_ITEMS       "There are no items to show"
+    ID_MEMORY_EXPAND        "Expand memory blocks of the region (Ctrl + '+')"
+    ID_MEMORY_COMPACT       "Hide memory blocks of the region (Ctrl + '-')"
+    IDS_OPTIONS_PROPSHT_CAPTION "Task Manager Extension Properties"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_TIPS_DIDYOUKNOW     "Did you know..."
+    IDS_TIPS_FILE_ABSENT    "Tips repository is empty!"
+    IDS_TIPS                "You should start Windows Task Manager to get the power of Task Manager Extension.\nYou can start Windows Task Manager by pressing Ctrl+Shift+Esc.\nYou can look for used file in all processes by choosing menu option Extension\\Find used file...\nYou can look for used module in all processes by choosing menu option Extension\\Find used module...\nIf you want to know all loaded drivers you should choose menu option Extension\\Show loaded drivers...\nYou can setup Task Manager Extension to be automatically loaded after user logon. You should choose menu option Extension\\Options, check ""Run during logon"" checkbox and press OK button.\nYou can get a lot of process information by right mouse click on particular process item. You can get information about files, modules, handles, access right, windows, threads, memory map ant etc.\n"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_PANE1      "Status pane"
+    ID_INDICATOR_PANE2      "Items count pane"
+    IDS_LANGID              "0x409"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_AUTORUN_CHECK       "Load Task Manager Extension after any user logon"
+    IDC_SHOW_SPLASH         "Display splah screen during Task Manager Extension loading"
+    IDC_PROCESS_COLOR       "Color of process name"
+    IDC_SERVICE_PROCESS_COLOR "Color of service process name"
+    IDC_CPU_ALERT_COLOR     "Color of process name that uses CPU too much"
+    IDC_NEXTTIP             "Show next tip"
+    IDC_TIP_STARTUP         "Show tips during Task Manager Extension activation"
+    IDC_SHOW_TIPS           "Show tips during Task Manager Extension activation"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_TEXT_COMBO          "Text to find"
+    IDC_MATCH_WHOLE_WORD    "Find whole word only. It means that text is not a part of a bigger word, but a single one."
+    IDC_MATCH_CASE          "Match symbol case in text"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_DIRECTION_UP_RADIO  "Backward lookup"
+    IDC_DIRECTION_DOWN_RADIO "Forward lookup"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FIND_OK             "Start search"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FIND_CANCEL         "Cancel search"
+    IDC_INFO_EXIT           "Close window (Esc)"
+    IDC_INFO_REFRESH        "Refresh information (Enter)"
+    IDS_TIPS_OK             "Close tips"
+    IDS_INFORMATION_RPOCESS "Process Info"
+    IDS_SYSTEM_RPOCESS_OPERATION_DENIED 
+                            "Operation is impossible!\nThis is a main system process.\nIt has no main executable file."
+    IDS_CANT_SHELL_EXECUTE  "Can't execute ""%s"" operation on file\n""%s"""
+    IDS_CAPTION_EXTENDED    " (Extended)"
+    IDS_MODULE_FIXED        "fixed"
+    IDS_MEMORY_THREAD_STACK "Thread Stack"
+    IDS_COLUMN_PID          "PID"
+    IDS_COLUMN_PROCESS_NAME "Process"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_HANDLE       "Handle"
+    IDS_COLUMN_HANDLE_PID   "Handle PID"
+    IDS_COLUMN_MODULE_BASE  "Base address"
+    IDS_COLUMN_MODULE_LENGTH "Length"
+    IDS_COLUMN_MODULE_USAGE "Usage"
+    IDS_COLUMN_MODULE_NAME  "Name"
+    IDS_COLUMN_MODULE_FILE_SIZE "File size"
+    IDS_COLUMN_MODULE_VERSION "Version"
+    IDS_COLUMN_MODULE_PATH  "Path"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_DRIVER_NAME  "Base name"
+    IDS_COLUMN_DRIVER_ADDRESS "Load address"
+    IDS_COLUMN_DRIVER_TYPE  "Extension"
+    IDS_COLUMN_DRIVER_PATH  "Path"
+    IDS_COLUMN_DRIVER_FILE_SIZE "File size"
+    IDS_COLUMN_DRIVER_FULL_NAME "File name"
+    IDS_COLUMN_MEMORY_ADDRESS "Base address"
+    IDS_COLUMN_MEMORY_SIZE  "Size"
+    IDS_COLUMN_MEMORY_TYPE  "Type"
+    IDS_COLUMN_MEMORY_BLOCKS "Blocks"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_MEMORY_PROTECT "Protection"
+    IDS_COLUMN_MEMORY_DESCRIPTION "Description"
+    IDS_COLUMN_MEMORY_TYPE_UNKNOWN "Unknown"
+    IDS_COLUMN_MEMORY_TYPE_FREE "Free"
+    IDS_COLUMN_MEMORY_TYPE_RESERVE "Reserve"
+    IDS_COLUMN_MEMORY_TYPE_IMAGE "Image"
+    IDS_COLUMN_MEMORY_TYPE_MAPPED "Mapped"
+    IDS_COLUMN_MEMORY_TYPE_PRIVATE "Private"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_THREAD_TID   "Thread ID"
+    IDS_COLUMN_THREAD_PRIORITY "Priority"
+    IDS_COLUMN_THREAD_START_ADDRESS "Start address"
+    IDS_COLUMN_THREAD_MODULE "Module"
+    IDS_COLUMN_THREAD_STATE "State"
+    IDS_COLUMN_THREAD_REASON "Wait Reason"
+    IDS_COLUMN_THREAD_CONTEXT_SWITCHES "Context Switches"
+    IDS_COLUMN_THREAD_WAIT_TIME "Wait time"
+    IDS_COLUMN_HANDLE_ACCESS "Access"
+    IDS_COLUMN_HANDLE_TYPE  "Type"
+    IDS_COLUMN_HANDLE_TYPE_NUMBER "Type#"
+    IDS_COLUMN_HANDLE_NAME  "Name"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_FILE_NAME    "Name"
+    IDS_COLUMN_FILE_PATH    "Path"
+    IDS_COLUMN_FILE_DEVICE  "Device"
+    IDS_COLUMN_WINDOW_CAPTION "Window Title"
+    IDS_COLUMN_WINDOW_CLASS "Class"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COLUMN_WINDOW_RECT  "Rectangle"
+    IDS_COLUMN_WINDOW_STYLE "Style"
+    IDS_COLUMN_WINDOW_EX_STYLE "Extended Style"
+    IDS_LIST_STATUS_READY   "Ready"
+    IDS_LIST_STATUS_BUSY    "Refreshing..."
+    IDS_LIST_CAPTION_FIND_USED_FILE "Find used file"
+    IDS_LIST_CAPTION_FIND_USED_MODULE "Find used module"
+    IDS_LIST_CAPTION_ALL_HANDLES "Show all handles in the system"
+    IDS_PID_SYSTEM_NAME     "[System]"
+    IDS_LIST_CAPTION_KERNEL_PROCESS "System"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_LIST_CAPTION_LOADED_KERNEL_MODULES "Show loaded kernel modules"
+    IDS_LIST_CAPTION_KERNEL_MODULES "Kernel Modules"
+    IDS_LIST_CAPTION_SUB_FILES "Files"
+    IDS_LIST_CAPTION_SUB_MODULES "Modules"
+    IDS_LIST_CAPTION_SUB_WINDOWS "Windows"
+    IDS_LIST_CAPTION_SUB_HANDLES "Handles"
+    IDS_LIST_CAPTION_SUB_THREADS "Threads"
+    IDS_LIST_CAPTION_SUB_MEMORY_MAP "Memory map"
+    IDS_LIST_STATUS_ITEMS   "%d items (%d selected)"
+    IDS_PROCESS_IS_NOT_VALID 
+                            "Probably the process ID is not valid anymore.\nDo you want to close the process window?"
+    IDS_CANT_FIND_TEXT      "Cannot find string '%s'."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CANT_RELEASE_HANDLE "Can't release handle"
+    IDS_CANT_LOAD_MODULE    "Can't load module"
+    IDS_CANT_UNLOAD_MODULE  "Can't unload module"
+    IDS_CANT_SET_EVENT      "Can't set event"
+    IDS_CANT_RESET_EVENT    "Can't reset event"
+    IDS_CANT_PULSE_EVENT    "Can't pulse event"
+    IDS_CANT_RELEASE_MUTEX  "Can't release mutex"
+    IDS_CANT_EXIT_PROCESS   "Can't exit process"
+    IDS_CANT_TERMINATE_PROCESS "Can't terminate process"
+    IDS_CANT_OPEN_PROCESS   "Can't open process"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CANT_RESUME_THREAD  "Can't resume thread"
+    IDS_CANT_SUSPEND_THREAD "Can't suspend thread"
+    IDS_CANT_TERMINATE_THREAD "Can't terminate thread"
+    IDS_CANT_OPEN_THREAD    "Can't open thread"
+    IDS_INVALID_THREAD_ID   "Thread ID is invalid!"
+    IDS_CANT_FIND_OPENTHREAD_FUNC 
+                            "Can't find function OpenThread in kernel32.dll"
+    IDS_CANT_ASSIGN_WINSTATION "Can't assign window station"
+    IDS_CANT_SWITCH_DESKTOP "Can't switch desktop"
+    IDS_LIST_FIND_FILE_NAME "File name:"
+    IDS_LIST_FIND_MODULE_NAME "Module name:"
+    IDS_LIST_FIND_UNKNOWN_NAME "UNKNOWN name:"
 END
 
 #endif    // English (U.S.) resources
@@ -205,6 +1151,7 @@ END
 // Generated from the TEXTINCLUDE 3 resource.
 //
 
+#include "..\TaskManagerExDll\VerInfo.ver"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

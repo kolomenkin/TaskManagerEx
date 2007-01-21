@@ -9,64 +9,260 @@
 #include "LoadDll.h"
 #include "SystemInfo.h"
 #include "SystemInfoDlg.h"
-#include "FindUsedDlg.h"
 #include "AboutExtension.h"
+#include "InformationDlg.h"
 
-#pragma data_seg(".SharedData")
-BOOL bInitialized = FALSE;
-#pragma data_seg()
-#pragma comment( linker, "/SECTION:.SharedData,RWS" )
+#include "TaskManagerEx.h"
+#include "Localization.h"
+#include "Taskmgr.h"
+#include <locale.h>
+#include <winuser.h>
+
+#include "TipDlg.h"
+#include "OptionsPropertySheet.h"
+
+#include "../AccessMaster/SecurityInformation.h"
+
+#define CREATE_FAKE_WINDOW
+//#define VISIBLE_FAKE_WINDOW
+
+//#ifndef MIIM_STRING
+//#define MIIM_STRING      0x00000040		// Windows 2000+
+//#endif
+
+//#pragma data_seg(".SharedData")
+volatile BOOL bInitialized = FALSE;
+//#pragma data_seg()
+//#pragma comment( linker, "/SECTION:.SharedData,RWS" )
+
+#pragma comment( linker, "/BASE:0x5BD00000" )
+//#pragma comment( linker, "/OUT:TaskManagerEx.dll" )
+
+static char g_szStamp_Mark[] = "\r\n\r\nTaskManagerExDll.cpp Timestamp: " __DATE__ ", " __TIME__ "\r\n\r\n";
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define DEFAULT_PID_WIDTH	50
+#define TASKMAN_CORRECTION	4	// -4 because Taskmgr.exe (in Windows XP) has some problem
+								// in calculation and horizontal scrollbar appears too early
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+BOOL MyShellExecute( HWND hwnd, LPCTSTR szOperation, LPCTSTR szFileName )
+{
+	if( _tcscmp( szFileName, LocLoadString(IDS_PID_SYSTEM_NAME) ) == 0 )
+	{
+		AfxMessageBox( LocLoadString(IDS_SYSTEM_RPOCESS_OPERATION_DENIED) );
+		return FALSE;
+	}
+
+	SHELLEXECUTEINFO sei;
+	ZeroMemory( &sei, sizeof(sei) );
+	sei.cbSize = sizeof(sei);
+	sei.fMask = SEE_MASK_FLAG_DDEWAIT | SEE_MASK_INVOKEIDLIST;
+	sei.hwnd = hwnd;
+	sei.lpVerb = szOperation;
+	sei.lpFile = szFileName;
+	sei.nShow = SW_SHOWDEFAULT;
+	BOOL res = ShellExecuteEx( &sei );
+	if( !res )
+	{
+		CString s;
+		s.Format( LocLoadString(IDS_CANT_SHELL_EXECUTE),
+			szOperation, szFileName );
+		AfxMessageBox( s );
+	}
+	return res;
+}
+
+BOOL IsDependencyWalkerInstalled()
+{
+	BOOL bDependency = FALSE;
+	HKEY hKey = NULL;
+	long lRes = RegOpenKeyEx( HKEY_CLASSES_ROOT, _T("CLSID\\{A324EA60-2156-11D0-826F-00A0C9044E61}"),
+		0, KEY_READ, &hKey );
+
+	if( lRes == ERROR_SUCCESS )
+	{
+		bDependency = TRUE;
+		RegCloseKey( hKey );
+		hKey = NULL;
+	}
+	return bDependency;
+}
+
+BOOL FreeSearchInString( LPCTSTR lpszString, LPCTSTR lpszSubString )
+{
+	if ( lpszSubString[0] == _T('\0') )
+		return TRUE;
+
+	CString szString( lpszString );
+	CString szSubString( lpszSubString );
+
+	szString.MakeUpper();
+	szSubString.MakeUpper();
+
+	return _tcsstr( szString, szSubString ) != NULL;
+}
+
+BOOL GetProcessExecutableName( DWORD dwPID, LPTSTR szName, int cbSize )
+{
+	if( szName == NULL )
+		return FALSE;
+
+	if( cbSize == 0 )
+		return FALSE;
+
+	szName[0] = _T('\0');
+
+	if( !IPsapi::bStatus )
+		return FALSE;
+
+	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwPID );
+	if( hProcess == NULL )
+	{
+		if( IS_PID_SYSTEM(dwPID) ) // [System]
+		{
+			_tcsncpy( szName, LocLoadString(IDS_PID_SYSTEM_NAME), cbSize );
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	DWORD dwRet = IPsapi::GetModuleFileNameEx( hProcess, NULL, szName, cbSize );
+	szName[dwRet] = _T('\0');
+	CloseHandle(hProcess);
+
+	if( dwRet == 0 )
+	{
+		if( IS_PID_SYSTEM(dwPID) ) // [System]
+		{
+			_tcsncpy( szName, LocLoadString(IDS_PID_SYSTEM_NAME), cbSize );
+			return TRUE;
+		}
+	}
+
+	if( dwRet > 0 )
+	{
+		CString strFileName = SystemInfoUtils::DecodeModuleName( szName );
+		_tcsncpy( szName, strFileName, cbSize );
+	}
+
+	return dwRet > 0;
+}
+
+//////////////////////////////////////////////////////////////
+
+CString GetProcessName( DWORD dwPID )
+{
+	TCHAR szFileName[MAX_PATH] = _T("");
+	GetProcessExecutableName( dwPID, szFileName, SIZEOF_ARRAY(szFileName) );
+	LPTSTR p = _tcsrchr( szFileName, _T('\\') );
+	if( p == NULL )
+	{
+		p = szFileName;
+	}
+	else
+	{
+		p++;
+	}
+	return CString(p);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TaskManagerExDllApp theApp;
 
-BOOL TaskManagerExDllApp::InitInstance()
+TaskManagerExDllApp::TaskManagerExDllApp(): CWinApp( TMEX_APP_NAME )
 {
-   if ( bInitialized )
-      return FALSE;
-
-   dwWindowsNTMajorVersion = IsWindowsNT();
-
-   if ( dwWindowsNTMajorVersion < 4 )
-      return FALSE;
-
-   hMainIcon = LoadIcon( IDI_MAINICON );
-
-   EnableDebugPriv();
-
-   LoadDefaultParameters();
-
-   return TRUE;
+	mapProcessIsService.InitHashTable( 1982 );
+	m_hwndFakeWindow = NULL;
+	fnOriginFakeWndProc = NULL;
 }
 
-TaskManagerExDllApp::ExitInstance()
+TaskManagerExDllApp::~TaskManagerExDllApp()
+{
+	MicroImageList.DeleteImageList();
+}
+
+LPCTSTR g_szLocale = NULL;
+
+BOOL TaskManagerExDllApp::InitInstance()
+{
+	g_szLocale = _tsetlocale( LC_ALL, _T("") );
+	SetThreadNativeLanguage();
+
+	SetRegistryKey( TMEX_REGISTRY_KEY );
+
+	BOOL bEnable = AfxEnableMemoryTracking(FALSE);
+	if( m_pszProfileName != NULL )
+	{
+		free( (void*)m_pszProfileName );
+		m_pszProfileName = NULL;
+	}
+	m_pszProfileName = _tcsdup(TMEX_PROFILE_NAME);
+	AfxEnableMemoryTracking(bEnable);
+
+	if ( bInitialized )
+		return FALSE;
+
+	dwWindowsNTMajorVersion = IsWindowsNT();
+
+	if ( dwWindowsNTMajorVersion < 4 )
+		return FALSE;
+
+	//hMainIconSmall = hMainIconBig = LocLoadIcon( IDI_SYSTEM_INFO_ICON );
+
+	hMainIconSmall = LocLoadIcon( IDI_SYSTEM_INFO_ICON, 16, 16 );
+	hMainIconBig = LocLoadIcon( IDI_SYSTEM_INFO_ICON, 32, 32 );
+
+	EnableDebugPriv();
+
+	return TRUE;
+}
+
+int TaskManagerExDllApp::ExitInstance()
 {  
-   SaveDefaultParameters();
-   
-   DestroyIcon( hMainIcon );
-   
-   if ( bInitialized )
-   {
-      Deinitialize();
+	if ( fnOriginFakeWndProc != NULL )
+		SetWindowLong(
+				m_hwndFakeWindow,
+				GWL_WNDPROC,
+				(LONG)fnOriginFakeWndProc );
 
-      _exit(0);
-   }
+	if( m_hwndFakeWindow != NULL )
+	{
+		DestroyWindow( m_hwndFakeWindow );
+		m_hwndFakeWindow = NULL;
+	}
 
-   return CWinApp::ExitInstance();
+	if ( bInitialized )
+	{
+		Deinitialize();
+
+		_exit(0);
+	}
+
+	return CWinApp::ExitInstance();
 }
 
 DWORD TaskManagerExDllApp::GetProcessesListDlgID()
 {
-	return 0x3F1;
+	return TASKMGR_PROCESS_LIST_DLG_ID;
 }
 
 DWORD TaskManagerExDllApp::GetApplicationsListDlgID()
 {
-	return 0x41D;
+	return TASKMGR_APPLICATIONS_LIST_DLG_ID;
 }
 
 BOOL TaskManagerExDllApp::IsAnotherTaskManagerExDll()
 {
-   HANDLE hMutex = CreateMutex( NULL, FALSE, _T("TaskManagerExDllIsAlreadyLoaded") );	
+   CString strMutexName;
+   strMutexName.Format( _T("Local\\TaskManagerExDllIsAlreadyLoaded_PID_%08X"), GetCurrentProcessId() );
+
+   HANDLE hMutex = CreateMutex( NULL, FALSE, strMutexName );	
+//   HANDLE hMutex = CreateMutex( NULL, FALSE, _T("Local\\TaskManagerExDllIsAlreadyLoaded") );	
    
    DWORD dwer = GetLastError();	
 
@@ -75,16 +271,23 @@ BOOL TaskManagerExDllApp::IsAnotherTaskManagerExDll()
 
 BOOL TaskManagerExDllApp::Initialize()
 {
-   if ( IsAnotherTaskManagerExDll() )
-      return FALSE;
+	if ( IsAnotherTaskManagerExDll() )
+	  return FALSE;
 
-   hwndTaskManager = FindTaskManagerWindow();
+	hwndTaskManager = FindTaskManagerWindow();
 	hwndProcessesList = FindTaskManagerDlgItem( GetProcessesListDlgID() );
 	hwndApplicationsList = FindTaskManagerDlgItem( GetApplicationsListDlgID() );
 
+	DWORD TaskManagerPID = 0;
+	GetWindowThreadProcessId( hwndTaskManager, &TaskManagerPID );
+	if( TaskManagerPID != GetCurrentProcessId() )
+	{
+		return FALSE;
+	}
+	
 	if ( hwndTaskManager == NULL || 
-	      hwndProcessesList == NULL ||
-	      hwndApplicationsList == NULL )
+		  hwndProcessesList == NULL ||
+		  hwndApplicationsList == NULL )
 		return FALSE;
 
 	fnOriginTaskManagerWndProc = (WNDPROC)SetWindowLong( 
@@ -111,12 +314,12 @@ BOOL TaskManagerExDllApp::Initialize()
 			GetParent(hwndApplicationsList),
 			GWL_WNDPROC,
 			(LONG)ApplicationsTabWndProc );
-	
+
 	if ( fnOriginProcessesList == NULL || 
-	     fnOriginTaskManagerWndProc == NULL ||
-	     fnOriginProcessesTab == NULL ||
-	     fnOriginApplicationsList == NULL ||
-	     fnOriginApplicationsTab == NULL )
+		 fnOriginTaskManagerWndProc == NULL ||
+		 fnOriginProcessesTab == NULL ||
+		 fnOriginApplicationsList == NULL ||
+		 fnOriginApplicationsTab == NULL )
 	{
 		Deinitialize();
 		return FALSE;
@@ -124,19 +327,23 @@ BOOL TaskManagerExDllApp::Initialize()
 
 	HookImportedFunctions();
 
-   SetProcessesIcons( bShowProcessesIcons );
-   
-   UpdateMainMenu( GetMenu(hwndTaskManager) );
+	SetProcessesIcons( m_options.GetShowProcessIcons() );
 
-   SendMessage( hwndTaskManager, WM_NCPAINT, (WPARAM)1, (LPARAM)0 );
+	UpdateMainMenu( GetMenu(hwndTaskManager) );
 
-	SendMessage( hwndTaskManager, WM_SETTEXT, 0, 0 );
+	SendMessage( hwndTaskManager, WM_NCPAINT, (WPARAM)1, (LPARAM)0 );
 
-   UpdateApplicationsListView();
-   
-   RefreshProcessList();
+	SendMessage( hwndTaskManager, WM_TASKMANAGER_CREATE_FAKIE_WND, 0, 0 );
 
-   bInitialized = TRUE;
+	SendMessage( hwndTaskManager, WM_SETTEXT, 0, 0 );	// To change window caption to new one!
+
+	UpdateApplicationsListView();
+
+	RefreshProcessList();
+
+	bInitialized = TRUE;
+
+	PostMessage( hwndTaskManager, WM_TASKMANAGER_TIP_OF_THE_DAY, 0, 0 ); // to show tip of the day at startup
 
 	return TRUE;
 }
@@ -176,70 +383,246 @@ BOOL TaskManagerExDllApp::Deinitialize()
 	return TRUE;
 }
 
-HWND TaskManagerExDllApp::FindTaskManagerWindow()
-{
-   return ::FindWindow( (LPCTSTR)32770, GetTaskManagerCaption() );
-}
-
-LPCTSTR TaskManagerExDllApp::GetEnglishTaskManagerCaption()
-{
-   LPCTSTR rc = NULL;
-
-   switch ( dwWindowsNTMajorVersion )
-   {
-   case 4:
-      rc = _T("Windows NT Task Manager");
-      break;
-
-   case 5:
-   default:
-      rc = _T("Windows Task Manager");
-      break;
-   }
-
-   return rc;
-}
-
-// Thanks Dominique Faure for the idea
-// dominique.faure@msg-software.com
-LPCTSTR TaskManagerExDllApp::GetTaskManagerCaption()
-{
-   static LPCTSTR lpszCaption = NULL;
-   static TCHAR szCaption[0x100];
-
-   _tcscpy( szCaption, GetEnglishTaskManagerCaption() );
-
-   if ( lpszCaption == NULL )
-   {
-      HINSTANCE hTaskmgrExe = LoadLibrary( _T("taskmgr.exe") );
-      
-      if ( hTaskmgrExe != NULL )
-      {
-         LoadString( hTaskmgrExe, 10003, szCaption, 0x100 );
-         FreeLibrary( hTaskmgrExe );
-      }
-
-      lpszCaption = szCaption;
-   }
-
-   return lpszCaption;
-}
-
 LPCTSTR TaskManagerExDllApp::GetNewTaskManagerCaption()
 {
-   static LPCTSTR lpszNewCaption = NULL;
-   static TCHAR szNewCaption[0x100];
+	static LPCTSTR lpszNewCaption = NULL;
+	static TCHAR szNewCaption[0x100];
 
-   if ( lpszNewCaption == NULL )
-   {
-      _tcscpy( szNewCaption, GetTaskManagerCaption() );
-      _tcscat( szNewCaption, _T(" (Extended)") );
+	if ( lpszNewCaption == NULL )
+	{
+		_tcscpy( szNewCaption, GetTaskManagerCaption() );
+		_tcscat( szNewCaption, LocLoadString(IDS_CAPTION_EXTENDED) );
+		lpszNewCaption = szNewCaption;
+	}
 
-      lpszNewCaption = szNewCaption;
-   }
-
-   return lpszNewCaption;
+	return lpszNewCaption;
 }
+
+/*
+BOOL TaskManagerExDllApp::InitFakeWindow(HINSTANCE hinstance) 
+{ 
+    WNDCLASSEX wcx; 
+ 
+    // Fill in the window class structure with parameters 
+    // that describe the main window. 
+ 
+    wcx.cbSize = sizeof(wcx);          // size of structure 
+    wcx.style = CS_HREDRAW | 
+        CS_VREDRAW;                    // redraw if size changes 
+    wcx.lpfnWndProc = TaskManagerExDllApp::FakeWndProc;  // points to window procedure 
+    wcx.cbClsExtra = 0;                // no extra class memory 
+    wcx.cbWndExtra = 0;                // no extra window memory 
+    wcx.hInstance = hinstance;         // handle to instance 
+    wcx.hIcon = NULL;                  // predefined app. icon 
+    wcx.hCursor = NULL;                // predefined arrow 
+    wcx.hbrBackground = NULL;          // white background brush 
+    wcx.lpszMenuName =  NULL;          // name of menu resource 
+    wcx.lpszClassName = TASKMGR_DEFAULT_WINDOW_CLASS;  // name of window class 
+    wcx.hIconSm = NULL; 
+ 
+    // Register the window class. 
+ 
+    return RegisterClassEx(&wcx); 
+} 
+*/
+
+
+LRESULT CALLBACK TaskManagerExDllApp::FakeWndProc(
+  HWND hwnd,      // handle to window
+  UINT uMsg,      // message identifier
+  WPARAM wParam,  // first message parameter
+  LPARAM lParam   // second message parameter
+)
+{
+	switch( uMsg )
+	{
+	case WM_TASKMANAGER_FLAG:
+		//TRACE( _T("TaskManagerExDllApp::FakeWndProc: WM_TASKMANAGER_FLAG\n") );
+		return WM_TASKMANAGER_FLAG_RET_VAL;
+		break;
+
+	}
+
+	switch( uMsg )
+	{
+	case WM_CLOSE:
+	case WM_TASKMAN_SET_FOREGROUND:
+		TRACE( _T("TaskManagerExDllApp::FakeWndProc: WM_TASKMAN_SET_FOREGROUND\n") );
+		// Some internal Task Manager message
+		// It is used to activate TaskManager Window.
+		//TRACE( _T("TaskManagerExDllApp::FakeWndProc() got message WM_TASKMAN_SET_FOREGROUND!\n") );
+
+		{
+			LRESULT result = CallWindowProc( 
+						theApp.fnOriginTaskManagerWndProc, 
+						theApp.hwndTaskManager, 
+						uMsg, 
+						wParam, 
+						lParam );
+
+			return result;
+		}
+
+		break;
+	}
+
+//	switch( uMsg )
+//	{
+//	case WM_ACTIVATE:
+//	case WM_SHOWWINDOW:
+//
+//		{
+//			LRESULT result = CallWindowProc( 
+//						theApp.fnOriginTaskManagerWndProc, 
+//						theApp.hwndTaskManager, 
+//						uMsg, 
+//						wParam, 
+//						lParam );
+//
+//#ifndef VISIBLE_FAKE_WINDOW
+//			return result;
+//#else
+//			result;
+//#endif
+//		}
+
+//		break;
+//	}
+
+
+//	LRESULT result = DefWindowProc(
+//			hwnd, 
+//			uMsg, 
+//			wParam, 
+//			lParam );
+
+	LRESULT result = CallWindowProc( 
+				theApp.fnOriginFakeWndProc,
+				hwnd, 
+				uMsg, 
+				wParam, 
+				lParam );
+
+	return result;
+}
+
+BOOL TaskManagerExDllApp::CreateFakeWindow()
+{
+#ifndef CREATE_FAKE_WINDOW
+	return TRUE;
+#endif
+
+	HINSTANCE hinstance = AfxGetInstanceHandle();
+//	BOOL res = InitFakeWindow( hinstance );
+//	TRACE( _T("TaskManagerExDllApp::InitFakeWindow() returned %d\n"), res );
+//	if( !res )
+//	{
+//		//return FALSE;
+//	}
+
+    HWND hwnd; 
+ 
+	LPCTSTR szDefaultCaption = GetTaskManagerCaption();
+	HWND hParent = NULL;
+
+    hwnd = CreateWindow( 
+        TASKMGR_DEFAULT_WINDOW_CLASS, // name of window class 
+        szDefaultCaption,    // title-bar string 
+        WS_OVERLAPPEDWINDOW, // top-level window 
+        CW_USEDEFAULT,       // default horizontal position 
+        CW_USEDEFAULT,       // default vertical position 
+        CW_USEDEFAULT,       // default width 
+        CW_USEDEFAULT,       // default height 
+        hParent,             // no owner window 
+        (HMENU) NULL,        // use class menu 
+        hinstance,           // handle to application instance 
+        (LPVOID) NULL);      // no window-creation data 
+ 
+    if (!hwnd) 
+        return FALSE; 
+ 
+	fnOriginFakeWndProc = (WNDPROC)SetWindowLong( 
+			hwnd,
+			GWL_WNDPROC,
+			(LONG)FakeWndProc );
+
+	SetWindowLong( hwnd, GWL_USERDATA, TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE );
+
+    // Show the window and send a WM_PAINT message to the window 
+    // procedure. 
+
+#ifdef VISIBLE_FAKE_WINDOW
+	int nCmdShow = SW_SHOW;
+#else
+	int nCmdShow = SW_HIDE;
+#endif
+
+	ShowWindow(hwnd, nCmdShow); 
+	UpdateWindow(hwnd);
+	return TRUE;
+}
+
+BOOL CALLBACK UpdateWndZorderProc2( HWND hwnd, LPARAM lParam )
+{
+	BOOL bTopLevel = (BOOL)lParam;
+	//if( ::GetParent( hwnd ) == NULL ) // Top-level windows:
+	{
+		DWORD dwWindowProcessId = 0;
+		GetWindowThreadProcessId( hwnd, &dwWindowProcessId );
+		if( dwWindowProcessId == GetCurrentProcessId() )
+		{
+			if( hwnd != theApp.hwndTaskManager )
+			{
+				if( bTopLevel )
+				{
+					::SetWindowPos( hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
+				}
+				else
+				{
+					::SetWindowPos( hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
+				}
+				//TCHAR szCaption[200] = _T("");
+				//::GetWindowText( hwnd, szCaption, SIZEOF_ARRAY(szCaption) );
+				//TRACE( _T("UpdateWndZorderProc2(): window 0x%08X (%s), bTopLevel = %d\n"),
+				//	hwnd, szCaption, bTopLevel );
+			}
+		}
+	}
+	return TRUE;
+}
+
+bool TaskManagerExDllApp::IsTaskManagerWindowTopMost()
+{
+	bool res = false;
+	HMENU hMenu = GetMenu( theApp.hwndTaskManager );
+	if( hMenu == NULL )
+		return res;
+	int cnt = GetMenuItemCount( hMenu );
+	if( cnt == -1 )
+		return res;
+
+	for( int i=0; i<cnt; i++ )
+	{
+		HMENU hSubMenu = GetSubMenu( hMenu, i );
+		if( hSubMenu == NULL )
+			continue;
+
+		MENUITEMINFO info;
+		info.cbSize = sizeof(info);
+		info.fMask = MIIM_STATE;
+		BOOL bFound = GetMenuItemInfo( hSubMenu, TASKMGR_ALWAYS_ON_TOP_CMD, FALSE, &info );
+		if( bFound )
+		{
+			bool bChecked = 0 != ( info.fState & MFS_CHECKED );
+			//TRACE( _T("TaskManagerExDllApp::IsTaskManagerWindowTopMost(): Found \"Always On Top\" menu element!\n") );
+			return bChecked;
+			//break;
+		}
+	}
+
+	return res;
+}
+
 
 LRESULT CALLBACK TaskManagerExDllApp::TaskManagerWndProc(
   HWND hwnd,      // handle to window
@@ -250,85 +633,161 @@ LRESULT CALLBACK TaskManagerExDllApp::TaskManagerWndProc(
 {
 	switch( uMsg )
 	{
+	case WM_TASKMAN_SET_FOREGROUND:
+		TRACE( _T("TaskManagerExDllApp::TaskManagerWndProc: WM_TASKMAN_SET_FOREGROUND\n") );
+		break;
+
+	case WM_TASKMANAGER_FLAG: // this case is not necessary now, because we are changing window caption
+		//TRACE( _T("TaskManagerExDllApp::TaskManagerWndProc: WM_TASKMANAGER_FLAG\n") );
+		return WM_TASKMANAGER_FLAG_RET_VAL;
+		break;
+
+	case WM_TASKMANAGER_TIP_OF_THE_DAY:
+		theApp.ShowTipAtStartup();
+		break;
+
+	case WM_TASKMANAGER_CREATE_FAKIE_WND:
+		theApp.CreateFakeWindow();
+		break;
+/*
+	case WM_KEYDOWN:
+		TRACE( _T("TaskManagerExDllApp - WM_KEYDOWN\n") );
+		break;
+
+	case WM_KEYUP:
+		TRACE( _T("TaskManagerExDllApp - WM_KEYUP\n") );
+		break;
+*/
 	case WM_COMMAND:
 		switch( wParam )
 		{
-	   case ID_EXTENSION_CPU00:
-	      theApp.iProcessUsageAlertLimit = 0;
-	      theApp.RefreshProcessList();
-	      break;
+			case ID_EXTENSION_CPU00:
+				theApp.m_options.SetAlertLimit(0);
+				theApp.RefreshProcessList();
+				break;
 
-	   case ID_EXTENSION_CPU25:
-	      theApp.iProcessUsageAlertLimit = 25;
-	      theApp.RefreshProcessList();
-	      break;
+			case ID_EXTENSION_CPU25:
+				theApp.m_options.SetAlertLimit(25);
+				theApp.RefreshProcessList();
+				break;
 
-	   case ID_EXTENSION_CPU50:
-	      theApp.iProcessUsageAlertLimit = 50;
-	      theApp.RefreshProcessList();
-	      break;
+			case ID_EXTENSION_CPU50:
+				theApp.m_options.SetAlertLimit(50);
+				theApp.RefreshProcessList();
+				break;
 
-	   case ID_EXTENSION_CPU75:
-	      theApp.iProcessUsageAlertLimit = 75;
-	      theApp.RefreshProcessList();
-	      break;
+			case ID_EXTENSION_CPU75:
+				theApp.m_options.SetAlertLimit(75);
+				theApp.RefreshProcessList();
+				break;
 
-      case ID_EXTENSION_FINDUSEDFILE:
-      case ID_EXTENSION_FINDUSEDMODULE:
-         FindUsedDlgThread::Start( wParam );
-         break;
+			case ID_EXTENSION_FINDUSEDFILE:
+			case ID_EXTENSION_FINDUSEDMODULE:
+				CSystemInfoDlgThread::Start( 0, wParam, TRUE, TRUE );
+				break;
 
-      case ID_EXTENSION_PROCESSICONS:
-         theApp.bShowProcessesIcons = !theApp.bShowProcessesIcons;
-         theApp.SetProcessesIcons( theApp.bShowProcessesIcons );
-         break;
+			case ID_EXTENSION_ALL_HANDLES:
+				CSystemInfoDlgThread::Start( 0, wParam, FALSE, TRUE );
+				break;
 
-      case ID_EXTENSION_HIDESERVICES:
-         theApp.bHideServiceProcesses = !theApp.bHideServiceProcesses;
-         theApp.RefreshProcessList();
-         break;
-         
-		case ID_EXTENSION_ABOUT:
-			AboutExtensionThread::Start();
-			break;
-			
+			case ID_EXTENSION_SHOW_DRIVERS:
+				CSystemInfoDlgThread::Start( 0, wParam, FALSE, TRUE );
+				break;
+
+			case ID_EXTENSION_PROCESSICONS:
+				theApp.m_options.SetShowProcessIcons( !theApp.m_options.GetShowProcessIcons() );
+				theApp.SetProcessesIcons( theApp.m_options.GetShowProcessIcons() );
+				break;
+
+			case ID_EXTENSION_HIDESERVICES:
+				theApp.m_options.SetHideServices( !theApp.m_options.GetHideServices() );
+				theApp.RefreshProcessList();
+				break;
+
+			case ID_EXTENSION_TIP_OF_THE_DAY:
+				{
+					CTipDlg dlg( CWnd::FromHandle(hwnd) );
+					dlg.DoModal();
+				}
+				break;
+
+			case ID_EXTENSION_ABOUT:
+				CAboutExtensionThread::Start( CWnd::FromHandle(hwnd) );
+				break;
+
+			case ID_EXTENSION_OPTIONS:
+				{
+					COptionsPropertySheet dlg( CWnd::FromHandle(hwnd) );
+					dlg.DoModal();
+				}
+				break;
+			case TASKMGR_ALWAYS_ON_TOP_CMD:
+				//TRACE( _T("TaskManagerEx: TASKMGR_ALWAYS_ON_TOP_CMD\n") );
+				{
+					bool bOLD_AlwaysOnTop = theApp.IsTaskManagerWindowTopMost();
+					//TRACE( _T("TaskManagerEx: TASKMGR_ALWAYS_ON_TOP_CMD: bOLD_AlwaysOnTop = %d\n"), bOLD_AlwaysOnTop );
+					EnumWindows( UpdateWndZorderProc2, (LPARAM)!bOLD_AlwaysOnTop );
+				}
+				break;
+
 		}
 		break;
 
 	case WM_INITMENUPOPUP:
-	   {
-	      HMENU hMenu = (HMENU)wParam;
-	      switch ( GetMenuItemID( hMenu, 0 ) )
-	      {
-	      case ID_EXTENSION_FINDUSEDFILE:
-	         CheckMenuItem( hMenu, ID_EXTENSION_HIDESERVICES, MF_BYCOMMAND | 
-	                  ( theApp.bHideServiceProcesses ? MF_CHECKED : MF_UNCHECKED ) );
-	         CheckMenuItem( hMenu, ID_EXTENSION_PROCESSICONS, MF_BYCOMMAND | 
-	                  ( theApp.bShowProcessesIcons ? MF_CHECKED : MF_UNCHECKED ) );
-	         break;
+		{
+		  HMENU hMenu = (HMENU)wParam;
+		  switch ( GetMenuItemID( hMenu, 0 ) )
+		  {
+		  case TMEX_EXTENSION_MENU_FIRST_ITEM:
+			 CheckMenuItem( hMenu, ID_EXTENSION_HIDESERVICES, MF_BYCOMMAND | 
+					  ( theApp.m_options.GetHideServices() ? MF_CHECKED : MF_UNCHECKED ) );
+			 CheckMenuItem( hMenu, ID_EXTENSION_PROCESSICONS, MF_BYCOMMAND | 
+					  ( theApp.m_options.GetShowProcessIcons() ? MF_CHECKED : MF_UNCHECKED ) );
+			 break;
 
-         case ID_EXTENSION_CPU00:
-	         for ( int i = 0; i < 4; i++ )
-	            CheckMenuItem( hMenu, i, MF_BYPOSITION | MF_UNCHECKED );
+		 case TMEX_CPU_MENU_FIRST_ITEM:
+			 for ( int i = 0; i < 4; i++ )
+				CheckMenuItem( hMenu, i, MF_BYPOSITION | MF_UNCHECKED );
 
-	         CheckMenuItem( hMenu, theApp.iProcessUsageAlertLimit /  25, MF_BYPOSITION | MF_CHECKED );
-	         break;
-	      }
-	   }
-	   
-	   break;
+			 CheckMenuItem( hMenu, theApp.m_options.GetAlertLimit()/25, MF_BYPOSITION | MF_CHECKED );
+			 break;
+		  }
+		}
+
+		break;
 
 	case WM_SETTEXT:
-	   lParam = (LPARAM)theApp.GetNewTaskManagerCaption();
-	   break;
+		{
+			LPCTSTR szCaption = theApp.GetNewTaskManagerCaption();
+			lParam = (LPARAM)szCaption;
+		}
+		break;
 	}
 
-	return CallWindowProc( 
+	LRESULT result = CallWindowProc( 
 				theApp.fnOriginTaskManagerWndProc, 
 				hwnd, 
 				uMsg, 
 				wParam, 
 				lParam );
+
+	switch( uMsg )
+	{
+	case WM_SIZE:
+		if( dwNTVersion < OSVERSION_XP ) // 2000 and earlier
+		{
+			int iStatus	= ListView_GetColumnWidth( theApp.hwndApplicationsList, 1 );
+			int iPid	= DEFAULT_PID_WIDTH;
+			RECT rectClient = {0,0,0,0};
+			GetClientRect( theApp.hwndApplicationsList, &rectClient );
+			ListView_SetColumnWidth( theApp.hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus - iPid );
+			ListView_SetColumnWidth( theApp.hwndApplicationsList, 1, iStatus );
+			ListView_SetColumnWidth( theApp.hwndApplicationsList, 2, iPid );
+		}
+		break;
+	}
+
+	return result;
 }
 
 LRESULT CALLBACK TaskManagerExDllApp::ProcessesListWndProc(
@@ -338,40 +797,99 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesListWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-   switch( uMsg )
-   {
-   case LVM_SETITEMA:
-   case LVM_SETITEMW:
-   case LVM_INSERTITEMA:
-   case LVM_INSERTITEMW:
-      {
-         LVITEM* pItem = (LVITEM*)lParam;
+	switch( uMsg )
+	{
+	case LVM_SETITEMA:
+	case LVM_SETITEMW:
+	case LVM_INSERTITEMA:
+	case LVM_INSERTITEMW:
+		{
+			LVITEM* pItem = (LVITEM*)lParam;
 
-         if ( !( pItem->mask & LVIF_IMAGE ) && pItem->iSubItem == 0 )
-         {
-            pItem->mask |= LVIF_IMAGE;
-            pItem->iImage = I_IMAGECALLBACK;
-         }
-      }
-      break;
+			if ( !( pItem->mask & LVIF_IMAGE ) && pItem->iSubItem == 0 )
+			{
+				if( theApp.m_options.GetShowProcessIcons() )
+				{
+					pItem->mask |= LVIF_IMAGE;
+					pItem->iImage = I_IMAGECALLBACK;
+				}
+			}
+		}
+		break;
+/*
+	case WM_KEYDOWN:
+		TRACE( _T("ProcessesListWndProc - WM_KEYDOWN\n") );
+		break;
 
-   case WM_KEYUP:
-      if ( wParam == VK_DELETE )
-      {
-         
-         ProcessesItemData* pData = theApp.GetSelectedProcessData();
-	      if ( pData != NULL )
-	         theApp.KillProcess( pData->processId );
-      }
-      break;
+	case WM_KEYUP:
+		TRACE( _T("ProcessesListWndProc - WM_KEYUP\n") );
+//		break;
+*/
+
+//	case WM_KEYDOWN:	// don't work for some reason
+	case WM_KEYUP:
+		switch( wParam )
+		{
+		case VK_DELETE:
+			{
+				ProcessesItemData* pData = theApp.GetSelectedProcessData();
+				if ( pData != NULL )
+				theApp.KillProcess( pData->processId );
+			}
+			break;
+
+/* don't work for some reason
+		case VK_RETURN:
+			{
+				TRACE( _T("ProcessesListWndProc - VK_RETURN\n") );
+				SHORT keyAlt = GetKeyState( VK_MENU );
+				BOOL bAlt = (keyAlt & 0x8000) != 0;
+				TRACE( _T("Alt = %X, %d - VK_RETURN\n"), keyAlt, bAlt );
+				if( bAlt )
+				{
+					ProcessesItemData* pData = theApp.GetSelectedProcessData();
+					// Open process to read to query the module list
+					if( pData != NULL )
+					{
+						TCHAR szFileName[MAX_PATH] = _T("");
+						BOOL res = GetProcessExecutableName( pData->processId, szFileName, SIZEOF_ARRAY(szFileName) );
+
+						if( res )
+						{
+							MyShellExecute( hwnd, SHELL_OPERATION_FILE_PROPERTIES, szFileName );
+						}
+						else
+						{
+						}
+					}
+				}
+			}
+			break;
+*/
+		}
+		break;
+
+	case LVM_SETIMAGELIST:
+		{
+			//int iImageCount = ImageList_GetImageCount( (HIMAGELIST)lParam );
+			//TRACE( _T("ProcessesListWndProc> LVM_SETIMAGELIST> count = %d\n"), iImageCount );
+		}
+		break;
+
+	case LVM_GETIMAGELIST:
+		{
+			//int iImageCount = ImageList_GetImageCount( (HIMAGELIST)lParam );
+			//TRACE( _T("ProcessesListWndProc> LVM_GETIMAGELIST> count = %d\n"), iImageCount );
+		}
+		break;
    }
 
 	LRESULT rc = CallWindowProc( 
-				theApp.fnOriginProcessesList, 
-				hwnd, 
-				uMsg, 
-				wParam, 
-				lParam );
+			theApp.fnOriginProcessesList, 
+			hwnd, 
+			uMsg, 
+			wParam, 
+			lParam );
 
 	return rc;
 }
@@ -387,19 +905,126 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
    
 	switch( uMsg )
 	{
+/*
+	case NM_KEYDOWN:
+		TRACE( _T("ProcessesTabWndProc - NM_KEYDOWN\n") );
+		break;
+
+	case NM_RETURN:
+		TRACE( _T("ProcessesTabWndProc - NM_RETURN\n") );
+		break;
+
+	case WM_KEYDOWN:
+		TRACE( _T("ProcessesTabWndProc - WM_KEYDOWN\n") );
+		break;
+
+	case WM_KEYUP:
+		TRACE( _T("ProcessesTabWndProc - WM_KEYUP\n") );
+		break;
+*/
 	case WM_COMMAND:
-	   switch( wParam )
-	   {
-	   case ID_PROCESSES_FILES:
-	   case ID_PROCESSES_MODULES: 
-	   case ID_PROCESSES_HANDLES:
-	   case ID_PROCESSES_WINDOWS:
-	      {
-	         ProcessesItemData* pData = theApp.GetSelectedProcessData();
-	         if ( pData != NULL )
-	            SystemInfoDlgThread::Start( pData->processId, wParam );
-	      }
-	      break;
+		switch( wParam )
+		{
+		case ID_PROCESSES_FILES:
+		case ID_PROCESSES_MODULES:
+		case ID_PROCESSES_HANDLES:
+		case ID_PROCESSES_WINDOWS:
+		case ID_PROCESSES_THREADS:
+		case ID_PROCESSES_MEMORY:
+			{
+				ProcessesItemData* pData = theApp.GetSelectedProcessData();
+				if ( pData != NULL )
+				{
+					if( wParam == ID_PROCESSES_MODULES && IS_PID_SYSTEM(pData->processId) )
+					{
+						CSystemInfoDlgThread::Start( pData->processId, ID_EXTENSION_SHOW_DRIVERS, FALSE, TRUE );
+					}
+					else
+					{
+						CSystemInfoDlgThread::Start( pData->processId, wParam, FALSE, FALSE );
+					}
+				}
+			}
+			break;
+
+		case ID_PROCESSES_INFO:
+			{
+				ProcessesItemData* pData = theApp.GetSelectedProcessData();
+				if ( pData != NULL )
+				{
+					CInformationDlgThread::Start( pData->processId, wParam );
+				}
+			}
+			break;
+
+		case ID_PROCESSES_PROCESS_SECURITY:
+			{
+				ProcessesItemData* pData = theApp.GetSelectedProcessData();
+				// Open process to read to query the module list
+				if( pData != NULL )
+				{
+					CString strProcessName = GetProcessName( pData->processId );
+					HANDLE hProcess = OpenProcess( MAXIMUM_ALLOWED, FALSE, pData->processId );
+					if( hProcess != NULL )
+					{
+						ObjectInformation info;
+						info.m_hHandle = hProcess;
+						info.m_szName[0] = _T('\0');
+						_tcsncpy( info.m_szObjectName, strProcessName, SIZEOF_ARRAY(info.m_szObjectName) );
+						info.m_objInternalType = OB_TYPE_PROCESS;
+
+						CSecurityInformation* pSec = CSecurityInformation::CreateInstance( info, FALSE );
+						if( pSec != NULL )
+						{
+							pSec->EditSecurity( hwnd );
+							pSec->Release();
+						}
+
+						CloseHandle( hProcess );
+					}
+				}
+			}
+			break;
+
+		case ID_PROCESSES_EXE_DEPENDENCY:
+			{
+				ProcessesItemData* pData = theApp.GetSelectedProcessData();
+				// Open process to read to query the module list
+				if( pData != NULL )
+				{
+					TCHAR szFileName[MAX_PATH] = _T("");
+					BOOL res = GetProcessExecutableName( pData->processId, szFileName, SIZEOF_ARRAY(szFileName) );
+
+					if( res )
+					{
+						MyShellExecute( hwnd, SHELL_OPERATION_VIEW_DEPENDENCY, szFileName );
+					}
+					else
+					{
+					}
+				}
+			}
+			break;
+
+		case ID_PROCESSES_EXE_PROPERTIES:
+			{
+				ProcessesItemData* pData = theApp.GetSelectedProcessData();
+				// Open process to read to query the module list
+				if( pData != NULL )
+				{
+					TCHAR szFileName[MAX_PATH] = _T("");
+					BOOL res = GetProcessExecutableName( pData->processId, szFileName, SIZEOF_ARRAY(szFileName) );
+
+					if( res )
+					{
+						MyShellExecute( hwnd, SHELL_OPERATION_FILE_PROPERTIES, szFileName );
+					}
+					else
+					{
+					}
+				}
+			}
+			break;
 	   }
 	   break;
 
@@ -422,24 +1047,53 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
                   case CDDS_ITEMPREPAINT:
                      {
                         ProcessesItemData* pData = theApp.GetProcessData( lplvcd->nmcd.dwItemSpec );
+						BOOL bService = theApp.IsProcessService( pData->processId );
 
                         RECT iconRect;
                         if ( ListView_GetItemRect( theApp.hwndProcessesList, lplvcd->nmcd.dwItemSpec, &iconRect, LVIR_ICON ) )
                         {
-                           FillRect( lplvcd->nmcd.hdc, &iconRect, (HBRUSH)(COLOR_WINDOW+1) );
+							HBRUSH hWindowBrush = GetSysColorBrush(COLOR_WINDOW);
+							FillRect( lplvcd->nmcd.hdc, &iconRect, hWindowBrush );
+
+							if( theApp.m_options.GetShowProcessIcons() )
+							{
+								const int cx = 16;
+								const int cy = 16;
+								int iImage = theApp.FindProcessImageIndex( pData->processId );
+								if( iImage == I_IMAGECALLBACK ) // image list index not found
+								{
+									static HICON hServiceIcon =
+										LocLoadIcon( MAKEINTRESOURCE(IDI_SERVICEPROCESS), cx, cy );
+									static HICON hDefaultIcon =
+										LocLoadIcon( MAKEINTRESOURCE(IDI_DEFAULTPROCESS), cx, cy );
+									HICON hIcon = hDefaultIcon;
+									if( bService )
+									{
+										hIcon = hServiceIcon;
+									}
+									DrawIconEx( lplvcd->nmcd.hdc, iconRect.left, iconRect.top, hIcon,
+										cx, cy, 0, hWindowBrush, DI_NORMAL );
+								}
+							}
                         }
+						else
+						{
+							TRACE( _T("ListView_GetItemRect error\n") );
+						}
 
                         if ( pData == NULL )
 	                        return CDRF_NEWFONT;
 
-                        if ( theApp.iProcessUsageAlertLimit != 0 &&
-                              pData->usageCPU > theApp.iProcessUsageAlertLimit )
-                           lplvcd->clrText = theApp.clrCPUUsageAlert;
+						int limit = theApp.m_options.GetAlertLimit();
+
+                        if ( limit != 0 &&
+                              pData->usageCPU > limit )
+                           lplvcd->clrText = theApp.m_options.GetAlertColor();
                         else 
-                        if ( theApp.bHideServiceProcesses && theApp.IsProcessService( pData->processId ) )
-                           lplvcd->clrText = theApp.clrServiceProcess;
+                        if ( theApp.m_options.GetHideServices() && bService )
+                           lplvcd->clrText = theApp.m_options.GetServiceColor();
                         else
-                           lplvcd->clrText = theApp.clrDefaultProcess;
+                           lplvcd->clrText = theApp.m_options.GetProcessColor();
 
                         return CDRF_NEWFONT;
                      }
@@ -450,21 +1104,54 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
             }
       }
       break;
-      
+
 	case WM_INITMENUPOPUP:
-      if ( GetMenuItemID( (HMENU)wParam, 0 ) == 40028 ) //ENDPROCESS 
-	   {
-	      ProcessesItemData* pData = theApp.GetSelectedProcessData();
-	      if ( pData != NULL && pData->processId != 0 )
-      	{
-      	   InsertMenu( (HMENU)wParam, 0, MF_BYPOSITION | MF_STRING, ID_PROCESSES_FILES, _T("&Files") );
-            InsertMenu( (HMENU)wParam, 1, MF_BYPOSITION | MF_STRING, ID_PROCESSES_MODULES, _T("&Modules") );
-            InsertMenu( (HMENU)wParam, 2, MF_BYPOSITION | MF_STRING, ID_PROCESSES_HANDLES, _T("&Handles") );
-            InsertMenu( (HMENU)wParam, 3, MF_BYPOSITION | MF_STRING, ID_PROCESSES_WINDOWS, _T("&Windows") );
-            InsertMenu( (HMENU)wParam, 4, MF_BYPOSITION | MF_SEPARATOR, 0, NULL );
-         }
-      }
-	   break;
+		if ( GetMenuItemID( (HMENU)wParam, 0 ) == TASKMGR_END_PROCESS_CMD )
+		{
+			ProcessesItemData* pData = theApp.GetSelectedProcessData();
+			if ( pData != NULL && pData->processId != 0 )
+			{
+				BOOL bDependency = IsDependencyWalkerInstalled();
+				HMENU hMenu = (HMENU)wParam;
+
+				HMENU hSubMenu = LocLoadMenu( MAKEINTRESOURCE(IDR_PROCESS_POPUP) );
+				HMENU hSubMenu2 = GetSubMenu( hSubMenu, 0 );
+
+				int iItemCount = GetMenuItemCount( hSubMenu2 );
+				int pos = 0;
+				for( int i=0; i<iItemCount; i++, pos++ )
+				{
+					int iID = GetMenuItemID( hSubMenu2, i );
+
+					if( iID == ID_TASKMGR_DEFAULT_ITEMS )
+					{
+						pos = GetMenuItemCount( hSubMenu2 );
+						continue;
+					}
+
+					if( iID == ID_PROCESSES_EXE_DEPENDENCY && !bDependency )
+					{
+						continue;
+					}
+
+					MENUITEMINFO mii;
+					ZeroMemory( &mii, sizeof(mii) );
+					TCHAR szItemText[200] = _T("");
+					mii.cbSize = sizeof(mii);
+					mii.fType = MFT_STRING;
+					mii.fMask = MIIM_TYPE; // MIIM_STRING; // MIIM_STRING - Windows 2000+
+					mii.dwTypeData = szItemText;
+					mii.cch = SIZEOF_ARRAY(szItemText);
+					GetMenuItemInfo( hSubMenu2, i, TRUE, &mii);
+
+					DWORD dwState = GetMenuState( hSubMenu2, i, MF_BYPOSITION );
+
+					InsertMenu( hMenu, pos, MF_BYPOSITION | dwState, iID, szItemText );
+				}
+				DestroyMenu( hSubMenu );
+			}
+		}
+		break;
 	}
 
 	rc = CallWindowProc( 
@@ -488,6 +1175,22 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
                   NMLVDISPINFO* pDispInfo = (NMLVDISPINFO*)lParam;
 
                   ProcessesItemData* pData = theApp.GetProcessData( pDispInfo->item.iItem );
+/*
+				  {
+					  TRACE(
+						  //_T("TaskManagerEx> LVN_GETDISPINFOW: ")
+						  _T("PID: %d |")
+						  _T(", %5d")
+						  _T(", %5d |")
+						  _T("\n"),
+						  pData->processId,
+						  pData->usageCPU,
+						  pData->Handles,
+						  pData->Threads,
+						  0
+						  );
+				  }
+*/
 
                   if ( ( pDispInfo->item.mask & LVIF_IMAGE ) &&
                        ( pDispInfo->item.iSubItem == 0 ) )
@@ -509,12 +1212,53 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsListWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-   LRESULT rc = CallWindowProc( 
-				theApp.fnOriginApplicationsList, 
-				hwnd, 
-				uMsg, 
-				wParam, 
-				lParam );
+	switch( uMsg )
+	{
+	case LVM_SETCOLUMNWIDTH:
+		if( wParam == 0 )
+		{
+			short width = LOWORD(lParam);
+			if( width == LVSCW_AUTOSIZE )
+			{
+			}
+			else if( width == LVSCW_AUTOSIZE_USEHEADER )
+			{
+			}
+			else if( width<0 )
+			{
+			}
+			else
+			{
+				if( dwNTVersion >= OSVERSION_XP ) // Windows XP+
+				{
+					width = (short) max( 0, width - DEFAULT_PID_WIDTH - TASKMAN_CORRECTION );
+					lParam = MAKELPARAM( width, 0 );
+				}
+			}
+		}
+		break;
+
+	case LVM_SETIMAGELIST:
+		{
+			//int iImageCount = ImageList_GetImageCount( (HIMAGELIST)lParam );
+			//TRACE( _T("ApplicationsListWndProc> LVM_SETIMAGELIST> count = %d\n"), iImageCount );
+		}
+		break;
+
+	case LVM_GETIMAGELIST:
+		{
+			//int iImageCount = ImageList_GetImageCount( (HIMAGELIST)lParam );
+			//TRACE( _T("ApplicationsListWndProc> LVM_GETIMAGELIST> count = %d\n"), iImageCount );
+		}
+		break;
+	}
+
+	LRESULT rc = CallWindowProc( 
+			theApp.fnOriginApplicationsList, 
+			hwnd, 
+			uMsg, 
+			wParam, 
+			lParam );
 
 	return rc;
 }
@@ -526,122 +1270,155 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsTabWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-   LRESULT rc = CallWindowProc( 
-				theApp.fnOriginApplicationsTab, 
-				hwnd, 
-				uMsg, 
-				wParam, 
-				lParam );
+	LRESULT rc = CallWindowProc( 
+					theApp.fnOriginApplicationsTab, 
+					hwnd, 
+					uMsg, 
+					wParam, 
+					lParam );
 
-   switch( uMsg )
+	switch( uMsg )
 	{
 	case WM_NOTIFY:
-      {
-         LPNMLISTVIEW  pnm    = (LPNMLISTVIEW)lParam;
+		{
+			LPNMLISTVIEW  pnm    = (LPNMLISTVIEW)lParam;
 
-         if ( pnm->hdr.hwndFrom == theApp.hwndApplicationsList )
-            switch ( pnm->hdr.code )
-            {
-            case LVN_GETDISPINFOW:
-               {
-                  NMLVDISPINFO* pDispInfo = (NMLVDISPINFO*)lParam;
+			if ( pnm->hdr.hwndFrom == theApp.hwndApplicationsList )
+				switch ( pnm->hdr.code )
+				{
+				case LVN_GETDISPINFOW:
+					{
+						NMLVDISPINFO* pDispInfo = (NMLVDISPINFO*)lParam;
 
-                  ApplicationsItemData* pData = theApp.GetApplicationsData( pDispInfo->item.iItem );
-
-                  if ( pDispInfo->item.mask & LVIF_TEXT )
-                     switch ( pDispInfo->item.iSubItem )
-                     {
-                     case 2:
-                        {
-                           DWORD pID;
-
-                           GetWindowThreadProcessId( pData->hWnd, &pID );
-
-                           swprintf( (wchar_t*)pDispInfo->item.pszText, L"%d", pID );
-                        }
-                        break;
-                     }
-              }
-               break;
-            }
-      }
-      break;
+						if ( pDispInfo->item.mask & LVIF_TEXT )
+							switch ( pDispInfo->item.iSubItem )
+							{
+							case APPLICATION_LIST_PID_COLUMN:
+								{
+									ApplicationsItemData* pData =
+										theApp.GetApplicationsData( pDispInfo->item.iItem );
+									DWORD pID;
+									GetWindowThreadProcessId( pData->hWnd, &pID );
+									wsprintfW( (wchar_t*)pDispInfo->item.pszText, L"%d", pID );
+								}
+								break;
+							}
+					}
+					break;
+				}
+		}
+		break;
 	}
 
-   return rc;
+	return rc;
 }
 
-TASKMANAGEREXDLL_API BOOL Initialize()
+TASKMANAGEREXDLL_API BOOL WINAPI Initialize()
 {
-   return theApp.Initialize();
+	TRACE( _T("TaskManagerEx.dll> Initialize() enter\n") );
+	BOOL res = theApp.Initialize();
+	TRACE( _T("TaskManagerEx.dll> Initialize() returned %d\n"), res );
+
+	return res;
 }
 
 void TaskManagerExDllApp::UpdateMainMenu( HMENU hMenu )
 {
-   if ( GetMenuItemID( GetSubMenu( hMenu, 1 ), 0 ) == ID_EXTENSION_FINDUSEDFILE )
-      return;
+//	TRACE( _T("Try to UpdateMainMenu...\n") );
+	if ( GetMenuItemID( GetSubMenu( hMenu, TMEX_EXTENSION_SUBMENU_INDEX ), 0 ) == TMEX_EXTENSION_MENU_FIRST_ITEM )
+		return;
 
-   HMENU hExtensionPopupMenu = CreatePopupMenu();
-   HMENU hCPUUsageAlertPopupMenu = CreatePopupMenu();
+	SetThreadNativeLanguage();
 
-   AppendMenu( hCPUUsageAlertPopupMenu, MF_BYPOSITION | MF_STRING, ID_EXTENSION_CPU00, _T("Off") );
-   AppendMenu( hCPUUsageAlertPopupMenu, MF_BYPOSITION | MF_STRING, ID_EXTENSION_CPU25, _T("25%") );
-   AppendMenu( hCPUUsageAlertPopupMenu, MF_BYPOSITION | MF_STRING, ID_EXTENSION_CPU50, _T("50%") );
-   AppendMenu( hCPUUsageAlertPopupMenu, MF_BYPOSITION | MF_STRING, ID_EXTENSION_CPU75, _T("75%") );
+	HMENU hSubMenu = LocLoadMenu( MAKEINTRESOURCE(IDR_EXTENSION) );
+	HMENU hSubMenu2 = GetSubMenu( hSubMenu, 0 );
+	ASSERT( GetMenuItemID( hSubMenu2, 0 ) == TMEX_EXTENSION_MENU_FIRST_ITEM );
 
-	AppendMenu( hExtensionPopupMenu, MF_STRING, ID_EXTENSION_FINDUSEDFILE, _T("Find used &file") );
-	AppendMenu( hExtensionPopupMenu, MF_STRING, ID_EXTENSION_FINDUSEDMODULE, _T("Find used &module") );
-   AppendMenu( hExtensionPopupMenu, MF_SEPARATOR, 0, NULL );
-	AppendMenu( hExtensionPopupMenu, MF_POPUP, (UINT)hCPUUsageAlertPopupMenu, _T("&CPU Usage Alert") );
-	AppendMenu( hExtensionPopupMenu, MF_STRING, ID_EXTENSION_PROCESSICONS, _T("&Show process icons") );
-	AppendMenu( hExtensionPopupMenu, MF_STRING, ID_EXTENSION_HIDESERVICES, _T("&Hide services") );
-	AppendMenu( hExtensionPopupMenu, MF_SEPARATOR, 0, NULL );
-   AppendMenu( hExtensionPopupMenu, MF_STRING, ID_EXTENSION_ABOUT, _T("&About Extension") );
+	MENUITEMINFO mii;
+	ZeroMemory( &mii, sizeof(mii) );
+	TCHAR szItemText[200] = _T("");
+	mii.cbSize = sizeof(mii);
+	mii.fType = MFT_STRING;
+	mii.fMask = MIIM_TYPE; // MIIM_STRING; // MIIM_STRING - Windows 2000+
+	mii.dwTypeData = szItemText;
+	mii.cch = SIZEOF_ARRAY(szItemText);
+	GetMenuItemInfo( hSubMenu, 0, TRUE, &mii);
 
-   InsertMenu( hMenu, 1, MF_BYPOSITION | MF_POPUP, (int)hExtensionPopupMenu, _T("Extension") );
+	::InsertMenu( hMenu, TMEX_EXTENSION_SUBMENU_INDEX, MF_BYPOSITION | MF_POPUP, (int)hSubMenu2, szItemText );
 }
 
 void TaskManagerExDllApp::SetProcessesIcons( BOOL bShow )
 {
-   ListView_SetImageList( 
-            hwndProcessesList, 
-            bShow ? ListView_GetImageList(hwndApplicationsList, LVSIL_SMALL ) : NULL, 
-            LVSIL_SMALL  );
+	if( bShow )
+	{
+		ListView_SetImageList( hwndProcessesList,
+				ListView_GetImageList(hwndApplicationsList, LVSIL_SMALL ),
+				LVSIL_SMALL  );
+	}
+	else
+	{
+		HIMAGELIST hOldList = ListView_SetImageList( hwndProcessesList, NULL, LVSIL_SMALL );
+		if( hOldList != NULL )
+		{
+			// there was another image list, so we can't simply remove old list.
+			// If we set image list to NULL, then first column's width will remain unchanged.
+			// But if we set image list with images 1x1, then it will seem that there is no icon at all!
+			MicroImageList.DeleteImageList();
+			MicroImageList.Create( 1, 1, ILC_COLOR, 1, 1 );
+			ListView_SetImageList( hwndProcessesList, MicroImageList, LVSIL_SMALL );
+		}
+	}
 
-   int processCnt = ListView_GetItemCount( hwndProcessesList );
-   for ( int nItem = 0; nItem < processCnt; nItem++ )
-   {
-      LVITEM lvi;
-	   memset(&lvi, 0, sizeof(LVITEM));
-	   lvi.iItem = nItem;
-	   lvi.mask = LVIF_IMAGE;
-	   lvi.iImage = bShow ? I_IMAGECALLBACK : 0;
+	int processCnt = ListView_GetItemCount( hwndProcessesList );
+	for ( int nItem = 0; nItem < processCnt; nItem++ )
+	{
+		LVITEM lvi;
+		ZeroMemory(&lvi, sizeof(lvi));
+		lvi.iItem = nItem;
+		lvi.iSubItem = 0;
+		lvi.mask = LVIF_IMAGE;
+		lvi.iImage = bShow ? I_IMAGECALLBACK : 0;
+		::SendMessage( hwndProcessesList, LVM_SETITEM, 0, (LPARAM)&lvi );
+	}
 
-	   ::SendMessage( hwndProcessesList, LVM_SETITEMW, 0, (LPARAM)&lvi );
-   }
-
-   RefreshProcessList();
+	RefreshProcessList();
 }
 
 void TaskManagerExDllApp::RefreshProcessList()
 {
-   InvalidateRect( hwndProcessesList, NULL, TRUE );
+	InvalidateRect( hwndProcessesList, NULL, TRUE );
 }
 
 void TaskManagerExDllApp::UpdateApplicationsListView()
 {
-   LVCOLUMN lvc;
-   ::ZeroMemory( &lvc, sizeof(lvc) );
+	LVCOLUMN lvc;
+	::ZeroMemory( &lvc, sizeof(lvc) );
 
-   lvc.mask = LVCF_TEXT | LVCF_FMT | LVCF_WIDTH;
-   lvc.pszText = _T("PID");
-   lvc.cx = 50;
-   lvc.fmt = HDF_RIGHT;
-	ListView_InsertColumn( hwndApplicationsList, 2, &lvc );
+	lvc.mask = LVCF_TEXT | LVCF_FMT | LVCF_WIDTH;
+	lvc.pszText = _T("PID");
+	lvc.cx = DEFAULT_PID_WIDTH;
+	lvc.fmt = HDF_RIGHT;
+	ListView_InsertColumn( hwndApplicationsList, APPLICATION_LIST_PID_COLUMN, &lvc );
 
 	ListView_SetExtendedListViewStyle( hwndApplicationsList, 
          ListView_GetExtendedListViewStyle( hwndApplicationsList ) |
          LVS_EX_FULLROWSELECT ) ;
+
+	int iStatus	= ListView_GetColumnWidth( hwndApplicationsList, 1 );
+	int iPid	= DEFAULT_PID_WIDTH;
+	RECT rectClient = {0,0,0,0};
+	GetClientRect( hwndApplicationsList, &rectClient );
+	if( dwNTVersion >= OSVERSION_XP ) // Windows XP+
+	{
+		ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus + TASKMAN_CORRECTION );
+	}
+	else // 2000 and earlier:
+	{
+		//ListView_SetColumnWidth( hwndApplicationsList, 0, LVSCW_AUTOSIZE );
+		ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus - iPid );
+		ListView_SetColumnWidth( hwndApplicationsList, 1, iStatus );
+		ListView_SetColumnWidth( hwndApplicationsList, 2, iPid );
+	}
 
 	UpdateWindow( hwndApplicationsList );
 }
@@ -654,8 +1431,8 @@ TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetSelectedProcessD
 
 TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData( int nItem )
 {
-   LVITEM lvi;
-	memset(&lvi, 0, sizeof(LVITEM));
+	LVITEM lvi;
+	ZeroMemory(&lvi, sizeof(lvi));
 	lvi.iItem = nItem;
 	lvi.mask = LVIF_PARAM;
 
@@ -666,14 +1443,19 @@ TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData( int
 
 TaskManagerExDllApp::ApplicationsItemData* TaskManagerExDllApp::GetApplicationsData( int nItem )
 {
-   LVITEM lvi;
-	memset(&lvi, 0, sizeof(LVITEM));
+	LVITEM lvi;
+	ZeroMemory(&lvi, sizeof(lvi));
 	lvi.iItem = nItem;
 	lvi.mask = LVIF_PARAM;
 
 	::SendMessage( hwndApplicationsList, LVM_GETITEM, 0, (LPARAM)&lvi );
 
-	return (ApplicationsItemData*)lvi.lParam;
+	ApplicationsItemData* pItemData = (ApplicationsItemData*)lvi.lParam;
+
+	//TRACE( _T("AppItemData: '%ws', %d\n"),
+	//	pItemData->Caption, pItemData->index );
+
+	return pItemData;
 }
 
 BOOL CALLBACK TaskManagerExDllApp::_EnumChildProc( HWND hwnd, LPARAM lParam )
@@ -715,7 +1497,7 @@ BOOL TaskManagerExDllApp::IsProcessIdValid( DWORD pID )
 DWORD TaskManagerExDllApp::_IsService( DWORD pID, BOOL& isService )
 {
 	HANDLE hProcessToken = NULL;
-	DWORD groupLength = 50;
+	DWORD groupLength = 40;
 	PTOKEN_GROUPS groupInfo = NULL;
 
 	SID_IDENTIFIER_AUTHORITY siaNt = SECURITY_NT_AUTHORITY;
@@ -730,7 +1512,7 @@ DWORD TaskManagerExDllApp::_IsService( DWORD pID, BOOL& isService )
 
 	DWORD ndx;
 
-	HANDLE hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, pID );
+	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION, FALSE, pID );
 
 	// open the token
 	if (!::OpenProcessToken( hProcess, TOKEN_QUERY, &hProcessToken) )
@@ -740,7 +1522,7 @@ DWORD TaskManagerExDllApp::_IsService( DWORD pID, BOOL& isService )
 	}
 
 	// allocate a buffer of default size
-	groupInfo = (PTOKEN_GROUPS)::LocalAlloc(0, groupLength);
+	groupInfo = (PTOKEN_GROUPS)::LocalAlloc( LMEM_FIXED, groupLength );
 	if (groupInfo == NULL)
 	{
 		dwRet = ::GetLastError();
@@ -748,6 +1530,7 @@ DWORD TaskManagerExDllApp::_IsService( DWORD pID, BOOL& isService )
 	}
 
 	// try to get the info
+	ZeroMemory( groupInfo, groupLength );
 	if (!::GetTokenInformation(hProcessToken, TokenGroups,
 		groupInfo, groupLength, &groupLength))
 	{
@@ -760,13 +1543,14 @@ DWORD TaskManagerExDllApp::_IsService( DWORD pID, BOOL& isService )
 
 		::LocalFree(groupInfo);
 
-		groupInfo = (PTOKEN_GROUPS)::LocalAlloc(0, groupLength);
+		groupInfo = (PTOKEN_GROUPS)::LocalAlloc( LMEM_FIXED, groupLength );
 		if (groupInfo == NULL)
 		{
 			dwRet = ::GetLastError();
 			goto closedown;
 		}
 
+		ZeroMemory( groupInfo, groupLength );
 		if (!GetTokenInformation(hProcessToken, TokenGroups,
 			groupInfo, groupLength, &groupLength))
 		{
@@ -791,7 +1575,7 @@ DWORD TaskManagerExDllApp::_IsService( DWORD pID, BOOL& isService )
 	}
 
 	// try to match sids
-	for (ndx = 0; ndx < groupInfo->GroupCount ; ndx += 1)
+	for( ndx = 0; ndx < groupInfo->GroupCount; ndx ++ )
 	{
 		SID_AND_ATTRIBUTES sanda = groupInfo->Groups[ndx];
 		PSID pSid = sanda.Sid;
@@ -834,47 +1618,53 @@ DWORD TaskManagerExDllApp::_IsService( DWORD pID, BOOL& isService )
 
 BOOL TaskManagerExDllApp::IsProcessService( DWORD pID )
 {
-   BOOL ret;
+	BOOL ret = FALSE;
 
-   if ( mapProcessIsService.Lookup( pID, ret ) )
-      return ret;
-   else
-   {
-      _IsService( pID, ret );
-      mapProcessIsService.SetAt( pID, ret );
-   }
+	if ( mapProcessIsService.Lookup( pID, ret ) )
+		return ret;
+	else
+	{
+		_IsService( pID, ret );
+		mapProcessIsService.SetAt( pID, ret );
+	}
 
-   return ret;
+	return ret;
 }
 
 int TaskManagerExDllApp::FindProcessImageIndex( DWORD pID )
 {
-   int processImageIndex = I_IMAGECALLBACK;
+	int processImageIndex = I_IMAGECALLBACK;
 
-   int appsCnt = ListView_GetItemCount( hwndApplicationsList );
-   
-   ApplicationsItemData* pAppData = NULL;
-   DWORD appPID = 0;
+	int appsCnt = ListView_GetItemCount( hwndApplicationsList );
 
-   for ( int i = 0; i < appsCnt; i++ )
-   {
-      pAppData = GetApplicationsData( i );
+	ApplicationsItemData* pAppData = NULL;
+	DWORD appPID = 0;
 
-      GetWindowThreadProcessId( pAppData->hWnd, &appPID );
+	for ( int i = 0; i < appsCnt; i++ )
+	{
+		pAppData = GetApplicationsData( i );
 
-      if ( appPID == pID )
-      {  
-         processImageIndex = i + 1;
-         break;
-      }
-   }
-   
-   return processImageIndex;
+		GetWindowThreadProcessId( pAppData->hWnd, &appPID );
+
+		if ( appPID == pID )
+		{
+			LVITEM lvi;
+			ZeroMemory(&lvi, sizeof(lvi));
+			lvi.iItem = i;
+			lvi.mask = LVIF_IMAGE;
+			::SendMessage( hwndApplicationsList, LVM_GETITEM, 0, (LPARAM)&lvi );
+
+			processImageIndex = lvi.iImage;
+			break;
+		}
+	}
+
+	return processImageIndex;
 }
 
 void TaskManagerExDllApp::KillProcess( DWORD pId )
 {
-  	HANDLE hProcess = OpenProcess( PROCESS_TERMINATE, 0, pId );
+	HANDLE hProcess = OpenProcess( PROCESS_TERMINATE, 0, pId );
 
 	if ( hProcess == NULL )
 		return;
@@ -884,61 +1674,41 @@ void TaskManagerExDllApp::KillProcess( DWORD pId )
 	CloseHandle( hProcess );
 }
 
-void TaskManagerExDllApp::LoadDefaultParameters()
+void TaskManagerExDllApp::ShowTipAtStartup(void)
 {
-   iProcessUsageAlertLimit = 0;
-	clrCPUUsageAlert = RGB( 255, 0, 0 );
-   clrServiceProcess = RGB( 192, 192, 192 );
-   clrDefaultProcess = RGB( 0, 0, 0 );
-   bShowProcessesIcons = TRUE;
-   bHideServiceProcesses = TRUE;
+	// CG: This function added by 'Tip of the Day' component.
 
-   HKEY hKey = NULL;
-   DWORD dwType = REG_DWORD;
-   DWORD dwSize = sizeof(DWORD);
+	CCommandLineInfo cmdInfo;
+	ParseCommandLine(cmdInfo);
+	if (cmdInfo.m_bShowSplash)
+	{
+		CTipDlg dlg( CWnd::FromHandle(hwndTaskManager) );
+		if (dlg.m_bStartup)
+			dlg.DoModal();
+	}
+}
 
-   ::RegCreateKey( 
-         HKEY_CURRENT_USER, 
-         _T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\TaskManager\\Extension"), 
-         &hKey );
-
-   ::RegQueryValueEx( hKey, _T("ProcessUsageAlertLimit"), NULL, &dwType, 
-               (LPBYTE)&iProcessUsageAlertLimit, &dwSize );
-   ::RegQueryValueEx( hKey, _T("CPUUsageAlertColor"), NULL, &dwType,
-               (LPBYTE)&clrCPUUsageAlert, &dwSize );
-   ::RegQueryValueEx( hKey, _T("ServiceProcessHideColor"), NULL, &dwType,
-               (LPBYTE)&clrServiceProcess, &dwSize );
-   ::RegQueryValueEx( hKey, _T("ProcessColor"), NULL, &dwType,
-               (LPBYTE)&clrDefaultProcess, &dwSize );
-   ::RegQueryValueEx( hKey, _T("ShowProcessesIcons"), NULL, &dwType,
-               (LPBYTE)&bShowProcessesIcons, &dwSize );
-   ::RegQueryValueEx( hKey, _T("HideServiceProcesses"), NULL, &dwType,
-               (LPBYTE)&bHideServiceProcesses, &dwSize );
-
-   ::RegCloseKey( hKey );
-}  
-
-void TaskManagerExDllApp::SaveDefaultParameters()
+void TaskManagerExDllApp::ShowTipOfTheDay(void)
 {
-   HKEY hKey = NULL;
+	// CG: This function added by 'Tip of the Day' component.
 
-   ::RegCreateKey( 
-         HKEY_CURRENT_USER, 
-         _T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\TaskManager\\Extension"), 
-         &hKey );
+	CTipDlg dlg;
+	dlg.DoModal();
+}
 
-   ::RegSetValueEx( hKey, _T("ProcessUsageAlertLimit"), NULL, REG_DWORD, 
-               (LPBYTE)&iProcessUsageAlertLimit, sizeof(DWORD) );
-   ::RegSetValueEx( hKey, _T("CPUUsageAlertColor"), NULL, REG_DWORD,
-               (LPBYTE)&clrCPUUsageAlert, sizeof(DWORD) );
-   ::RegSetValueEx( hKey, _T("ServiceProcessHideColor"), NULL, REG_DWORD,
-               (LPBYTE)&clrServiceProcess, sizeof(DWORD) );
-   ::RegSetValueEx( hKey, _T("ProcessColor"), NULL, REG_DWORD,
-               (LPBYTE)&clrDefaultProcess, sizeof(DWORD) );
-   ::RegSetValueEx( hKey, _T("ShowProcessesIcons"), NULL, REG_DWORD,
-               (LPBYTE)&bShowProcessesIcons, sizeof(DWORD) );
-   ::RegSetValueEx( hKey, _T("HideServiceProcesses"), NULL, REG_DWORD,
-               (LPBYTE)&bHideServiceProcesses, sizeof(DWORD) );
+void TaskManagerExDllApp::OnProperties()
+{
+	// TODO: The property sheet attached to your project
+	// via this function is not hooked up to any message
+	// handler.  In order to actually use the property sheet,
+	// you will need to associate this function with a control
+	// in your project such as a menu item or tool bar button.
 
-   ::RegCloseKey( hKey );
+	COptionsPropertySheet propSheet;
+
+	propSheet.DoModal();
+
+	// This is where you would retrieve information from the property
+	// sheet if propSheet.DoModal() returned IDOK.  We aren't doing
+	// anything for simplicity.
 }
