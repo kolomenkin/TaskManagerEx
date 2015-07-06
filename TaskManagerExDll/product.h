@@ -6,17 +6,17 @@
 #define RUSSIAN_RESOURCES
 
 #define COPYRIGHT1					"Written by Zoltan Csizmadia (zoltan_csizmadia@yahoo.com), 2000"
-#define COPYRIGHT2					"Improved and refactoried by Sergey Kolomenkin (kolomenkinjob@tut.by), 2005-2007"
+#define COPYRIGHT2					"Improved and refactoried by Sergey Kolomenkin (kolomenkin@gmail.com), 2005-2015"
 
 
 #define APPVERSION					2
 #define APPREVISION					1
 #define APPSUBREVISION				0
-#define APPRELEASE					247
+#define APPRELEASE					248
 
 #define	PRODUCTNAME					"Task Manager Extension"
 
-#define VERSIONCOPYRIGHT			"Copyright © 2001 - 2007, Zoltan Csizmadia and Sergey Kolomenkin\0"
+#define VERSIONCOPYRIGHT			"Copyright © 2000 - 2015, Zoltan Csizmadia and Sergey Kolomenkin\0"
 #define VERSIONCOMMENTS				COPYRIGHT1 "\r\n\r\n" COPYRIGHT2 "\0"
 #define VERSIONPRODUCTNAME			PRODUCTNAME "\0"
 #define VERSIONINTERNALNAME			"TaskManagerEx\0"
@@ -30,9 +30,9 @@
 #ifdef RUSSIAN_RESOURCES
 
 #define COPYRIGHT1_RUS				"Автор: Zoltan Csizmadia (zoltan_csizmadia@yahoo.com), 2000"
-#define COPYRIGHT2_RUS				"Улучшено и дополнено: Сергей Коломенкин (kolomenkinjob@tut.by), 2005-2007"
+#define COPYRIGHT2_RUS				"Улучшено и дополнено: Сергей Коломенкин (kolomenkin@gmail.com), 2005-2015"
 
-#define VERSIONCOPYRIGHT_RUS		"Copyright © 2001 - 2007, Zoltan Csizmadia, Сергей Коломенкин\0"
+#define VERSIONCOPYRIGHT_RUS		"Copyright © 2000 - 2015, Zoltan Csizmadia, Сергей Коломенкин\0"
 #define VERSIONCOMMENTS_RUS			COPYRIGHT1_RUS "\r\n\r\n" COPYRIGHT2_RUS "\0"
 #define VERSIONPRODUCTNAME_RUS		VERSIONPRODUCTNAME
 #define VERSIONINTERNALNAME_RUS		VERSIONINTERNALNAME
