@@ -483,36 +483,6 @@ CString SystemInfoUtils::DecodeModuleName( const CString& strFullName )
 	return s;
 }
 
-//Get NT version
-OSVERSIONINFO SystemInfoUtils::GetNTVersion()
-{
-	OSVERSIONINFO osvi;
-	ZeroMemory( &osvi, sizeof(osvi) );
-	osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-	BOOL res = GetVersionEx( &osvi );
-	if( !res )
-	{
-		DWORD dwVersion = GetVersion();
- 		osvi.dwMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
-		osvi.dwMinorVersion =  (DWORD)(HIBYTE(LOWORD(dwVersion)));
-
-		if (dwVersion < 0x80000000)				// Windows NT/2000, Whistler
-			osvi.dwBuildNumber = (DWORD)(HIWORD(dwVersion));
-		else if (osvi.dwMajorVersion < 4)		// Win32s
-			osvi.dwBuildNumber = (DWORD)(HIWORD(dwVersion) & ~0x8000);
-		else									// Windows 95/98/Me
-			osvi.dwBuildNumber =  0;
-	}
-	return osvi;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
-
-OSVERSIONINFO	NTVersion = SystemInfoUtils::GetNTVersion();
-DWORD			dwNTMajorVersion = NTVersion.dwMajorVersion;
-DWORD			dwNTMinorVersion = NTVersion.dwMinorVersion;
-DWORD			dwNTVersion = MAKELONG( dwNTMinorVersion, dwNTMajorVersion ); //  0x00050000 - Win2000, 0x00050001 - WinXP
-
 //////////////////////////////////////////////////////////////////////////////////////
 
 PVOID Alloc( PVOID pStartAddress, DWORD dwBytes )
@@ -900,14 +870,9 @@ BOOL SystemHandleInformation::IsSupportedHandle( SYSTEM_HANDLE& handle )
 {
 	//Here you can filter the handles you don't want in the Handle list
 
+	handle; // use variable
+
 	// Windows 2000 supports everything :)
-	if ( dwNTMajorVersion >= 5 )
-		return TRUE;
-
-	//NT4 System process doesn't like if we bother his internal security :)
-	if ( handle.ProcessID == PID_SYSTEM_WIN_NT4 && handle.HandleType == 16 )
-		return FALSE;
-
 	return TRUE;
 }
 

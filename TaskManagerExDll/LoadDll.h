@@ -144,9 +144,6 @@ void FreeSpecialBuffer( DWORD pReturnCodeForFunction );
 
 //DWORD RemoteGetCurrentDirectory( DWORD, LPWSTR, DWORD, DWORD* );
 
-// Check OS
-DWORD IsWindowsNT();
-
 BOOL RemoteSimpleFunction( DWORD processId, DWORD dwArgument, char* lpszFunction, DWORD* lpdwFuncRetVal );
 
 #endif

@@ -71,22 +71,7 @@ public:
 	static BOOL GetFsFileName( LPCTSTR, CString& );
 
 	static CString DecodeModuleName( const CString& strFullName );
-
-	//////////////////////////////////////////////////////////////////////////////////
-	// Information functions
-
-	static OSVERSIONINFO GetNTVersion();
 };
-
-//////////////////////////////////////////////////////////////////////////////////////
-
-extern OSVERSIONINFO	NTVersion;
-extern DWORD			dwNTMajorVersion;
-extern DWORD			dwNTMinorVersion;
-extern DWORD			dwNTVersion; //  0x00050000 - Win2000, 0x00050001 - WinXP
-
-#define	OSVERSION_2000		0x00050000
-#define	OSVERSION_XP		0x00050001
 
 //////////////////////////////////////////////////////////////////////////////////////
 //

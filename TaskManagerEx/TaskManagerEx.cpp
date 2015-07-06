@@ -383,15 +383,6 @@ int MainFunction()
 		return -1;
 	}
 
-	dwWindowsNTMajorVersion = IsWindowsNT();
-
-	if ( dwWindowsNTMajorVersion < 4 )
-	{
-		MessageBox( NULL, szRequireNT, szCaption, MB_OK | MB_ICONERROR );
-		return -1;
-	}
-
-
 	res = GetModuleFileName( NULL, szDllPath, _MAX_PATH );
 	if ( !res )
 	{

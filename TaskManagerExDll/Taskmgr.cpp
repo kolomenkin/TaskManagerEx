@@ -8,24 +8,7 @@ HWND FindTaskManagerWindow()
 
 LPCTSTR GetEnglishTaskManagerCaption()
 {
-	LPCTSTR rc = NULL;
-
-	DWORD dwVersion = GetVersion();
- 	DWORD dwWindowsNTMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
-
-	switch ( dwWindowsNTMajorVersion )
-	{
-	case 4:
-	  rc = TASKMGR_DEFAULT_NT4_WINDOW_CAPTION;
-	  break;
-
-	case 5:
-	default:
-	  rc = TASKMGR_DEFAULT_WINDOW_CAPTION;
-	  break;
-	}
-
-	return rc;
+	return TASKMGR_DEFAULT_WINDOW_CAPTION;
 }
 
 // Thanks Dominique Faure for the idea

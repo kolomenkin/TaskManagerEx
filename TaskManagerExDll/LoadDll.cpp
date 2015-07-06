@@ -23,33 +23,6 @@
 const DWORD MAXINJECTSIZE = 4096;
 
 
-DWORD IsWindowsNT()
-{
-   OSVERSIONINFOEX osvi;
-   BOOL bOsVersionInfoEx;
-   
-   // Try calling GetVersionEx using the OSVERSIONINFOEX structure,
-   // which is supported on Windows 2000.
-   //
-   // If that fails, try using the OSVERSIONINFO structure.
-
-   my_memset(&osvi, 0, sizeof(OSVERSIONINFOEX));
-   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
-   bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi);
-
-   if( bOsVersionInfoEx == 0 )
-   {
-      // If OSVERSIONINFOEX doesn't work, try OSVERSIONINFO.
-
-      osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-      if (! GetVersionEx ( (OSVERSIONINFO *) &osvi) ) 
-         return FALSE;
-   }
-
-   return ( osvi.dwPlatformId == VER_PLATFORM_WIN32_NT ? osvi.dwMajorVersion : 0 );
-}
-
 PVOID GetFuncAddress(PVOID addr)
 {
 #ifdef _DEBUG

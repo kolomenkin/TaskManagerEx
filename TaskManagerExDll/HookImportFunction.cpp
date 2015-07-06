@@ -28,9 +28,6 @@ static char THIS_FILE[] = __FILE__;
 
 #define MakePtr(cast, ptr, AddValue) (cast)((DWORD)(ptr)+(DWORD)(AddValue))
 
-BOOL IsNT();
-
-
 
 ////////////////// Implementation //////////////////////////////
 
@@ -80,15 +77,6 @@ BOOL HookImportFunctionsByName(HMODULE hModule, LPCSTR szImportMod, UINT uiCount
   {
     ASSERT(FALSE);
     SetLastErrorEx(ERROR_INVALID_PARAMETER, SLE_ERROR);
-    return FALSE;
-  }
-
-  // Is this a system DLL, which Windows95 will not let you patch
-  //  since it is above the 2GB line?
-  if (!IsNT() && ((DWORD)hModule >= 0x80000000))
-  {
-    ASSERT(FALSE);
-    SetLastErrorEx(ERROR_INVALID_HANDLE, SLE_ERROR);
     return FALSE;
   }
 
@@ -254,22 +242,4 @@ PIMAGE_IMPORT_DESCRIPTOR GetNamedImportDescriptor(HMODULE hModule, LPCSTR szImpo
 
   // All OK, Jumpmaster!
   return pImportDesc;
-}
-
-BOOL IsNT()
-{
-  OSVERSIONINFO stOSVI;
-  my_memset(&stOSVI, 0, sizeof(OSVERSIONINFO));
-  stOSVI.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-  BOOL bRet = GetVersionEx(&stOSVI);
-  ASSERT(TRUE == bRet);
-  if (FALSE == bRet)
-  {
-    TRACE0("GetVersionEx failed!\n");
-    return FALSE;
-  }
-
-  // Check the version and call the appropriate thing.
-  return (VER_PLATFORM_WIN32_NT == stOSVI.dwPlatformId);
 }

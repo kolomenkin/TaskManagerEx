@@ -207,11 +207,6 @@ BOOL TaskManagerExDllApp::InitInstance()
 	if ( bInitialized )
 		return FALSE;
 
-	dwWindowsNTMajorVersion = IsWindowsNT();
-
-	if ( dwWindowsNTMajorVersion < 4 )
-		return FALSE;
-
 	//hMainIconSmall = hMainIconBig = LocLoadIcon( IDI_SYSTEM_INFO_ICON );
 
 	hMainIconSmall = LocLoadIcon( IDI_SYSTEM_INFO_ICON, 16, 16 );
@@ -771,22 +766,6 @@ LRESULT CALLBACK TaskManagerExDllApp::TaskManagerWndProc(
 				wParam, 
 				lParam );
 
-	switch( uMsg )
-	{
-	case WM_SIZE:
-		if( dwNTVersion < OSVERSION_XP ) // 2000 and earlier
-		{
-			int iStatus	= ListView_GetColumnWidth( theApp.hwndApplicationsList, 1 );
-			int iPid	= DEFAULT_PID_WIDTH;
-			RECT rectClient = {0,0,0,0};
-			GetClientRect( theApp.hwndApplicationsList, &rectClient );
-			ListView_SetColumnWidth( theApp.hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus - iPid );
-			ListView_SetColumnWidth( theApp.hwndApplicationsList, 1, iStatus );
-			ListView_SetColumnWidth( theApp.hwndApplicationsList, 2, iPid );
-		}
-		break;
-	}
-
 	return result;
 }
 
@@ -1229,11 +1208,8 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsListWndProc(
 			}
 			else
 			{
-				if( dwNTVersion >= OSVERSION_XP ) // Windows XP+
-				{
-					width = (short) max( 0, width - DEFAULT_PID_WIDTH - TASKMAN_CORRECTION );
-					lParam = MAKELPARAM( width, 0 );
-				}
+				width = (short) max( 0, width - DEFAULT_PID_WIDTH - TASKMAN_CORRECTION );
+				lParam = MAKELPARAM( width, 0 );
 			}
 		}
 		break;
@@ -1405,20 +1381,10 @@ void TaskManagerExDllApp::UpdateApplicationsListView()
          LVS_EX_FULLROWSELECT ) ;
 
 	int iStatus	= ListView_GetColumnWidth( hwndApplicationsList, 1 );
-	int iPid	= DEFAULT_PID_WIDTH;
 	RECT rectClient = {0,0,0,0};
 	GetClientRect( hwndApplicationsList, &rectClient );
-	if( dwNTVersion >= OSVERSION_XP ) // Windows XP+
-	{
-		ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus + TASKMAN_CORRECTION );
-	}
-	else // 2000 and earlier:
-	{
-		//ListView_SetColumnWidth( hwndApplicationsList, 0, LVSCW_AUTOSIZE );
-		ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus - iPid );
-		ListView_SetColumnWidth( hwndApplicationsList, 1, iStatus );
-		ListView_SetColumnWidth( hwndApplicationsList, 2, iPid );
-	}
+
+	ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus + TASKMAN_CORRECTION );
 
 	UpdateWindow( hwndApplicationsList );
 }
