@@ -24,13 +24,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -50,13 +50,10 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\..\Bin\Release\</OutDir>
-    <IntDir>.\..\Intermediate\Release\TaskManagerExDll\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(SolutionDir)Intermediate\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\..\Bin\Debug\</OutDir>
-    <IntDir>.\..\Intermediate\Debug\TaskManagerExDll\</IntDir>
+    <IntDir>$(SolutionDir)Intermediate\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -71,30 +68,24 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <PreprocessorDefinitions>NDEBUG;UNICODE;WIN32;_WINDOWS;_USRDLL;TASKMANAGEREXDLL_EXPORTS;TASKMANEX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;WIN32;_WINDOWS;_USRDLL;TASKMANAGEREXDLL_EXPORTS;TASKMANEX_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>.\..\Intermediate\Release\TaskManagerExDll/TaskManagerExDll.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\Intermediate\Release\TaskManagerExDll/</AssemblerListingLocation>
-      <ObjectFileName>.\..\Intermediate\Release\TaskManagerExDll/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\Intermediate\Release\TaskManagerExDll/</ProgramDataBaseFileName>
       <WarningLevel>Level4</WarningLevel>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0417</Culture>
     </ResourceCompile>
     <Link>
-      <OutputFile>.\..\Bin\Release/TaskManagerExDll.dll</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\TaskManagerExDll.def</ModuleDefinitionFile>
-      <ProgramDatabaseFile>.\..\Bin\Release/TaskManagerExDll.pdb</ProgramDatabaseFile>
-      <ImportLibrary>.\..\Bin\Release/TaskManagerExDll.lib</ImportLibrary>
-      <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>.\..\Bin\$(Configuration)\TaskManagerExDll.lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -112,30 +103,21 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;UNICODE;WIN32;_WINDOWS;_USRDLL;TASKMANAGEREXDLL_EXPORTS;TASKMANEX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
+      <PreprocessorDefinitions>UNICODE;WIN32;_WINDOWS;_USRDLL;TASKMANAGEREXDLL_EXPORTS;TASKMANEX_DLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>.\..\Intermediate\Debug\TaskManagerExDll/TaskManagerExDll.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\Intermediate\Debug\TaskManagerExDll/</AssemblerListingLocation>
-      <ObjectFileName>.\..\Intermediate\Debug\TaskManagerExDll/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\Intermediate\Debug\TaskManagerExDll/</ProgramDataBaseFileName>
       <WarningLevel>Level4</WarningLevel>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0417</Culture>
     </ResourceCompile>
     <Link>
-      <OutputFile>.\..\Bin\Debug/TaskManagerExDll.dll</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\TaskManagerExDll.def</ModuleDefinitionFile>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\..\Bin\Debug/TaskManagerExDll.pdb</ProgramDatabaseFile>
-      <ImportLibrary>.\..\Bin\Debug/TaskManagerExDll.lib</ImportLibrary>
-      <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>.\..\Bin\$(Configuration)\TaskManagerExDll.lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>

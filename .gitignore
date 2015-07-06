@@ -5,15 +5,18 @@
 *.obj
 
 # Auto-generated compiler files:
-ipch
-Bin
-Intermediate
+ipch/*
+Bin/*
+Intermediate/*
+Debug/*
+Release/*
 
 *.suo
 *.vxproj.user
 *.vcxproj.user
 *.sdf
 *.opensdf
+*.ilk
 
 # Precompiled Headers
 *.gch
