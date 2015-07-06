@@ -10,7 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define WINVER 0x0400
+#define WINVER 0x0501
 //#define WINVER 0x0500 // for multimonitor support
 
 #define _CRT_SECURE_NO_DEPRECATE

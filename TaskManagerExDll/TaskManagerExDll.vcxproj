@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7146B562-702A-46E9-9BC5-97A1F953E5E1}</ProjectGuid>
+    <RootNamespace>TaskManagerExDll</RootNamespace>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\..\Bin\Release\</OutDir>
+    <IntDir>.\..\Intermediate\Release\TaskManagerExDll\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\..\Bin\Debug\</OutDir>
+    <IntDir>.\..\Intermediate\Debug\TaskManagerExDll\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\Bin\Release/TaskManagerExDll.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <PreprocessorDefinitions>NDEBUG;UNICODE;WIN32;_WINDOWS;_USRDLL;TASKMANAGEREXDLL_EXPORTS;TASKMANEX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\Intermediate\Release\TaskManagerExDll/TaskManagerExDll.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\Intermediate\Release\TaskManagerExDll/</AssemblerListingLocation>
+      <ObjectFileName>.\..\Intermediate\Release\TaskManagerExDll/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\Intermediate\Release\TaskManagerExDll/</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0417</Culture>
+    </ResourceCompile>
+    <Link>
+      <OutputFile>.\..\Bin\Release/TaskManagerExDll.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>.\TaskManagerExDll.def</ModuleDefinitionFile>
+      <ProgramDatabaseFile>.\..\Bin\Release/TaskManagerExDll.pdb</ProgramDatabaseFile>
+      <ImportLibrary>.\..\Bin\Release/TaskManagerExDll.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Bin\Release/TaskManagerExDll.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\Bin\Debug/TaskManagerExDll.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;UNICODE;WIN32;_WINDOWS;_USRDLL;TASKMANAGEREXDLL_EXPORTS;TASKMANEX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\Intermediate\Debug\TaskManagerExDll/TaskManagerExDll.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\Intermediate\Debug\TaskManagerExDll/</AssemblerListingLocation>
+      <ObjectFileName>.\..\Intermediate\Debug\TaskManagerExDll/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\Intermediate\Debug\TaskManagerExDll/</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0417</Culture>
+    </ResourceCompile>
+    <Link>
+      <OutputFile>.\..\Bin\Debug/TaskManagerExDll.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>.\TaskManagerExDll.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\Bin\Debug/TaskManagerExDll.pdb</ProgramDatabaseFile>
+      <ImportLibrary>.\..\Bin\Debug/TaskManagerExDll.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\Bin\Debug/TaskManagerExDll.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AccessMaster\SecurityInformation.cpp" />
+    <ClCompile Include="..\AccessMaster\SecurityInformationAccessRights.cpp" />
+    <ClCompile Include="AboutExtension.cpp" />
+    <ClCompile Include="ApiHooks.cpp" />
+    <ClCompile Include="ColorBox.cpp" />
+    <ClCompile Include="DllVersion.cpp" />
+    <ClCompile Include="FindTextDlg.cpp" />
+    <ClCompile Include="HookImportFunction.cpp" />
+    <ClCompile Include="InformationDlg.cpp" />
+    <ClCompile Include="LoadDll.cpp" />
+    <ClCompile Include="Localization.cpp" />
+    <ClCompile Include="Options.cpp" />
+    <ClCompile Include="OptionsPropertyPages.cpp" />
+    <ClCompile Include="OptionsPropertySheet.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="SystemInfo.cpp" />
+    <ClCompile Include="SystemInfoDlg.cpp" />
+    <ClCompile Include="SystemInfoListCtrl.cpp" />
+    <ClCompile Include="SystemInfoUI.cpp" />
+    <ClCompile Include="TaskManagerExDll.cpp" />
+    <ClCompile Include="Taskmgr.cpp" />
+    <ClCompile Include="TipDlg.cpp" />
+    <ClCompile Include="VMQuery.cpp" />
+    <ClCompile Include="WindowsCore.cpp" />
+    <ClCompile Include="WinObjects.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TaskManagerExDll.def" />
+    <None Include="VerInfo.ver" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AccessMaster\SecurityInformation.h" />
+    <ClInclude Include="AboutExtension.h" />
+    <ClInclude Include="ApiHooks.h" />
+    <ClInclude Include="ColorBox.h" />
+    <ClInclude Include="DllVersion.h" />
+    <ClInclude Include="FindTextDlg.h" />
+    <ClInclude Include="HookImportFunction.h" />
+    <ClInclude Include="InformationDlg.h" />
+    <ClInclude Include="LoadDll.h" />
+    <ClInclude Include="Localization.h" />
+    <ClInclude Include="module.h" />
+    <ClInclude Include="Options.h" />
+    <ClInclude Include="OptionsPropertyPages.h" />
+    <ClInclude Include="OptionsPropertySheet.h" />
+    <ClInclude Include="product.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="SystemInfo.h" />
+    <ClInclude Include="SystemInfoDlg.h" />
+    <ClInclude Include="SystemInfoListCtrl.h" />
+    <ClInclude Include="SystemInfoUI.h" />
+    <ClInclude Include="TaskManagerEx.h" />
+    <ClInclude Include="TaskManagerExDll.h" />
+    <ClInclude Include="TaskManagerExDllExport.h" />
+    <ClInclude Include="Taskmgr.h" />
+    <ClInclude Include="TipDlg.h" />
+    <ClInclude Include="VMQuery.h" />
+    <ClInclude Include="WindowsCore.h" />
+    <ClInclude Include="WindowsDdk.h" />
+    <ClInclude Include="WinObjects.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TaskManagerExDll.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\DefaultProcessIcon.ico" />
+    <Image Include="res\litebulb.bmp" />
+    <Image Include="res\ServiceProcessIcon.ico" />
+    <Image Include="res\SystemInfo.ico" />
+    <Image Include="res\SystemInfoToolbar.bmp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

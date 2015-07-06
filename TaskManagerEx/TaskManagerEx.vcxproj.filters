@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{5a817087-c7cb-42c3-8396-88dcc0f16370}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0d723a81-a172-4874-912f-6a6afef7f380}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{0615d178-84e0-4465-b6c4-3d59ee48b614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Other">
+      <UniqueIdentifier>{0e40db6d-e106-41a0-a440-1ac0e20e0f5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TaskManagerExDll">
+      <UniqueIdentifier>{5144c86c-3efe-4a1f-9f2f-b2476431dafb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="crt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MakeWindowTransparent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SplashWnd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskManagerEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TaskManagerExDll\LoadDll.cpp">
+      <Filter>TaskManagerExDll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TaskManagerExDll\Localization.cpp">
+      <Filter>TaskManagerExDll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TaskManagerExDll\Options.cpp">
+      <Filter>TaskManagerExDll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TaskManagerExDll\Taskmgr.cpp">
+      <Filter>TaskManagerExDll</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MakeWindowTransparent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SplashWnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaskManagerExDll\TaskManagerEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="module.h">
+      <Filter>Resources\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaskManagerExDll\product.h">
+      <Filter>Resources\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaskManagerExDll\LoadDll.h">
+      <Filter>TaskManagerExDll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaskManagerExDll\Localization.h">
+      <Filter>TaskManagerExDll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaskManagerExDll\Options.h">
+      <Filter>TaskManagerExDll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaskManagerExDll\TaskManagerExDllExport.h">
+      <Filter>TaskManagerExDll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaskManagerExDll\Taskmgr.h">
+      <Filter>TaskManagerExDll</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TaskManagerEx.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\TaskManagerExDll\res\General.ico">
+      <Filter>Resources\Other</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\TaskManagerExDll\VerInfo.ver">
+      <Filter>Resources\Other</Filter>
+    </None>
+  </ItemGroup>
+</Project>
