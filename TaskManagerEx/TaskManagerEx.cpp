@@ -148,8 +148,8 @@ BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 		HKEY hKey = NULL;
 		DWORD dwType = REG_DWORD;
 		DWORD dwSize = sizeof(DWORD);
-		LONG lRes;
-		DWORD dwValue;
+		LONG lRes = 0;
+		DWORD dwValue = 0;
 
 		::RegOpenKey( REG_ROOT, REG_KEY, &hKey );
 
