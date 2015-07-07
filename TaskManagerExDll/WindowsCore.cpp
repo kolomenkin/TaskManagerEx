@@ -29,7 +29,7 @@ BOOL	INtDll::bStatus = INtDll::Init();
 BOOL INtDll::Init()
 {
 	hModule = LoadLibrary( _T("ntdll.dll") );
-	//TRACE( _T("TaskManagerEx: INtDll::Init(): hModule = 0x%08X\n"), hModule );
+	//TRACE( _T("TaskManagerEx: INtDll::Init(): hModule = 0x%08IX\n"), hModule );
 
 	NtQuerySystemInformation = (PNtQuerySystemInformation)
 					GetProcAddress( hModule, "NtQuerySystemInformation" );
@@ -76,7 +76,7 @@ BOOL	IPsapi::bStatus = IPsapi::Init();
 BOOL IPsapi::Init()
 {
 	hModule = LoadLibrary( _T("psapi.dll") );
-	//TRACE( _T("TaskManagerEx: IPsapi::Init(): hModule = 0x%08X\n"), hModule );
+	//TRACE( _T("TaskManagerEx: IPsapi::Init(): hModule = 0x%08IX\n"), hModule );
 
 	EnumProcesses = (PEnumProcesses)
 					GetProcAddress( hModule, "EnumProcesses" );
@@ -149,7 +149,7 @@ BOOL	IToolhelp32::bStatus = IToolhelp32::Init();
 BOOL IToolhelp32::Init()
 {
 	hModule = LoadLibrary( _T("kernel32.dll") );
-	//TRACE( _T("TaskManagerEx: IToolhelp32::Init(): hModule = 0x%08X\n"), hModule );
+	//TRACE( _T("TaskManagerEx: IToolhelp32::Init(): hModule = 0x%08IX\n"), hModule );
 
 	CreateToolhelp32Snapshot = (PCreateToolhelp32Snapshot)
 					GetProcAddress( hModule, "CreateToolhelp32Snapshot" );
@@ -211,7 +211,7 @@ BOOL	IAdvapi32::bStatus = IAdvapi32::Init();
 BOOL IAdvapi32::Init()
 {
 	hModule = LoadLibrary( _T("advapi32.dll") );
-	//TRACE( _T("TaskManagerEx: IAdvapi32::Init(): hModule = 0x%08X\n"), hModule );
+	//TRACE( _T("TaskManagerEx: IAdvapi32::Init(): hModule = 0x%08IX\n"), hModule );
 
 	EnumServicesStatusEx = (PEnumServicesStatusEx)
 					GetProcAddress( hModule, "EnumServicesStatusEx" FUNC_SUFFIX );

@@ -707,7 +707,7 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 		(pi.bDisablePriorityBoost ? _T("Disabled") : _T("Enabled") ) );
 	info += d;
 
-	d.Format( _T("CPU affinity mask:\t\t0x%X; system CPU affinity mask: 0x%X\n"),
+	d.Format( _T("CPU affinity mask:\t\t0x%IX; system CPU affinity mask: 0x%IX\n"),
 		pi.nProcessAffinity, pi.nSystemAffinity );
 	info += d;
 
@@ -715,7 +715,7 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 		HIWORD(pi.dwVersion), LOWORD(pi.dwVersion) );
 	info += d;
 
-	d.Format( _T("Working set:\t\t\t%d, min = %d, max = %d\n"),
+	d.Format( _T("Working set:\t\t\t%Id, min = %Id, max = %Id\n"),
 		pi.pmc.WorkingSetSize, pi.minWorkSet, pi.maxWorkSet );
 	info += d;
 

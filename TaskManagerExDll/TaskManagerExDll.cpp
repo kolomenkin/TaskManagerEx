@@ -578,7 +578,7 @@ BOOL CALLBACK UpdateWndZorderProc2( HWND hwnd, LPARAM lParam )
 				}
 				//TCHAR szCaption[200] = _T("");
 				//::GetWindowText( hwnd, szCaption, SIZEOF_ARRAY(szCaption) );
-				//TRACE( _T("UpdateWndZorderProc2(): window 0x%08X (%s), bTopLevel = %d\n"),
+				//TRACE( _T("UpdateWndZorderProc2(): window 0x%08IX (%s), bTopLevel = %d\n"),
 				//	hwnd, szCaption, bTopLevel );
 			}
 		}

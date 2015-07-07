@@ -111,7 +111,7 @@ void SetThreadNativeLanguage()
 
 LPVOID LoadResource( LPCTSTR id, LPCTSTR type, DWORD* lpSize = NULL )
 {
-	UINT uID = (UINT)(PVOID)id;
+	UINT_PTR uID = (UINT_PTR)(PVOID)id;
 	uID;
 
 #ifdef TASKMANEX_EXE
@@ -129,13 +129,13 @@ LPVOID LoadResource( LPCTSTR id, LPCTSTR type, DWORD* lpSize = NULL )
 
 	if( hRsrc == NULL )
 	{
-		TRACE( _T("FindResourceEx: try #2 (%d)\n"), uID );
+		TRACE( _T("FindResourceEx: try #2 (%Id)\n"), uID );
 		hRsrc = FindResourceEx( hMod, type, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL) );
 	}
 
 	if( hRsrc == NULL )
 	{
-		TRACE( _T("FindResource: try #3 (%d)\n"), uID );
+		TRACE( _T("FindResource: try #3 (%Id)\n"), uID );
 		hRsrc = FindResource( hMod, id, type );
 	}
 

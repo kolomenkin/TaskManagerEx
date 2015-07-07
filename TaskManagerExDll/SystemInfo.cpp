@@ -680,7 +680,7 @@ BOOL SystemThreadInformation::ModuleFromAddressEx( DWORD processId, PVOID pv, LP
 	if( !IPsapi::bStatus )
 		return FALSE;
 
-	//TRACE( _T("ModuleFromAddressEx( PID = %d, addr = 0x%X\n"), processId, pv );
+	//TRACE( _T("ModuleFromAddressEx( PID = %d, addr = 0x%IX\n"), processId, pv );
 
 	BOOL result = FALSE;
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId );
@@ -695,7 +695,7 @@ BOOL SystemThreadInformation::ModuleFromAddressEx( DWORD processId, PVOID pv, LP
 	if (nReadBytes != sizeof(mbi))
 		goto cleanup;
 
-	//TRACE( _T("ModuleFromAddressEx: module address: 0x%X\n"), mbi.AllocationBase );
+	//TRACE( _T("ModuleFromAddressEx: module address: 0x%IX\n"), mbi.AllocationBase );
 	DWORD nRet = IPsapi::GetModuleFileNameEx( hProcess, (HMODULE) mbi.AllocationBase, szModuleName, cbSize );
 	szModuleName[nRet] = _T('\0');
 	if( nRet == 0 )
@@ -962,7 +962,7 @@ BOOL SystemHandleInformation::Refresh()
 		}
 	}
 
-	//TRACE( _T("SystemHandleInformation::Refresh selected %d handles!\n"), m_HandleInfos.GetCount() );
+	//TRACE( _T("SystemHandleInformation::Refresh selected %Id handles!\n"), m_HandleInfos.GetCount() );
 
 cleanup:
 
@@ -1612,7 +1612,7 @@ BOOL SystemMemoryMapInformation::FileFromAddress( DWORD processId, PVOID pv, LPT
 	if( !IPsapi::bStatus )
 		return FALSE;
 
-	//TRACE( _T("FileFromAddress( PID = %d, addr = 0x%X\n"), processId, pv );
+	//TRACE( _T("FileFromAddress( PID = %d, addr = 0x%IX\n"), processId, pv );
 
 	BOOL result = FALSE;
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId );
@@ -1641,13 +1641,13 @@ BOOL SystemMemoryMapInformation::FileFromAddress( DWORD processId, PVOID pv, LPT
 		pv = mbi.AllocationBase;
 	}
 
-	TRACE( _T("FileFromAddress - 0x%X\n"), pv );
+	TRACE( _T("FileFromAddress - 0x%IX\n"), pv );
 
 	dwRet = IPsapi::GetMappedFileName( hProcess, pv,
 		szFileName, cbSize );
 	szFileName[dwRet] = _T('\0');
 
-	TRACE( _T("FileFromAddress - 0x%X - GetMappedFileName returned %d, err = %d\n"), pv, dwRet, GetLastError() );
+	TRACE( _T("FileFromAddress - 0x%IX - GetMappedFileName returned %d, err = %d\n"), pv, dwRet, GetLastError() );
 
 #if 0
 	ERROR_UNEXP_NET_ERR

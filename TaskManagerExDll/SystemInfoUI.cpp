@@ -73,7 +73,7 @@ int SystemModuleInformation::MODULE_INFO::Insert( CSystemInfoListCtrl& list, BOO
 		file.Close();
 	}
 
-	strBase.Format( _T("0x%08X"), Handle );
+	strBase.Format( _T("0x%08IX"), Handle );
 	strLength.Format( _T("%d"), info.SizeOfImage );
 
 	if( me32.GlblcntUsage == 0 )
@@ -149,7 +149,7 @@ int SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION::Insert( CSystemInf
 
 	CString strBaseAddress, strBaseName, strFullPath, strExtension, strFileSize, strFullFileName;
 
-	strBaseAddress.Format( _T("0x%08X"), pBaseAddress );
+	strBaseAddress.Format( _T("0x%08IX"), pBaseAddress );
 	strBaseName = Name;
 	strFullPath = FullPath;
 	int pos = strBaseName.ReverseFind( _T('.') );
@@ -265,9 +265,9 @@ int SystemMemoryMapInformation::MEMORY_INFORMATION::Insert( CSystemInfoListCtrl&
 
 	CString strBaseAddress, strSize, strType, strBlockCount, strProtect, strDescription;
 
-	strBaseAddress.Format( _T("0x%08X"),
+	strBaseAddress.Format( _T("0x%08IX"),
 		(bRegion ? vmq.pvRgnBaseAddress : vmq.pvBlkBaseAddress ) );
-	strSize.Format( _T("%d"),
+	strSize.Format( _T("%Id"),
 		(bRegion ? vmq.RgnSize : vmq.BlkSize ) );
 	strType = GetMemStorageText( (bRegion ? vmq.dwRgnStorage : vmq.dwBlkStorage ) );
 
@@ -353,7 +353,7 @@ int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& li
 
 	if( ThreadHandle != NULL )
 	{
-		strHandle.Format( _T("0x%08X"), ThreadHandle );
+		strHandle.Format( _T("0x%08IX"), ThreadHandle );
 		strHandlePid.Format( _T("%d"), HandleProcessId );
 	}
 	else
@@ -364,7 +364,7 @@ int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& li
 
 	strThreadId.Format( _T("0x%08X"), sti.ClientId.UniqueThread );
 	strPriority.Format( _T("%d / %d"), sti.Priority, sti.BasePriority );
-	strStartAddress.Format( _T("0x%08X"), sti.StartAddress );
+	strStartAddress.Format( _T("0x%08IX"), sti.StartAddress );
 	strModule = Module;
 	int pos = strModule.ReverseFind( _T('\\') );
 	strModule = strModule.Mid( pos+1 );
