@@ -54,11 +54,11 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CFindTextDlg)
-	public:
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual int DoModal();
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+	virtual INT_PTR DoModal() override;
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -67,9 +67,9 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CFindTextDlg)
-	virtual void OnOK();
-	virtual void OnCancel();
-	virtual BOOL OnInitDialog();
+	virtual void OnOK() override;
+	virtual void OnCancel() override;
+	virtual BOOL OnInitDialog() override;
 	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

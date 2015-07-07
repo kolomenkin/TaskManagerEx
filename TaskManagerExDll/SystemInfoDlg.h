@@ -20,7 +20,7 @@ protected:
 	DECLARE_DYNCREATE( CSystemInfoDlgThread )
 
 public:
-	virtual BOOL InitInstance();
+	virtual BOOL InitInstance() override;
 
 public:
 	static TASKMANAGEREXDLL_DEBUG_API CSystemInfoDlgThread* Start( DWORD pID, WPARAM wCommand, BOOL bFind, BOOL bMultiProcess );
@@ -102,7 +102,7 @@ public:
 	//{{AFX_VIRTUAL(CSystemInfoDlg)
 	public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual int DoModal();
+	virtual INT_PTR DoModal();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void PostNcDestroy();

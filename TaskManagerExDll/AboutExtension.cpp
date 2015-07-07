@@ -16,7 +16,7 @@ static char THIS_FILE[] = __FILE__;
 int CAboutExtensionThread::Start( CWnd* pParent )
 {
 	CAboutExtension dlg( pParent );
-	int res = dlg.DoModal();
+	INT_PTR res = dlg.DoModal();
 	return res;
 }
 
@@ -148,7 +148,7 @@ BOOL CAboutExtension::OnInitDialog()
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CAboutExtension::DoModal() 
+INT_PTR CAboutExtension::DoModal()
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )

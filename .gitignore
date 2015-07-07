@@ -10,6 +10,8 @@ Bin/*
 Intermediate/*
 Debug/*
 Release/*
+TaskManagerEx/x64/*
+TaskManagerExDll/x64/*
 
 *.suo
 *.vxproj.user

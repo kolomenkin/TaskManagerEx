@@ -61,10 +61,10 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CColorBox)
-	public:
-	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
-	protected:
-	virtual void PreSubclassWindow();
+public:
+	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
+protected:
+	virtual void PreSubclassWindow() override;
 	//}}AFX_VIRTUAL
 
 // Implementation

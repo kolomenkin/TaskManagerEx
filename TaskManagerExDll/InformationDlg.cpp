@@ -148,7 +148,7 @@ BOOL CInformationDlg::OnHelpInfo(HELPINFO* pHelpInfo)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CInformationDlg::DoModal() 
+INT_PTR CInformationDlg::DoModal()
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )

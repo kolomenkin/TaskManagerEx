@@ -33,7 +33,7 @@ protected:
 	DECLARE_DYNCREATE( CInformationDlgThread )
 
 public:
-	virtual BOOL InitInstance();
+	virtual BOOL InitInstance() override;
 
 public:
 	BOOL Initialize( DWORD pID, WPARAM command );
@@ -67,11 +67,11 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CInformationDlg)
-	public:
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual int DoModal();
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+	virtual INT_PTR DoModal() override;
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -91,8 +91,8 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnClose();
 	afx_msg void OnDestroy();
-	virtual void OnOK();
-	virtual void OnCancel();
+	virtual void OnOK() override;
+	virtual void OnCancel() override;
 	afx_msg void OnExit();
 	afx_msg void OnRefresh();
 	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);

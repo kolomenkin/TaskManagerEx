@@ -360,7 +360,7 @@ void CSystemInfoDlg::OnDestroy()
 	m_ImageList.DeleteImageList();
 }
 
-int CSystemInfoDlg::DoModal() 
+INT_PTR CSystemInfoDlg::DoModal()
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )
@@ -1447,7 +1447,7 @@ void CSystemInfoDlg::OnItemchangedListview(NMHDR* pNMHDR, LRESULT* pResult)
 void CSystemInfoDlg::OnFindText() 
 {
 	CFindTextDlg m_FindDlg;
-	int res = m_FindDlg.DoModal();
+	INT_PTR res = m_FindDlg.DoModal();
 	if( res == IDOK )
 	{
 		m_FindOptions = m_FindDlg.m_options;

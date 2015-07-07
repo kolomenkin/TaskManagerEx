@@ -48,7 +48,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // COptionsPropertySheet message handlers
 
-int COptionsPropertySheet::DoModal() 
+INT_PTR COptionsPropertySheet::DoModal()
 {
 	BOOL oldShowSplash = theApp.m_options.GetShowSplash();
 	BOOL oldShowTips = theApp.m_options.GetShowTips();
@@ -63,7 +63,7 @@ int COptionsPropertySheet::DoModal()
 	m_PageOther.m_wndServiceColor.SetColor( oldServiceColor );
 	m_PageOther.m_wndAlertColor.SetColor( oldAlertColor );
 	
-	int res = CPropertySheet::DoModal();
+	INT_PTR res = CPropertySheet::DoModal();
 	if( res == IDOK )
 	{
 		COLORREF newProcessColor = m_PageOther.m_wndProcessColor.GetColor();

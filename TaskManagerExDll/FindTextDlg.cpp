@@ -263,7 +263,7 @@ BOOL CFindTextDlg::OnHelpInfo(HELPINFO* pHelpInfo)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CFindTextDlg::DoModal() 
+INT_PTR CFindTextDlg::DoModal()
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )
