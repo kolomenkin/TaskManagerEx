@@ -1893,7 +1893,7 @@ void CSystemInfoDlg::OnHandlesThreadTerminate()
 		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle, 0 };
 
 		TRACE( _T("TerminateThread #2\n") );
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
 		using namespace RemoteExecute;
@@ -1957,7 +1957,7 @@ void CSystemInfoDlg::OnHandlesWindowstationAssigntoprocess()
 		const DWORD dwArgumentCount = 1;
 		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle };
 
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
 		using namespace RemoteExecute;
@@ -1992,7 +1992,7 @@ void CSystemInfoDlg::OnHandlesDesktopSwithto()
 		const DWORD dwArgumentCount = 1;
 		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle };
 
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
 		using namespace RemoteExecute;

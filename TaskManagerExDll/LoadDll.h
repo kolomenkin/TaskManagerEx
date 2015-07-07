@@ -26,8 +26,8 @@ namespace RemoteExecute
 
 	static const char* const NoLibrary = NULL;
 	static const char* const NoFunction = NULL;
-	static DWORD* const NoFuncReturn = NULL;
-	static DWORD* const NoFuncReturnSpecial = NULL;
+	static DWORD_PTR* const NoFuncReturn = NULL;
+	static DWORD_PTR* const NoFuncReturnSpecial = NULL;
 	static LONG*  const NoLastError = NULL;
 	static DWORD* const NoErrorLoad = NULL;
 	static DWORD* const NoErrorFunction = NULL;
@@ -55,9 +55,9 @@ struct RemoteDllThreadBlock
 	DWORD				MarkerBegin;
 	DWORD				ErrorLoad;					// error value for LoadLibrary
 	DWORD				ErrorFunction;				// error value for executed function
-	DWORD				ReturnCodeForFunction;		// function return code
+	DWORD_PTR			ReturnCodeForFunction;		// function return code
 	RemoteExecute::eSpecialMode	SpecialMode;
-	DWORD				ReturnCodeForFunctionSpecial;// Special Mode value that is calculated from ReturnCodeForFunction.
+	DWORD_PTR			ReturnCodeForFunctionSpecial;// Special Mode value that is calculated from ReturnCodeForFunction.
 													// Usually this is the size of remote buffer pointed by ReturnCodeForFunction.
 	DWORD				ErrorFree;					// error value for FreeLibrary
 	DWORD				LastError;
@@ -98,8 +98,8 @@ DWORD ExecuteRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,
@@ -130,8 +130,8 @@ DWORD LoadDllForRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,

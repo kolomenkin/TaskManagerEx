@@ -51,8 +51,8 @@ DWORD LoadDllForRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,
@@ -117,8 +117,8 @@ DWORD ExecuteRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,
@@ -133,9 +133,9 @@ DWORD ExecuteRemoteThread(
 	DWORD rc = (DWORD)-1;
 	HMODULE hKernel32 = 0;
 	RemoteDllThreadBlock localCopy;
-	DWORD i;
+	DWORD i = 0;
 	DWORD ThreadId = 0;
-	DWORD dwReadBytes = 0;
+	size_t nReadBytes = 0;
 	DWORD WaitObjectRes = 0;
 	BYTE* pSpecialBuffer = NULL;
 
@@ -233,18 +233,18 @@ DWORD ExecuteRemoteThread(
 
 	case WAIT_OBJECT_0:
 		// this might just have worked, pick up the result!
-		// rad back the prameter block, it has the error code
+		// rad back the parameter block, it has the error code
 
 		// clear the parameter block
 		my_memset( &localCopy, 0, sizeof(localCopy) );
 
-		if ( ! ReadProcessMemory( hProcess, c, &localCopy, sizeof(localCopy), &dwReadBytes ) )
+		if ( ! ReadProcessMemory( hProcess, c, &localCopy, sizeof(localCopy), &nReadBytes ) )
 		{
 			rc = 0x100;
 			goto cleanup;
 		}
 
-		if( dwReadBytes != sizeof(localCopy) )
+		if( nReadBytes != sizeof(localCopy) )
 		{
 			rc = 0x200;
 			goto cleanup;
@@ -294,24 +294,24 @@ DWORD ExecuteRemoteThread(
 				LPCVOID pRemoteBuffer = (LPCVOID) localCopy.ReturnCodeForFunction;
 				if( pRemoteBuffer != NULL )
 				{
-					DWORD n = localCopy.ReturnCodeForFunctionSpecial;
+					size_t n = localCopy.ReturnCodeForFunctionSpecial;
 					pSpecialBuffer = (PBYTE) LocalAlloc( LMEM_FIXED, n );
 					if( pSpecialBuffer != NULL )
 					{
 						my_memset( pSpecialBuffer, 0, n );
-						if ( ! ReadProcessMemory( hProcess, pRemoteBuffer, pSpecialBuffer, n, &dwReadBytes ) )
+						if ( ! ReadProcessMemory( hProcess, pRemoteBuffer, pSpecialBuffer, n, &nReadBytes ) )
 						{
 							rc = 0x500;
 							goto cleanup;
 						}
 
-						if( dwReadBytes != n )
+						if( nReadBytes != n )
 						{
 							rc = 0x600;
 							goto cleanup;
 						}
 
-						*pReturnCodeForFunction = (DWORD) pSpecialBuffer;
+						*pReturnCodeForFunction = (DWORD_PTR) pSpecialBuffer;
 						*pReturnCodeForFunctionSpecial = n;
 						pSpecialBuffer = NULL;
 					}
@@ -579,7 +579,7 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 		// execute the function, and get the result
 		if ( pfn != NULL )
 		{
-			DWORD ret = 0;
+			DWORD_PTR ret = 0;
 			DWORD* p = execBlock->Arguments;
 			execBlock->ErrorFunction = 0;
 
@@ -632,7 +632,7 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 				TCHAR* p = (TCHAR*)ret;
 				if( p != NULL )
 				{
-					int n = 0;
+					size_t n = 0;
 					while( *p )
 					{
 						n++;
@@ -646,7 +646,7 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 				TCHAR* p = (TCHAR*)ret;
 				if( p != NULL )
 				{
-					int n = 0;
+					size_t n = 0;
 					while( *p )
 					{
 						while( *p )

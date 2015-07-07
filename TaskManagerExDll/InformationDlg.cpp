@@ -551,10 +551,10 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 	tstring sCommandLine;
 
 	{
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
-		DWORD dwSpecial = 0;
+		DWORD_PTR dwSpecial = 0;
 
 		using namespace RemoteExecute;
 		DWORD dwRet = LoadDllForRemoteThread( pi.processId,
@@ -579,10 +579,10 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 	std::vector<tstring> arrEnvironment;
 //#pragma  warning (pop)
 	{
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
-		DWORD dwSpecial = 0;
+		DWORD_PTR dwSpecial = 0;
 
 		using namespace RemoteExecute;
 		DWORD dwRet = LoadDllForRemoteThread( pi.processId,
