@@ -565,7 +565,7 @@ int CALLBACK CSortClass::CompareDesI(LPARAM lParam1, LPARAM lParam2, LPARAM l3 )
 	return -res;
 }
 
-CSortClass::CSortItem::CSortItem( DWORD _dw, int _indent, const CString & _txt)
+CSortClass::CSortItem::CSortItem( DWORD_PTR _dw, int _indent, const CString & _txt)
 {
 	dw = _dw;
 	indent = _indent;
@@ -576,7 +576,7 @@ CSortClass::CSortItem::~CSortItem()
 {
 }
 
-CSortClass::CSortItemInt::CSortItemInt( DWORD _dw, int _indent, const CString & _txt)
+CSortClass::CSortItemInt::CSortItemInt(DWORD_PTR _dw, int _indent, const CString & _txt)
 {
 	iInt = _ttoi(_txt);
 	indent = _indent;

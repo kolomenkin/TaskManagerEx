@@ -489,10 +489,11 @@ BOOL CSystemInfoDlg::OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pRe
 	if(nID != 0)
 	{
 		CString s;
-		s.LoadString(nID);
+		ASSERT(nID <= UINT_MAX);
+		s.LoadString((UINT)nID);
 		if( nID < 41000 )
 		{
-			s = LocLoadString(nID);
+			s = LocLoadString((UINT)nID);
 		}
 		TRACE(_T("Load string #%Id = \"%s\"\n"), nID, s);
 		s = s.Left( SIZEOF_ARRAY(pTTT->szText)-1 );
@@ -858,8 +859,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemHandleInformation hi( GetInitProcessId(), TRUE, _T("File") );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for ( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
@@ -878,8 +879,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemModuleInformation mi( GetInitProcessId(), TRUE );
 
-			int iItem = 0;
-			int iItemCount = mi.m_ModuleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = mi.m_ModuleInfos.GetCount();
 			for ( POSITION pos = mi.m_ModuleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemModuleInformation::MODULE_INFO& m = mi.m_ModuleInfos.GetNext(pos);
@@ -935,8 +936,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemHandleInformation hi( GetInitProcessId(), TRUE, NULL );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for ( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
@@ -951,8 +952,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemThreadInformation ti( GetInitProcessId(), TRUE );
 
-			int iItem = 0;
-			int iItemCount = ti.m_ThreadInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = ti.m_ThreadInfos.GetCount();
 			for ( POSITION pos = ti.m_ThreadInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemThreadInformation::THREAD_INFORMATION& t = ti.m_ThreadInfos.GetNext(pos);
@@ -967,8 +968,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemMemoryMapInformation smi( GetInitProcessId(), m_bExpandRegions, TRUE );
 
-			int iItem = 0;
-			int iItemCount = smi.m_MemoryInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = smi.m_MemoryInfos.GetCount();
 			//TRACE( _T("Got %d memory blocks\n"), smi.m_MemoryInfos.GetCount() );
 			for ( POSITION pos = smi.m_MemoryInfos.GetHeadPosition(); pos != NULL; )
 			{
@@ -996,8 +997,8 @@ void CSystemInfoDlg::RefreshList()
 
 			SystemHandleInformation hi( ALL_PROCESSES, TRUE, _T("File") );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
@@ -1041,8 +1042,8 @@ void CSystemInfoDlg::RefreshList()
 
 			SystemModuleInformation mi( ALL_PROCESSES, TRUE );
 
-			int iItem = 0;
-			int iItemCount = mi.m_ModuleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = mi.m_ModuleInfos.GetCount();
 			for( POSITION pos = mi.m_ModuleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemModuleInformation::MODULE_INFO& m = mi.m_ModuleInfos.GetNext(pos);
@@ -1068,8 +1069,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemHandleInformation hi( ALL_PROCESSES, TRUE, NULL );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for ( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
@@ -1084,8 +1085,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemKernelModuleInformation kmi( TRUE );
 
-			int iItem = 0;
-			int iItemCount = kmi.m_KernelModuleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = kmi.m_KernelModuleInfos.GetCount();
 			for ( POSITION pos = kmi.m_KernelModuleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION& km = kmi.m_KernelModuleInfos.GetNext(pos);

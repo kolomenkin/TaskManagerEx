@@ -135,7 +135,7 @@ DWORD ExecuteRemoteThread(
 	RemoteDllThreadBlock localCopy;
 	DWORD i = 0;
 	DWORD ThreadId = 0;
-	size_t nReadBytes = 0;
+	SIZE_T nReadBytes = 0;
 	DWORD WaitObjectRes = 0;
 	BYTE* pSpecialBuffer = NULL;
 
@@ -357,7 +357,7 @@ cleanup:
 	return rc;
 }
 
-void FreeSpecialBuffer( DWORD pReturnCodeForFunction )
+void FreeSpecialBuffer(DWORD_PTR pReturnCodeForFunction)
 {
 	if( pReturnCodeForFunction )
 	{

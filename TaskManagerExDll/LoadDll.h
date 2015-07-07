@@ -140,7 +140,7 @@ DWORD LoadDllForRemoteThread(
 		DWORD*	pdwArguments
 		);
 
-void FreeSpecialBuffer( DWORD pReturnCodeForFunction );
+void FreeSpecialBuffer( DWORD_PTR pReturnCodeForFunction );
 
 //DWORD RemoteGetCurrentDirectory( DWORD, LPWSTR, DWORD, DWORD* );
 

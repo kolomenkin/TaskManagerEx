@@ -220,10 +220,10 @@ BOOL TaskManagerExDllApp::InitInstance()
 int TaskManagerExDllApp::ExitInstance()
 {  
 	if ( fnOriginFakeWndProc != NULL )
-		SetWindowLong(
+		SetWindowLongPtr(
 				m_hwndFakeWindow,
-				GWL_WNDPROC,
-				(LONG)fnOriginFakeWndProc );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginFakeWndProc );
 
 	if( m_hwndFakeWindow != NULL )
 	{
@@ -285,30 +285,30 @@ BOOL TaskManagerExDllApp::Initialize()
 		  hwndApplicationsList == NULL )
 		return FALSE;
 
-	fnOriginTaskManagerWndProc = (WNDPROC)SetWindowLong( 
+	fnOriginTaskManagerWndProc = (WNDPROC)SetWindowLongPtr(
 			hwndTaskManager,
-			GWL_WNDPROC,
-			(LONG)TaskManagerWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)TaskManagerWndProc );
 
-	fnOriginProcessesList = (WNDPROC)SetWindowLong( 
+	fnOriginProcessesList = (WNDPROC)SetWindowLongPtr(
 			hwndProcessesList,
-			GWL_WNDPROC,
-			(LONG)ProcessesListWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ProcessesListWndProc);
 
-	fnOriginProcessesTab = (WNDPROC)SetWindowLong( 
+	fnOriginProcessesTab = (WNDPROC)SetWindowLongPtr(
 			GetParent(hwndProcessesList),
-			GWL_WNDPROC,
-			(LONG)ProcessesTabWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ProcessesTabWndProc);
 
-	fnOriginApplicationsList = (WNDPROC)SetWindowLong( 
+	fnOriginApplicationsList = (WNDPROC)SetWindowLongPtr(
 			hwndApplicationsList,
-			GWL_WNDPROC,
-			(LONG)ApplicationsListWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ApplicationsListWndProc);
 
-	fnOriginApplicationsTab = (WNDPROC)SetWindowLong( 
+	fnOriginApplicationsTab = (WNDPROC)SetWindowLongPtr(
 			GetParent(hwndApplicationsList),
-			GWL_WNDPROC,
-			(LONG)ApplicationsTabWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ApplicationsTabWndProc);
 
 	if ( fnOriginProcessesList == NULL || 
 		 fnOriginTaskManagerWndProc == NULL ||
@@ -346,34 +346,34 @@ BOOL TaskManagerExDllApp::Initialize()
 BOOL TaskManagerExDllApp::Deinitialize()
 {
 	if ( fnOriginTaskManagerWndProc != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr( 
 				hwndTaskManager,	
-				GWL_WNDPROC, 
-				(LONG)fnOriginTaskManagerWndProc );
+				GWLP_WNDPROC, 
+				(LONG_PTR)fnOriginTaskManagerWndProc );
 
 	if ( fnOriginProcessesList != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				hwndProcessesList,	
-				GWL_WNDPROC, 
-				(LONG)fnOriginProcessesList );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginProcessesList);
 
 	if ( fnOriginProcessesTab != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				GetParent(hwndProcessesList),	
-				GWL_WNDPROC, 
-				(LONG)fnOriginProcessesTab );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginProcessesTab);
 
 	if ( fnOriginApplicationsList != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				hwndApplicationsList,	
-				GWL_WNDPROC, 
-				(LONG)fnOriginApplicationsList );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginApplicationsList);
 
 	if ( fnOriginApplicationsTab != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				GetParent(hwndApplicationsList),	
-				GWL_WNDPROC, 
-				(LONG)fnOriginApplicationsTab );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginApplicationsTab);
 
 	return TRUE;
 }
@@ -539,7 +539,7 @@ BOOL TaskManagerExDllApp::CreateFakeWindow()
 	fnOriginFakeWndProc = (WNDPROC)SetWindowLongPtr( 
 			hwnd,
 			GWLP_WNDPROC,
-			(LONG)FakeWndProc );
+			(LONG_PTR)FakeWndProc );
 
 	SetWindowLongPtr( hwnd, GWLP_USERDATA, TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE );
 
@@ -1395,11 +1395,11 @@ TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetSelectedProcessD
    return GetProcessData( ListView_GetNextItem( hwndProcessesList, -1, LVNI_SELECTED ) );
 }
 
-TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData( int nItem )
+TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData(INT_PTR nItem)
 {
 	LVITEM lvi;
 	ZeroMemory(&lvi, sizeof(lvi));
-	lvi.iItem = nItem;
+	lvi.iItem = (int)nItem;
 	lvi.mask = LVIF_PARAM;
 
 	::SendMessage( hwndProcessesList, LVM_GETITEM, 0, (LPARAM)&lvi );
@@ -1407,11 +1407,11 @@ TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData( int
 	return (ProcessesItemData*)lvi.lParam;
 }
 
-TaskManagerExDllApp::ApplicationsItemData* TaskManagerExDllApp::GetApplicationsData( int nItem )
+TaskManagerExDllApp::ApplicationsItemData* TaskManagerExDllApp::GetApplicationsData(INT_PTR nItem)
 {
 	LVITEM lvi;
 	ZeroMemory(&lvi, sizeof(lvi));
-	lvi.iItem = nItem;
+	lvi.iItem = (int)nItem;
 	lvi.mask = LVIF_PARAM;
 
 	::SendMessage( hwndApplicationsList, LVM_GETITEM, 0, (LPARAM)&lvi );

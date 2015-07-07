@@ -161,7 +161,7 @@ public:
 		TCHAR		Module[MAX_PATH];
 
 		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount) const;
 	};
 
 public:
@@ -193,10 +193,10 @@ public:
 		SYSTEM_HANDLE sh;
 
 		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount) const;
 
 		static void InsertFileColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int InsertFile( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount,
+		int InsertFile(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount,
 			LPCTSTR szDevice, LPCTSTR szPath ) const;
 	};
 
@@ -285,7 +285,7 @@ public:
 		MODULEENTRY32 me32;
 
 		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount) const;
 	} MODULE_INFO;
 
 public:
@@ -320,7 +320,7 @@ public:
 		TCHAR	Name[MAX_PATH];
 
 		static void InsertColumns( CSystemInfoListCtrl& list );
-		int Insert( CSystemInfoListCtrl& list, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, size_t iItem, size_t iItemCount) const;
 	};
 
 public:
@@ -351,7 +351,7 @@ public:
 		TCHAR		MappedFile[MAX_PATH];
 
 		static void InsertColumns( CSystemInfoListCtrl& list );
-		int Insert( CSystemInfoListCtrl& list, int iItem, int iItemCount, BOOL bExpandRegions ) const;
+		int Insert(CSystemInfoListCtrl& list, size_t iItem, size_t iItemCount, BOOL bExpandRegions) const;
 	};
 
 public:

@@ -55,10 +55,10 @@ void SystemModuleInformation::MODULE_INFO::InsertColumns( CSystemInfoListCtrl& l
 }
 
 int SystemModuleInformation::MODULE_INFO::Insert( CSystemInfoListCtrl& list, BOOL bPid,
-												 int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strPID, strProcesName;
 	CString strBase, strLength, strUsage, strFileSize, strVersion, strFilePath;
@@ -142,10 +142,10 @@ void SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION::InsertColumns( CS
 }
 
 int SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION::Insert( CSystemInfoListCtrl& list,
-														int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strBaseAddress, strBaseName, strFullPath, strExtension, strFileSize, strFullFileName;
 
@@ -258,10 +258,10 @@ void AppendString( CString& s, LPCTSTR szAdd )
 }
 
 int SystemMemoryMapInformation::MEMORY_INFORMATION::Insert( CSystemInfoListCtrl& list,
-							int iItem, int iItemCount, BOOL bExpandRegions ) const
+	size_t iItem, size_t iItemCount, BOOL bExpandRegions) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strBaseAddress, strSize, strType, strBlockCount, strProtect, strDescription;
 
@@ -340,10 +340,10 @@ void SystemThreadInformation::THREAD_INFORMATION::InsertColumns( CSystemInfoList
 }
 
 int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& list, BOOL bPid,
-														int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	bPid = bPid;
 	ASSERT( bPid == FALSE && "Not Implemented!" );
@@ -426,10 +426,10 @@ void SystemHandleInformation::HANDLE_INFORMATION::InsertColumns( CSystemInfoList
 }
 
 int SystemHandleInformation::HANDLE_INFORMATION::Insert( CSystemInfoListCtrl& list, BOOL bPid,
-														int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strPID, strProcesName;
 	CString strHandle, strAccess, strType, strTypeNum, strName;
@@ -510,10 +510,10 @@ void SystemHandleInformation::HANDLE_INFORMATION::InsertFileColumns( CSystemInfo
 }
 
 int SystemHandleInformation::HANDLE_INFORMATION::InsertFile( CSystemInfoListCtrl& list, BOOL bPid,
-										int iItem, int iItemCount, LPCTSTR szDevice, LPCTSTR szPath ) const
+	size_t iItem, size_t iItemCount, LPCTSTR szDevice, LPCTSTR szPath) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strPID, strProcesName;
 	CString strHandle, strName, strPath, strDevice;

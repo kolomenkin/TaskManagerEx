@@ -686,18 +686,17 @@ BOOL SystemThreadInformation::ModuleFromAddressEx( DWORD processId, PVOID pv, LP
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId );
 	MEMORY_BASIC_INFORMATION mbi;
 	ZeroMemory( &mbi, sizeof(mbi) );
-	size_t nRet = 0;
 
 	if ( hProcess == NULL )
 		goto cleanup;
 	//TRACE( _T("ModuleFromAddressEx: process opened!\n") );
 
-	nRet = VirtualQueryEx( hProcess, pv, &mbi, sizeof(mbi));
-	if( nRet != sizeof(mbi) )
+	const SIZE_T nReadBytes = VirtualQueryEx(hProcess, pv, &mbi, sizeof(mbi));
+	if (nReadBytes != sizeof(mbi))
 		goto cleanup;
 
 	//TRACE( _T("ModuleFromAddressEx: module address: 0x%X\n"), mbi.AllocationBase );
-	nRet = IPsapi::GetModuleFileNameEx( hProcess, (HMODULE) mbi.AllocationBase, szModuleName, cbSize );
+	DWORD nRet = IPsapi::GetModuleFileNameEx( hProcess, (HMODULE) mbi.AllocationBase, szModuleName, cbSize );
 	szModuleName[nRet] = _T('\0');
 	if( nRet == 0 )
 		goto cleanup;
@@ -1415,9 +1414,10 @@ void SystemModuleInformation::GetModuleListForProcess( DWORD processID )
 		moduleInfo.ProcessId = processID;
 		moduleInfo.Handle = hModules[i];
 
-		DWORD dwRet1, dwRet2, dwRet3;
-		BOOL res;
-		dwRet1 = VirtualQueryEx( hProcess, hModules[i], &moduleInfo.mbi, sizeof(moduleInfo.mbi) );
+		SIZE_T nReadBytes = 0;
+		DWORD dwRet2 = 0, dwRet3 = 0;
+		BOOL res = FALSE;
+		nReadBytes = VirtualQueryEx(hProcess, hModules[i], &moduleInfo.mbi, sizeof(moduleInfo.mbi));
 		res = IPsapi::GetModuleInformation( hProcess, hModules[i], &moduleInfo.info, sizeof(moduleInfo.info) );
 		dwRet3 = IPsapi::GetModuleBaseName( hProcess, hModules[i], moduleInfo.Name, SIZEOF_ARRAY(moduleInfo.Name) );
 		moduleInfo.Name[dwRet3] = _T('\0');
@@ -1634,8 +1634,8 @@ BOOL SystemMemoryMapInformation::FileFromAddress( DWORD processId, PVOID pv, LPT
 		if( !res )
 			goto cleanup;
 
-		dwRet = VirtualQueryEx( hProcess, info.EntryPoint, &mbi, sizeof(mbi));
-		if( dwRet != sizeof(mbi) )
+		const SIZE_T nReadBytes = VirtualQueryEx(hProcess, info.EntryPoint, &mbi, sizeof(mbi));
+		if (nReadBytes != sizeof(mbi))
 			goto cleanup;
 
 		pv = mbi.AllocationBase;
