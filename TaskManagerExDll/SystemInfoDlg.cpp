@@ -387,7 +387,7 @@ BOOL CSystemInfoDlg::OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pRe
 
 	NMHDR* pNMHDR = pTTTStruct;
     TOOLTIPTEXT *pTTT = (TOOLTIPTEXT *)pNMHDR;
-    UINT nID = pNMHDR->idFrom;
+    UINT_PTR nID = pNMHDR->idFrom;
 
 	//TRACE( _T("OnToolTipNotify> id = %d, from = %d (0x%X) \n"), id, nID, nID );
 
@@ -494,7 +494,7 @@ BOOL CSystemInfoDlg::OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pRe
 		{
 			s = LocLoadString(nID);
 		}
-		TRACE( _T("Load string #%d = \"%s\"\n"), nID, s );
+		TRACE(_T("Load string #%Id = \"%s\"\n"), nID, s);
 		s = s.Left( SIZEOF_ARRAY(pTTT->szText)-1 );
 		_tcsncpy( pTTT->szText, s, SIZEOF_ARRAY(pTTT->szText) );
 		pTTT->lpszText = pTTT->szText;

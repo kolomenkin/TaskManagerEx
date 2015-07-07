@@ -190,7 +190,7 @@ BOOL CFindTextDlg::SaveHistory()
 {
 	HKEY hKey = NULL;
 
-	int i;
+	size_t i = 0;
 	for( i=0; i<m_FindHistory.GetSize(); i++ )
 	{
 		CString s = m_FindHistory.GetAt( i );
@@ -217,20 +217,21 @@ BOOL CFindTextDlg::SaveHistory()
 		::RegSetValueEx( hKey, _T("FindForward"), NULL, REG_DWORD, 
 				   (const BYTE*)&m_options.m_bForward, sizeof(DWORD) );
 
-		int n = m_FindHistory.GetSize();
+		size_t n = m_FindHistory.GetSize();
 
 		for( i=0; i<n && i<MAX_HISTORY_DEPTH; i++ )
 		{
 			CString s = m_FindHistory.GetAt( i );
 			CString value;
-			value.Format( _T("Text_%02d"), i+1 );
+			value.Format( _T("Text_%02Id"), i+1 );
 
 			::RegSetValueEx( hKey, value, NULL, REG_SZ,
 					   (const BYTE*)(LPCTSTR)s, (s.GetLength()+1)*sizeof(TCHAR) );
 		}
 
+		DWORD dwRegVal = (DWORD) n;
 		::RegSetValueEx( hKey, _T("HistoryDepth"), NULL, REG_DWORD,
-				   (const BYTE*)&n, sizeof(DWORD) );
+			(const BYTE*)&dwRegVal, sizeof(DWORD));
 
 		::RegCloseKey( hKey );
 	}

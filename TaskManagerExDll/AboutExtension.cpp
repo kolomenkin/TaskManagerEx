@@ -13,7 +13,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-int CAboutExtensionThread::Start( CWnd* pParent )
+INT_PTR CAboutExtensionThread::Start(CWnd* pParent)
 {
 	CAboutExtension dlg( pParent );
 	INT_PTR res = dlg.DoModal();

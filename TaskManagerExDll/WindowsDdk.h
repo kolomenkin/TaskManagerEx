@@ -15,7 +15,9 @@ typedef NTSTATUS *PNTSTATUS;
 
 #define STATUS_SUCCESS							((NTSTATUS)0x00000000L) // ntsubauth
 
+#ifndef _WIN64
 typedef unsigned long ULONG_PTR, *PULONG_PTR;
+#endif
 
 typedef struct _IO_STATUS_BLOCK {
     union {
@@ -40,7 +42,10 @@ typedef LONG KPRIORITY;
 typedef struct _PEB_LDR_DATA
 {
 	ULONG Length;
-	BOOLEAN Initialized;
+	union {
+		BOOLEAN Initialized;
+		DWORD dwDummy;		// added to remove x64 warning: warning C4121: '_PEB_LDR_DATA' : alignment of a member was sensitive to packing
+	};
 	PVOID SsHandle;
 	LIST_ENTRY InLoadOrderModuleList;
 	LIST_ENTRY InMemoryOrderModuleList;

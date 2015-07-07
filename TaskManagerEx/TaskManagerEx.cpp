@@ -81,10 +81,10 @@ TCHAR szDllPath[_MAX_PATH] = _T(""); // TaskManagerEx.dll name
 BOOL IsHookedTaskManagerWindow( HWND hwnd )
 {
 	#ifdef _DEBUG
-//	OutputDebugString( _T("TaskManagerEx: GetWindowLong( hwnd, GWL_USERDATA );\n") );
+//	OutputDebugString( _T("TaskManagerEx: GetWindowLongPtr( hwnd, GWLP_USERDATA );\n") );
 	#endif
 
-	LONG lUserData = GetWindowLong( hwnd, GWL_USERDATA );
+	LONG_PTR lUserData = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if( lUserData == TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE )
 	{
 		return TRUE;
@@ -208,7 +208,7 @@ exit:
 VOID CALLBACK ThreadTimerProc(
 	HWND hwnd,
     UINT uMsg,
-    UINT idEvent,
+	UINT_PTR idEvent,
     DWORD dwTime
 )
 {

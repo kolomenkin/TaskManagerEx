@@ -300,7 +300,7 @@ RECT	g_rWindowDragBegin;
 
 LRESULT CALLBACK SplashWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int iRes;
+	UINT_PTR iRes = 0;	// for SetTimer ret val
 	switch (message) 
 	{
 		case WM_CREATE:

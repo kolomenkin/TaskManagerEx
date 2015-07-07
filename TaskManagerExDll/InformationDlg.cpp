@@ -708,7 +708,7 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 	info += d;
 
 	d.Format( _T("CPU affinity mask:\t\t0x%X; system CPU affinity mask: 0x%X\n"),
-		pi.dwProcessAffinity, pi.dwSystemAffinity );
+		pi.nProcessAffinity, pi.nSystemAffinity );
 	info += d;
 
 	d.Format( _T("Image version:\t\t\t%d.%d\n"),

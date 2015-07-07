@@ -536,12 +536,12 @@ BOOL TaskManagerExDllApp::CreateFakeWindow()
     if (!hwnd) 
         return FALSE; 
  
-	fnOriginFakeWndProc = (WNDPROC)SetWindowLong( 
+	fnOriginFakeWndProc = (WNDPROC)SetWindowLongPtr( 
 			hwnd,
-			GWL_WNDPROC,
+			GWLP_WNDPROC,
 			(LONG)FakeWndProc );
 
-	SetWindowLong( hwnd, GWL_USERDATA, TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE );
+	SetWindowLongPtr( hwnd, GWLP_USERDATA, TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE );
 
     // Show the window and send a WM_PAINT message to the window 
     // procedure. 

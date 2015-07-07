@@ -33,7 +33,7 @@ BOOL HookImportedFunctions()
 	pUser32APIHooks[HOOKSETMENU].szFunc = "SetMenu";
 
 	HookImportFunctionsByName( 
-						(HINSTANCE)GetWindowLong( theApp.hwndTaskManager, GWL_HINSTANCE ),
+						(HINSTANCE)GetWindowLongPtr( theApp.hwndTaskManager, GWLP_HINSTANCE ),
 						"user32.dll",
 						USER32APIHOOKCOUNT, 
 						pUser32APIHooks, 

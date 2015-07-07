@@ -106,8 +106,8 @@ public:
 		//IO_COUNTERS				ioc;		// Windows 2000+ (GetProcessIoCounters), see also SYSTEM_PROCESS_INFORMATION
 
 		BOOL		bDisablePriorityBoost;		// GetProcessPriorityBoost
-		DWORD		dwProcessAffinity;			// GetProcessAffinityMask
-		DWORD		dwSystemAffinity;			// GetProcessAffinityMask
+		DWORD_PTR	nProcessAffinity;			// GetProcessAffinityMask
+		DWORD_PTR	nSystemAffinity;			// GetProcessAffinityMask
 		//DWORD		dwDefaultLayout;			// Windows 2000+ (GetProcessDefaultLayout)
 		FILETIME	ftCreation;					// GetProcessTimes, see also SYSTEM_PROCESS_INFORMATION
 		FILETIME	ftExit;						// GetProcessTimes

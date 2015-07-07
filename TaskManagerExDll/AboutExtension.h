@@ -23,7 +23,7 @@
 class CAboutExtensionThread
 {
 public:
-	static TASKMANAGEREXDLL_DEBUG_API int Start( CWnd* pParent );
+	static TASKMANAGEREXDLL_DEBUG_API INT_PTR Start(CWnd* pParent);
 };
 
 /////////////////////////////////////////////////////////////////////////////

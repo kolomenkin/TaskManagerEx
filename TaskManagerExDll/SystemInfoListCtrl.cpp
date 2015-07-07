@@ -429,7 +429,7 @@ CSortClass::CSortClass(CListCtrl * _pWnd, const int _iCol, const bool _bIsNumeri
 	
 	ASSERT(pWnd);
 	int max = pWnd->GetItemCount();
-	DWORD dw;
+	DWORD_PTR dw = 0;
 	CString txt;
 	if (bIsNumeric)
 	{

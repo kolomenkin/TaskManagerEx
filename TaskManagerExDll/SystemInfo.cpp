@@ -570,7 +570,7 @@ BOOL SystemProcessInformation::GetAdditionalInfo( PROCESS_INFO& info )
 
 		//res = GetProcessIoCounters( hProcess, &info.ioc ); // Windows 2000+
 		res = GetProcessPriorityBoost( hProcess, &info.bDisablePriorityBoost );
-		res = GetProcessAffinityMask( hProcess, &info.dwProcessAffinity, &info.dwSystemAffinity );
+		res = GetProcessAffinityMask( hProcess, &info.nProcessAffinity, &info.nSystemAffinity );
 		//res = GetProcessDefaultLayout( hProcess, &info.dwDefaultLayout ); // Windows 2000+
 		res = GetProcessTimes( hProcess, &info.ftCreation, &info.ftExit, &info.ftKernel, &info.ftUser );
 		res = GetProcessWorkingSetSize( hProcess, &info.minWorkSet, &info.maxWorkSet );
@@ -686,20 +686,20 @@ BOOL SystemThreadInformation::ModuleFromAddressEx( DWORD processId, PVOID pv, LP
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId );
 	MEMORY_BASIC_INFORMATION mbi;
 	ZeroMemory( &mbi, sizeof(mbi) );
-	DWORD dwRet;
+	size_t nRet = 0;
 
 	if ( hProcess == NULL )
 		goto cleanup;
 	//TRACE( _T("ModuleFromAddressEx: process opened!\n") );
 
-	dwRet = VirtualQueryEx( hProcess, pv, &mbi, sizeof(mbi));
-	if( dwRet != sizeof(mbi) )
+	nRet = VirtualQueryEx( hProcess, pv, &mbi, sizeof(mbi));
+	if( nRet != sizeof(mbi) )
 		goto cleanup;
 
 	//TRACE( _T("ModuleFromAddressEx: module address: 0x%X\n"), mbi.AllocationBase );
-	dwRet = IPsapi::GetModuleFileNameEx( hProcess, (HMODULE) mbi.AllocationBase, szModuleName, cbSize );
-	szModuleName[dwRet] = _T('\0');
-	if( dwRet == 0 )
+	nRet = IPsapi::GetModuleFileNameEx( hProcess, (HMODULE) mbi.AllocationBase, szModuleName, cbSize );
+	szModuleName[nRet] = _T('\0');
+	if( nRet == 0 )
 		goto cleanup;
 
 	result = TRUE;
@@ -717,7 +717,7 @@ BOOL SystemThreadInformation::Refresh()
 	POSITION pos;
 	m_ThreadInfos.RemoveAll();
 
-	// Get teh process list
+	// Get the process list
 	SystemProcessInformation pi( m_processId, FALSE, TRUE );
 
 	DWORD pID;
@@ -756,13 +756,13 @@ BOOL SystemThreadInformation::Refresh()
 				int cbSize = SIZEOF_ARRAY(ti.Module);
 
 				SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION kmBest;
-				int BestFuncOffset = LONG_MAX;
+				ptrdiff_t BestFuncOffset = PTRDIFF_T_MAX;
 
 				for ( POSITION pos = kmi.m_KernelModuleInfos.GetHeadPosition(); pos != NULL; )
 				{
 					SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION& km = kmi.m_KernelModuleInfos.GetNext(pos);
 
-					int iFuncOffset = (PBYTE)pv - (PBYTE)km.pBaseAddress;
+					ptrdiff_t iFuncOffset = (PBYTE)pv - (PBYTE)km.pBaseAddress;
 					if( iFuncOffset >= 0 && iFuncOffset < BestFuncOffset )
 					{
 						BestFuncOffset = iFuncOffset;
@@ -770,7 +770,7 @@ BOOL SystemThreadInformation::Refresh()
 					}
 				}
 
-				if( BestFuncOffset == LONG_MAX )
+				if (BestFuncOffset == PTRDIFF_T_MAX)
 				{
 					szModuleName[0] = _T('\0');
 				}
@@ -793,7 +793,7 @@ BOOL SystemThreadInformation::Refresh()
 	// Get the Thread objects ( set the filter to "Thread" )
 	SystemHandleInformation hi( ALL_PROCESSES, TRUE, _T("Thread") );
 
-	//TRACE( _T("SystemThreadInformation> SystemHandleInformation found %d threads\n"), hi.m_HandleInfos.GetCount() );
+	//TRACE( _T("SystemThreadInformation> SystemHandleInformation found %Id threads\n"), hi.m_HandleInfos.GetCount() );
 
 	// Iterating through the found Thread objects
 	for ( pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )

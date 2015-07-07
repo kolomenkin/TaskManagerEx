@@ -79,10 +79,10 @@ inline void MyTrace( LPCTSTR szFormat, ... )
 
 //////////////////////////////////////////////////////////////////////////
 
-inline void my_memset( void* ptr, unsigned char ch, int bytes )
+inline void my_memset(void* ptr, unsigned char ch, size_t bytes)
 {
 	unsigned char* p = (unsigned char*)ptr;
-	for( int i=0; i<bytes; i++ )
+	for (size_t i = 0; i<bytes; i++)
 	{
 		*p = ch;
 		p++;
