@@ -76,12 +76,12 @@ class INtDll
 	} PROCESS_INFORMATION_CLASS;
 
 	typedef struct _PROCESS_BASIC_INFORMATION {
-			DWORD ExitStatus;
-			PPEB  PebBaseAddress;
-			DWORD AffinityMask;
-			DWORD BasePriority;
-			DWORD UniqueProcessId;
-			DWORD InheritedFromUniqueProcessId;
+			DWORD_PTR	ExitStatus;
+			PPEB		PebBaseAddress;
+			DWORD_PTR	AffinityMask;
+			DWORD_PTR	BasePriority;
+			DWORD_PTR	UniqueProcessId;
+			DWORD_PTR	InheritedFromUniqueProcessId;
 		} PROCESS_BASIC_INFORMATION;
 	
 	//////////////////////////////////////////////////////////////////
@@ -144,8 +144,8 @@ class INtDll
 			LARGE_INTEGER     KernelTime;
 			UNICODE_STRING    ProcessName;
 			KPRIORITY         BasePriority;
-			ULONG             ProcessId;
-			ULONG             InheritedFromProcessId;
+			ULONG_PTR         ProcessId;
+			ULONG_PTR         InheritedFromProcessId;
 			ULONG             HandleCount;
 			ULONG             Reserved2[2];
 			VM_COUNTERS       VmCounters;
@@ -214,13 +214,12 @@ class INtDll
 	} THREAD_INFORMATION_CLASS;
 
 	typedef struct _BASIC_THREAD_INFORMATION {
-		DWORD u1;
-		DWORD u2;
-		DWORD u3;
-		DWORD ThreadId;
-		DWORD u5;
-		DWORD u6;
-		DWORD u7;
+		BOOL		ExitStatus;
+		PVOID		Teb;
+		CLIENT_ID	ClientID;
+		DWORD		AffinityMask;
+		DWORD		BasePriority;
+		DWORD		Priority;
 	} BASIC_THREAD_INFORMATION;
 
 	//////////////////////////////////////////////////////////////////
@@ -228,11 +227,11 @@ class INtDll
 
 	typedef struct _SYSTEM_HANDLE
 	{
-		DWORD	ProcessID;
-		WORD	HandleType;
-		WORD	HandleNumber;
-		DWORD	KernelAddress;
-		DWORD	Flags;
+		DWORD		ProcessID;
+		WORD		HandleType;
+		WORD		HandleNumber;
+		DWORD_PTR	KernelAddress;
+		DWORD		Flags;
 	} SYSTEM_HANDLE;
 
 	typedef struct _SYSTEM_HANDLE_INFORMATION
@@ -515,7 +514,7 @@ public:
 		DWORD	dwSize;
 		DWORD	cntUsage;
 		DWORD	th32ProcessID;			// this process
-		DWORD	th32DefaultHeapID;
+		DWORD_PTR	th32DefaultHeapID;
 		DWORD	th32ModuleID;			// associated exe
 		DWORD	cntThreads;
 		DWORD	th32ParentProcessID;	// this process's parent process
@@ -557,10 +556,10 @@ public:
 
 	typedef struct tagHEAPLIST32
 	{
-		DWORD	dwSize;
-		DWORD	th32ProcessID;			// owning process
-		DWORD	th32HeapID;				// heap (in owning process's context!)
-		DWORD	dwFlags;
+		SIZE_T		dwSize;
+		DWORD		th32ProcessID;		// owning process
+		DWORD_PTR	th32HeapID;			// heap (in owning process's context!)
+		DWORD		dwFlags;
 	} HEAPLIST32;
 	typedef HEAPLIST32 *  PHEAPLIST32;
 	typedef HEAPLIST32 *  LPHEAPLIST32;
@@ -575,10 +574,10 @@ public:
 
 	typedef struct tagHEAPENTRY32
 	{
-		DWORD	dwSize;
-		HANDLE	hHandle;				// Handle of this heap block
-		DWORD	dwAddress;				// Linear address of start of block
-		DWORD	dwBlockSize;			// Size of block in bytes
+		DWORD_PTR	dwSize;
+		HANDLE		hHandle;			// Handle of this heap block
+		DWORD_PTR	dwAddress;			// Linear address of start of block
+		DWORD_PTR	dwBlockSize;		// Size of block in bytes
 		DWORD	dwFlags;
 		DWORD	dwLockCount;
 		DWORD	dwResvd;

@@ -699,8 +699,8 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 		info += d;
 	}
 
-	GetProcessExecutableName( pi.spi.InheritedFromProcessId, szBuf, SIZEOF_ARRAY(szBuf) );
-	d.Format( _T("Parent process:\t\t\tPID = %d, \"%s\"\n"), pi.spi.InheritedFromProcessId, szBuf );
+	GetProcessExecutableName((DWORD)pi.spi.InheritedFromProcessId, szBuf, SIZEOF_ARRAY(szBuf));
+	d.Format( _T("Parent process:\t\t\tPID = %Id, \"%s\"\n"), pi.spi.InheritedFromProcessId, szBuf );
 	info += d;
 
 	d.Format( _T("Base priority:\t\t\t%d; priority boost: %s\n"), pi.spi.BasePriority,

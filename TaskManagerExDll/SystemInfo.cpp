@@ -618,7 +618,7 @@ BOOL SystemProcessInformation::Refresh()
 			// fill the process information map
 			PROCESS_INFO new_info;
 			ZeroMemory( &new_info, sizeof(new_info) );
-			new_info.processId = pSysProcess->ProcessId;
+			new_info.processId = (DWORD)pSysProcess->ProcessId;
 			new_info.spi = *pSysProcess;
 			new_info.pThreads = new SYSTEM_THREAD_INFORMATION[pSysProcess->ThreadCount];
 			if( new_info.pThreads != NULL )
@@ -1191,7 +1191,7 @@ cleanup:
 BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD processId )
 {
 	BASIC_THREAD_INFORMATION ti;
-	HANDLE handle;
+	HANDLE handle = nullptr;
 	BOOL remote = processId != GetCurrentProcessId();
 
 	if ( !INtDll::bStatus )
@@ -1208,7 +1208,7 @@ BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD proc
 	// Get the thread information
 	NTSTATUS status = INtDll::NtQueryInformationThread( handle, ThreadBasicInformation, &ti, sizeof(ti), NULL );
 	if ( NT_SUCCESS(status) )
-		threadID = ti.ThreadId;
+		threadID = (DWORD)ti.ClientID.UniqueThread;
 
 	if ( remote )
 	{
@@ -1232,7 +1232,7 @@ BOOL SystemHandleInformation::GetProcessPath( HANDLE h, CString& strPath, DWORD 
 BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD remoteProcessId )
 {
 	BOOL ret = FALSE;
-	HANDLE handle;
+	HANDLE handle = nullptr;
 	BOOL remote = remoteProcessId != GetCurrentProcessId();
 	PROCESS_BASIC_INFORMATION pi;
 
@@ -1254,7 +1254,7 @@ BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD re
 	NTSTATUS status = INtDll::NtQueryInformationProcess( handle, ProcessBasicInformation, &pi, sizeof(pi), NULL);
 	if ( NT_SUCCESS(status) )
 	{
-		processId = pi.UniqueProcessId;
+		processId = (DWORD)pi.UniqueProcessId;
 		ret = TRUE;
 	}
 

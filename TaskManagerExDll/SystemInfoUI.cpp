@@ -362,7 +362,7 @@ int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& li
 		strHandlePid.Empty();
 	}
 
-	strThreadId.Format( _T("0x%08X"), sti.ClientId.UniqueThread );
+	strThreadId.Format( _T("0x%08IX"), sti.ClientId.UniqueThread );
 	strPriority.Format( _T("%d / %d"), sti.Priority, sti.BasePriority );
 	strStartAddress.Format( _T("0x%08IX"), sti.StartAddress );
 	strModule = Module;

@@ -208,8 +208,8 @@ typedef struct _VM_COUNTERS
 	} VM_COUNTERS;
 
 typedef struct _CLIENT_ID {
-	DWORD         UniqueProcess;
-	DWORD         UniqueThread;
+	DWORD_PTR	UniqueProcess;
+	DWORD_PTR	UniqueThread;
 } CLIENT_ID;
 
 //////////////////////////////////////////////////////////////////////////////////////
