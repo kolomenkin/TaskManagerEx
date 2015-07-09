@@ -244,8 +244,8 @@ int MainFunction()
 {
 //	g_szLocale = _tsetlocale( LC_ALL, _T("") ); // it is commented because CRT was reduced from this project
 												// so there is no need in localization of CRT library
-	BOOL res;
-	DWORD dwBufSize;
+	BOOL res = FALSE;
+	DWORD dwBufSize = 0;
 
 	TCHAR szCaption[200] = _T("");
 	TCHAR szRequireNT[200] = _T("");
@@ -273,6 +273,13 @@ int MainFunction()
 		MessageBox( NULL, szRequireNT, szCaption, MB_OK | MB_ICONERROR );
 		return -1;
 	}
+
+#if 0
+#pragma comment(lib, "TaskManagerExDll.lib")
+	res = TestProc();
+	if (res != 999)
+		return 0;
+#endif
 
 	BOOL bAnother	= FALSE;
 

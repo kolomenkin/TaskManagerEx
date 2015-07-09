@@ -1298,6 +1298,32 @@ TASKMANAGEREXDLL_API BOOL WINAPI Initialize()
 	return res;
 }
 
+TASKMANAGEREXDLL_API BOOL WINAPI TestProc()
+{
+	BOOL res = TRUE;
+	TRACE(_T("TaskManagerEx.dll> TestProc() enter\n"));
+	SystemHandleInformation hi(ALL_PROCESSES, TRUE, NULL);
+
+
+	size_t iItem = 0;
+	size_t iItemCount = hi.m_HandleInfos.GetCount();
+
+	std::vector<SystemHandleInformation::HANDLE_INFORMATION> v;
+	v.reserve(iItemCount);
+
+	for (POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL;)
+	{
+		SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
+
+		v.push_back(h);
+		//h.Insert(m_SystemInfoList, TRUE, iItem, iItemCount);
+		iItem++;
+	}
+
+	TRACE(_T("TaskManagerEx.dll> TestProc() returned %d\n"), res);
+	return res;
+}
+
 void TaskManagerExDllApp::UpdateMainMenu( HMENU hMenu )
 {
 //	TRACE( _T("Try to UpdateMainMenu...\n") );

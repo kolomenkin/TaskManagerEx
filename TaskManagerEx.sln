@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TaskManagerEx", "TaskManagerEx\TaskManagerEx.vcxproj", "{8578845C-17D4-4A8E-900F-57917B27DF05}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7146B562-702A-46E9-9BC5-97A1F953E5E1} = {7146B562-702A-46E9-9BC5-97A1F953E5E1}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TaskManagerExDll", "TaskManagerExDll\TaskManagerExDll.vcxproj", "{7146B562-702A-46E9-9BC5-97A1F953E5E1}"
 EndProject
