@@ -146,17 +146,26 @@ DWORD ExecuteRemoteThread(
 	// allocate memory for injected code
 	p = VirtualAllocEx( hProcess, 0, MAXINJECTSIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE );
 	if ( p == 0 )
+	{
+		rc = (DWORD)-101;
 		goto cleanup;
+	}
 
 	// allocate memory for parameter block
 	c = (RemoteDllThreadBlock*) VirtualAllocEx( hProcess, 0, sizeof(RemoteDllThreadBlock), MEM_COMMIT, PAGE_READWRITE );
 	if ( c == 0 )
+	{
+		rc = (DWORD)-102;
 		goto cleanup;
+	}
 
 	// copy function there, we will execute this piece of code
 	if ( ! WriteProcessMemory( hProcess, p, GetFuncAddress(RemoteDllThread), MAXINJECTSIZE, 0 ) )
+	{
+		rc = (DWORD)-103;
 		goto cleanup;
-	
+	}
+
 	// copy dll path to parameter block
 	lstrcpyn( localCopy.lpModulePath, lpModuleName, SIZEOF_ARRAY(localCopy.lpModulePath) );
 //#ifdef _UNICODE
@@ -180,8 +189,11 @@ DWORD ExecuteRemoteThread(
 	hKernel32 = GetModuleHandle( _T("kernel32.dll") );
 
 	if ( hKernel32 == NULL )
+	{
+		rc = (DWORD)-104;
 		goto cleanup;
-	
+	}
+
 	// get the addresses for the functions, what we will use in the remote thread
 
 	localCopy.fnLoadLibrary = (PLoadLibrary)GetProcAddress( hKernel32, "LoadLibrary" FUNC_SUFFIX );
@@ -199,11 +211,13 @@ DWORD ExecuteRemoteThread(
 
 	if( dwArgumentCount > REMOTE_MAX_ARGUMENTS )
 	{
+		rc = (DWORD)-105;
 		goto cleanup;
 	}
 
 	if( pdwArguments == NULL && dwArgumentCount != 0 )
 	{
+		rc = (DWORD)-106;
 		goto cleanup;
 	}
 
@@ -215,21 +229,33 @@ DWORD ExecuteRemoteThread(
 
 	// copy the parameterblock to the other process adress space
 	if ( ! WriteProcessMemory( hProcess, c, &localCopy, sizeof localCopy, 0 ) )
+	{
+		rc = (DWORD)-107;
 		goto cleanup;
+	}
 
 	// CreateRemoteThread()
 	ht = CreateRemoteThread( hProcess, 0, 0, (DWORD (__stdcall *)( void *)) p, c, 0, &ThreadId );
 	if ( ht == NULL )
+	{
+		rc = (DWORD)-108;
 		goto cleanup;
+	}
 
 	WaitObjectRes = WaitForSingleObject( ht, INFINITE );
 	switch ( WaitObjectRes )
 	{
 	case WAIT_TIMEOUT:
+	{
+		rc = (DWORD)-109;
 		goto cleanup;
+	}
 
 	case WAIT_FAILED:
+	{
+		rc = (DWORD)-110;
 		goto cleanup;
+	}
 
 	case WAIT_OBJECT_0:
 		// this might just have worked, pick up the result!

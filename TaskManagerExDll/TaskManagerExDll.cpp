@@ -1085,6 +1085,7 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
       break;
 
 	case WM_INITMENUPOPUP:
+		TRACE(_T("TaskManagerEx.dll> WM_INITMENUPOPUP: first item id: %d\n"), GetMenuItemID((HMENU)wParam, 0));
 		if ( GetMenuItemID( (HMENU)wParam, 0 ) == TASKMGR_END_PROCESS_CMD )
 		{
 			ProcessesItemData* pData = theApp.GetSelectedProcessData();

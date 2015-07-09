@@ -35,12 +35,16 @@ int WINAPI _tWinMain(HINSTANCE hinstExe, HINSTANCE, PTSTR pszCmdLine, int)
 {
 	hinstExe;
 	pszCmdLine;
+	TRACE(_T("TaskManagerEx> MainFunction begin\n"));
 	int nRet = MainFunction();
+	TRACE(_T("TaskManagerEx> MainFunction end\n"));
 	return nRet;
 }
 
 extern "C" void MyCRTStartup()
 {
+	TRACE(_T("TaskManagerEx> MainFunction begin\n"));
 	int nRet = MainFunction();
+	TRACE(_T("TaskManagerEx> MainFunction end\n"));
 	::ExitProcess((UINT)nRet);
 }

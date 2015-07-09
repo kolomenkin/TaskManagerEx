@@ -107,6 +107,10 @@ BOOL IsHookedTaskManagerWindow( HWND hwnd )
 
 BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 {
+//#ifdef _DEBUG
+	//TRACE(_T("TaskManagerEx> LoadDllToRemoteTaskManager, hwnd = %08IX\n"), hwnd);
+//#endif
+
 	// Check if window has already been hooked:
 	BOOL bIsHooked = IsHookedTaskManagerWindow( hwnd );
 	if( bIsHooked )
@@ -115,12 +119,7 @@ BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 	}
 
 	DWORD processId = GetTaskManagerProcessID( hwnd );
-	#ifdef _DEBUG
-	TCHAR s[200] = _T("");
-	wsprintf( s, _T("TaskManagerEx> LoadDllForRemoteThread for PID = %d\n"),
-		processId );
-	OutputDebugString( s );
-	#endif
+	TRACE(_T("TaskManagerEx> LoadDllForRemoteThread for PID = %d, hwnd = %08IX\n"), processId, hwnd);
 
 	using namespace RemoteExecute;
 	DWORD dwRet = LoadDllForRemoteThread( processId, 
@@ -134,12 +133,8 @@ BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 
 	if( !bOK )
 	{
-		#ifdef _DEBUG
-		TCHAR s[200] = _T("");
-		wsprintf( s, _T("TaskManagerEx> LoadDllForRemoteThread for PID = %d returned %d (0x%X)\n"),
-			processId, dwRet, dwRet );
-		OutputDebugString( s );
-		#endif
+		TRACE(_T("TaskManagerEx> LoadDllForRemoteThread for PID = %d returned %d (0x%X)\n"),
+			processId, dwRet, dwRet);
 	}
 
 	BOOL bRunOnceOnly = FALSE;
