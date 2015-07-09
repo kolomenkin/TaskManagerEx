@@ -9,6 +9,7 @@
 
 #define SHELL_OPERATION_FILE_PROPERTIES		_T("properties")
 #define SHELL_OPERATION_VIEW_DEPENDENCY		_T("View Dependencies")
+#define g_bMoreLogging						false
 
 BOOL MyShellExecute( HWND hwnd, LPCTSTR szOperation, LPCTSTR szFileName );
 

@@ -148,6 +148,7 @@ DWORD ExecuteRemoteThread(
 	if ( p == 0 )
 	{
 		rc = (DWORD)-101;
+		TRACE(_T(" ExecuteRemoteThread: VirtualAllocEx failed: %d\n"), GetLastError());
 		goto cleanup;
 	}
 
@@ -163,6 +164,7 @@ DWORD ExecuteRemoteThread(
 	if ( ! WriteProcessMemory( hProcess, p, GetFuncAddress(RemoteDllThread), MAXINJECTSIZE, 0 ) )
 	{
 		rc = (DWORD)-103;
+		TRACE(_T(" ExecuteRemoteThread: WriteProcessMemory failed: %d\n"), GetLastError());
 		goto cleanup;
 	}
 
@@ -239,6 +241,7 @@ DWORD ExecuteRemoteThread(
 	if ( ht == NULL )
 	{
 		rc = (DWORD)-108;
+		TRACE(_T(" ExecuteRemoteThread: CreateRemoteThread failed: %d\n"), GetLastError());
 		goto cleanup;
 	}
 

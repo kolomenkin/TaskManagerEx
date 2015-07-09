@@ -626,7 +626,14 @@ LRESULT CALLBACK TaskManagerExDllApp::TaskManagerWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-	switch( uMsg )
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::TaskManagerWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
+	switch (uMsg)
 	{
 	case WM_TASKMAN_SET_FOREGROUND:
 		TRACE( _T("TaskManagerExDllApp::TaskManagerWndProc: WM_TASKMAN_SET_FOREGROUND\n") );
@@ -776,7 +783,14 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesListWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-	switch( uMsg )
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ProcessesListWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
+	switch (uMsg)
 	{
 	case LVM_SETITEMA:
 	case LVM_SETITEMW:
@@ -880,8 +894,15 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-   LRESULT rc;
-   
+	LRESULT rc = 0;
+
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ProcessesTabWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
 	switch( uMsg )
 	{
 /*
@@ -1085,7 +1106,10 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
       break;
 
 	case WM_INITMENUPOPUP:
-		TRACE(_T("TaskManagerEx.dll> WM_INITMENUPOPUP: first item id: %d\n"), GetMenuItemID((HMENU)wParam, 0));
+		if (g_bMoreLogging)
+		{
+			TRACE(_T("TaskManagerEx.dll> WM_INITMENUPOPUP: first item id: %d\n"), GetMenuItemID((HMENU)wParam, 0));
+		}
 		const UINT nFirstMenuItemId = GetMenuItemID((HMENU)wParam, 0);
 		if (nFirstMenuItemId == TASKMGR_END_PROCESS_CMD || nFirstMenuItemId == TASKMGR_OPEN_FILE_LOCATION_CMD)
 		{
@@ -1193,6 +1217,13 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsListWndProc(
   LPARAM lParam   // second message parameter
 )
 {
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ApplicationsListWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
 	switch( uMsg )
 	{
 	case LVM_SETCOLUMNWIDTH:
@@ -1248,7 +1279,14 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsTabWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-	LRESULT rc = CallWindowProc( 
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ApplicationsTabWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
+	LRESULT rc = CallWindowProc(
 					theApp.fnOriginApplicationsTab, 
 					hwnd, 
 					uMsg, 
