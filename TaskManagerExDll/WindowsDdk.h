@@ -38,7 +38,6 @@ typedef struct _UNICODE_STRING
 
 typedef LONG KPRIORITY;
 
-#pragma pack(4)
 typedef struct _PEB_LDR_DATA
 {
 	ULONG Length;
@@ -51,7 +50,6 @@ typedef struct _PEB_LDR_DATA
 	LIST_ENTRY InMemoryOrderModuleList;
 	LIST_ENTRY InInitializationOrderModuleList;
 } PEB_LDR_DATA, *PPEB_LDR_DATA;
-#pragma pack() 
 
 typedef struct _RTL_DRIVE_LETTER_CURDIR {
 	USHORT Flags;
@@ -205,6 +203,7 @@ typedef struct _VM_COUNTERS
 	SIZE_T        QuotaNonPagedPoolUsage;
 	SIZE_T        PagefileUsage;
 	SIZE_T        PeakPagefileUsage;
+	SIZE_T        PrivatePageCount;				// Which OS has added this value first time?
 	} VM_COUNTERS;
 
 typedef struct _CLIENT_ID {

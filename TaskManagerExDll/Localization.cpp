@@ -17,7 +17,7 @@
 // #pragmas are used here to insure that the structure's
 // packing in memory matches the packing of the EXE or DLL.
 #pragma pack( push )
-#pragma pack( 2 )
+#pragma pack( 1 )
 typedef struct
 {
    BYTE   bWidth;               // Width, in pixels, of the image
@@ -26,13 +26,10 @@ typedef struct
    BYTE   bReserved;            // Reserved
    WORD   wPlanes;              // Color Planes
    WORD   wBitCount;            // Bits per pixel
-   DWORD   dwBytesInRes;         // how many bytes in this resource?
+   DWORD  dwBytesInRes;         // how many bytes in this resource?
    WORD   nID;                  // the ID
 } GRPICONDIRENTRY, *LPGRPICONDIRENTRY;
-#pragma pack( pop )
 
-#pragma pack( push )
-#pragma pack( 2 )
 typedef struct 
 {
    WORD            idReserved;   // Reserved (must be 0)
