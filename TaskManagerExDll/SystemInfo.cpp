@@ -26,6 +26,10 @@
 
 #include "SystemInfo.h"
 
+//#include <ntstatus.h>
+#define STATUS_INFO_LENGTH_MISMATCH      ((NTSTATUS)0xC0000004L)
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 // This is for GetLongPathName function on Windows NT4 SP3 and less:
 #define		COMPILE_NEWAPIS_STUBS
@@ -889,9 +893,10 @@ BOOL SystemHandleInformation::Refresh()
 	NTSTATUS status = INtDll::NtQuerySystemInformation(SystemExtendedHandleInformation, pSysHandleInformation, size, &needed);
 	if ( !NT_SUCCESS(status) )
 	{
-		if ( needed == 0 )
+		if (status != STATUS_INFO_LENGTH_MISMATCH)
 		{
 			ret = FALSE;
+			TRACE(_T("SystemHandleInformation::Refresh: NtQuerySystemInformation failed (#1): 0x%08X!\n"), status);
 			goto cleanup;
 		}
 
@@ -902,17 +907,18 @@ BOOL SystemHandleInformation::Refresh()
 
 		pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION_EX*)
 				Alloc( NULL, size );
-	}
 
-	if ( pSysHandleInformation == NULL )
-		return FALSE;
+		if (pSysHandleInformation == NULL)
+			return FALSE;
 
-	// Query the objects ( system wide )
-	status = INtDll::NtQuerySystemInformation( _SystemHandleInformation, pSysHandleInformation, size, NULL );
-	if ( !NT_SUCCESS(status) )
-	{
-		ret = FALSE;
-		goto cleanup;
+		// Query the objects ( system wide )
+		status = INtDll::NtQuerySystemInformation(SystemExtendedHandleInformation, pSysHandleInformation, size, &needed);
+		if (!NT_SUCCESS(status))
+		{
+			ret = FALSE;
+			TRACE(_T("SystemHandleInformation::Refresh: NtQuerySystemInformation failed (#2): 0x%08X!\n"), status);
+			goto cleanup;
+		}
 	}
 
 	//TRACE( _T("SystemHandleInformation::Refresh got %d handles!\n"), pSysHandleInformation->Count );
