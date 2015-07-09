@@ -1355,7 +1355,7 @@ BOOL SystemHandleInformation::GetFileName( HANDLE h, CString& str, DWORD process
 	// Wait for finishing the thread
 	if ( WaitForSingleObject( hThread, 100 ) == WAIT_TIMEOUT )
 	{
-		TRACE( _T("TerminateThread( 0x%X, 0 ) - Access denied getting file name for handle 0x%08IX from PID %d!\n"), hThread, h, processId );
+		TRACE(_T("TerminateThread( 0x%IX, 0 ) - Access denied getting file name for handle 0x%08IX from PID %d (local handle 0x%08IX)!\n"), hThread, h, processId, handle);
 		// Access denied
 		// Terminate the thread
 		TerminateThread( hThread, 0 );

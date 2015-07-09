@@ -279,6 +279,9 @@ int MainFunction()
 		return 0;
 #endif
 
+	LPCTSTR pszOriginalCaption = GetTaskManagerCaption();
+	TRACE(_T("TaskManagerEx> Local task manager caption is \"%s\"\n"), pszOriginalCaption);
+
 	BOOL bAnother	= FALSE;
 
 	BOOL bUnload	= FALSE;

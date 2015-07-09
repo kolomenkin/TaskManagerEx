@@ -13,6 +13,9 @@
 #define TASKMGR_DEFAULT_WINDOW_CAPTION		_T("Windows Task Manager")
 #define TASKMGR_DEFAULT_WINDOW_CLASS		( (LPCTSTR)32770 )
 
+#define TASKMGR_DEFAULT_WIN8_WINDOW_CAPTION	_T("Task Manager")
+#define TASKMGR_DEFAULT_WIN8_WINDOW_CLASS	_T("TaskManagerWindow")
+
 #define WM_TASKMAN_SET_FOREGROUND	( WM_USER + 0x0B )	// this message is sent to popup previously started taskmgr window
 
 #define TASKMGR_PROCESS_LIST_DLG_ID			0x3F1	// 1009

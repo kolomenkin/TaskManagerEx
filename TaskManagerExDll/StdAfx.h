@@ -70,7 +70,7 @@ inline void MyTrace( LPCTSTR szFormat, ... )
 
 //////////////////////////////////////////////////////////////////////////
 
-static bool g_bMoreLogging = false;
+static bool g_bMoreLogging = true;
 
 #define DO_TRACE_ALWAYS
 
