@@ -12,7 +12,7 @@
 #define APPVERSION					2
 #define APPREVISION					1
 #define APPSUBREVISION				0
-#define APPRELEASE					248
+#define APPRELEASE					249
 
 #define	PRODUCTNAME					"Task Manager Extension"
 
