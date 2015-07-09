@@ -16,6 +16,14 @@
 #include "resource.h"
 #include "Localization.h"
 
+//------------------------------------------------------
+
+#ifdef _WIN64
+#define FMT_REAL_DYN_PTR _T("0x%016IX")
+#else
+#define FMT_REAL_DYN_PTR _T("0x%08IX")
+#endif
+
 //////////////////////////////////////////////////////////////
 //
 // SystemModuleInformation::MODULE_INFO
@@ -149,7 +157,8 @@ int SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION::Insert( CSystemInf
 
 	CString strBaseAddress, strBaseName, strFullPath, strExtension, strFileSize, strFullFileName;
 
-	strBaseAddress.Format( _T("0x%08IX"), pBaseAddress );
+	strBaseAddress.Format(FMT_REAL_DYN_PTR, pBaseAddress);
+
 	strBaseName = Name;
 	strFullPath = FullPath;
 	int pos = strBaseName.ReverseFind( _T('.') );
@@ -265,7 +274,7 @@ int SystemMemoryMapInformation::MEMORY_INFORMATION::Insert( CSystemInfoListCtrl&
 
 	CString strBaseAddress, strSize, strType, strBlockCount, strProtect, strDescription;
 
-	strBaseAddress.Format( _T("0x%08IX"),
+	strBaseAddress.Format(FMT_REAL_DYN_PTR,
 		(bRegion ? vmq.pvRgnBaseAddress : vmq.pvBlkBaseAddress ) );
 	strSize.Format( _T("%Id"),
 		(bRegion ? vmq.RgnSize : vmq.BlkSize ) );
@@ -362,9 +371,9 @@ int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& li
 		strHandlePid.Empty();
 	}
 
-	strThreadId.Format( _T("0x%08IX"), sti.ClientId.UniqueThread );
+	strThreadId.Format(_T("0x%08X"), sti.ClientId.GetTid());
 	strPriority.Format( _T("%d / %d"), sti.Priority, sti.BasePriority );
-	strStartAddress.Format( _T("0x%08IX"), sti.StartAddress );
+	strStartAddress.Format(FMT_REAL_DYN_PTR, sti.StartAddress);
 	strModule = Module;
 	int pos = strModule.ReverseFind( _T('\\') );
 	strModule = strModule.Mid( pos+1 );

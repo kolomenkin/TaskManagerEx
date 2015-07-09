@@ -270,6 +270,9 @@ int MainFunction()
 	}
 
 #if 0
+	//void RemoteDllThread_NextProc();
+	//PVOID GetFuncAddress(PVOID addr);
+	//const ptrdiff_t nFuncSize = SIZE_T(PBYTE(GetFuncAddress(RemoteDllThread_NextProc)) - PBYTE(GetFuncAddress(RemoteDllThread)));
 #pragma comment(lib, "TaskManagerExDll.lib")
 	res = TestProc();
 	if (res != 999)

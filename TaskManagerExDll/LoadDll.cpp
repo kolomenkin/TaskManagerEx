@@ -20,8 +20,17 @@
 
 #include "WindowsCore.h"
 
-const DWORD MAXINJECTSIZE = 4096;
+//------------------------------------------------------
 
+#ifdef _WIN64
+const DWORD MAXINJECTSIZE = 8192;
+#else
+const DWORD MAXINJECTSIZE = 4096;
+#endif
+
+void RemoteDllThread_NextProc();
+
+//------------------------------------------------------
 
 PVOID GetFuncAddress(PVOID addr)
 {
@@ -148,7 +157,7 @@ DWORD ExecuteRemoteThread(
 	if ( p == 0 )
 	{
 		rc = (DWORD)-101;
-		TRACE(_T(" ExecuteRemoteThread: VirtualAllocEx failed: %d\n"), GetLastError());
+		TRACE(_T("ExecuteRemoteThread: VirtualAllocEx failed: %d\n"), GetLastError());
 		goto cleanup;
 	}
 
@@ -160,11 +169,19 @@ DWORD ExecuteRemoteThread(
 		goto cleanup;
 	}
 
+	const ptrdiff_t nFuncSize = SIZE_T(PBYTE(GetFuncAddress(RemoteDllThread_NextProc)) - PBYTE(GetFuncAddress(RemoteDllThread)));
+	if (g_bMoreLogging)
+	{
+		TRACE(_T("ExecuteRemoteThread: RemoteDllThread function size: %Id\n"), nFuncSize);
+	}
+	ASSERT(MAXINJECTSIZE >= nFuncSize);
+	RemoteDllThread_NextProc();	// it does nothing, put here just to prevent optimizers to do any optimization
+
 	// copy function there, we will execute this piece of code
 	if ( ! WriteProcessMemory( hProcess, p, GetFuncAddress(RemoteDllThread), MAXINJECTSIZE, 0 ) )
 	{
 		rc = (DWORD)-103;
-		TRACE(_T(" ExecuteRemoteThread: WriteProcessMemory failed: %d\n"), GetLastError());
+		TRACE(_T("ExecuteRemoteThread: WriteProcessMemory failed: %d\n"), GetLastError());
 		goto cleanup;
 	}
 
@@ -241,7 +258,7 @@ DWORD ExecuteRemoteThread(
 	if ( ht == NULL )
 	{
 		rc = (DWORD)-108;
-		TRACE(_T(" ExecuteRemoteThread: CreateRemoteThread failed: %d\n"), GetLastError());
+		TRACE(_T("ExecuteRemoteThread: CreateRemoteThread failed: %d\n"), GetLastError());
 		goto cleanup;
 	}
 
@@ -704,6 +721,10 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 	execBlock->hModule = hModule;
 	
 	return 0;
+}
+
+void RemoteDllThread_NextProc()
+{
 }
 
 /*
