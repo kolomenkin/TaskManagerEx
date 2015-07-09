@@ -26,14 +26,14 @@ namespace RemoteExecute
 
 	static const char* const NoLibrary = NULL;
 	static const char* const NoFunction = NULL;
-	static DWORD* const NoFuncReturn = NULL;
-	static DWORD* const NoFuncReturnSpecial = NULL;
+	static DWORD_PTR* const NoFuncReturn = NULL;
+	static DWORD_PTR* const NoFuncReturnSpecial = NULL;
 	static LONG*  const NoLastError = NULL;
 	static DWORD* const NoErrorLoad = NULL;
 	static DWORD* const NoErrorFunction = NULL;
 	static DWORD* const NoErrorFree = NULL;
 	static DWORD  ZeroArguments = 0;
-	static DWORD* const NoArguments = NULL;
+	static DWORD_PTR* const NoArguments = NULL;
 
 #define DONT_RETURN_REMOTE_API_ERRORS	NoErrorLoad, NoErrorFunction, NoErrorFree
 }
@@ -55,9 +55,9 @@ struct RemoteDllThreadBlock
 	DWORD				MarkerBegin;
 	DWORD				ErrorLoad;					// error value for LoadLibrary
 	DWORD				ErrorFunction;				// error value for executed function
-	DWORD				ReturnCodeForFunction;		// function return code
+	DWORD_PTR			ReturnCodeForFunction;		// function return code
 	RemoteExecute::eSpecialMode	SpecialMode;
-	DWORD				ReturnCodeForFunctionSpecial;// Special Mode value that is calculated from ReturnCodeForFunction.
+	DWORD_PTR			ReturnCodeForFunctionSpecial;// Special Mode value that is calculated from ReturnCodeForFunction.
 													// Usually this is the size of remote buffer pointed by ReturnCodeForFunction.
 	DWORD				ErrorFree;					// error value for FreeLibrary
 	DWORD				LastError;
@@ -66,7 +66,7 @@ struct RemoteDllThreadBlock
 	BOOL				bLoadLibrary;
 	BOOL				bFreeLibrary;
 	DWORD				dwArgumentCount; // 0..8
-	DWORD				Arguments[REMOTE_MAX_ARGUMENTS];
+	DWORD_PTR			Arguments[REMOTE_MAX_ARGUMENTS];
 
 	PLoadLibrary		fnLoadLibrary;
 	PGetModuleHandle	fnGetModuleHandle;
@@ -98,14 +98,14 @@ DWORD ExecuteRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		);
 
 // and this is the code we are injecting
@@ -130,22 +130,19 @@ DWORD LoadDllForRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		);
 
-void FreeSpecialBuffer( DWORD pReturnCodeForFunction );
+void FreeSpecialBuffer( DWORD_PTR pReturnCodeForFunction );
 
 //DWORD RemoteGetCurrentDirectory( DWORD, LPWSTR, DWORD, DWORD* );
-
-// Check OS
-DWORD IsWindowsNT();
 
 BOOL RemoteSimpleFunction( DWORD processId, DWORD dwArgument, char* lpszFunction, DWORD* lpdwFuncRetVal );
 

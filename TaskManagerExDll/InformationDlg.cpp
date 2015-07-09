@@ -148,7 +148,7 @@ BOOL CInformationDlg::OnHelpInfo(HELPINFO* pHelpInfo)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CInformationDlg::DoModal() 
+INT_PTR CInformationDlg::DoModal()
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )
@@ -517,7 +517,7 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 	// Get teh process list
 	SystemProcessInformation spi( pThread->m_processID, TRUE, TRUE );
 
-	DWORD pID;
+	DWORD pID = 0;
 	SystemProcessInformation::PROCESS_INFO pi;
 	ZeroMemory( &pi, sizeof(pi) );
 
@@ -551,10 +551,10 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 	tstring sCommandLine;
 
 	{
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
-		DWORD dwSpecial = 0;
+		DWORD_PTR dwSpecial = 0;
 
 		using namespace RemoteExecute;
 		DWORD dwRet = LoadDllForRemoteThread( pi.processId,
@@ -579,10 +579,10 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 	std::vector<tstring> arrEnvironment;
 //#pragma  warning (pop)
 	{
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
-		DWORD dwSpecial = 0;
+		DWORD_PTR dwSpecial = 0;
 
 		using namespace RemoteExecute;
 		DWORD dwRet = LoadDllForRemoteThread( pi.processId,
@@ -627,9 +627,9 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 			BYTE buf[64*1024];
 			const DWORD dwSize = sizeof(buf);
 			IAdvapi32::LPENUM_SERVICE_STATUS_PROCESS pEnum = (IAdvapi32::LPENUM_SERVICE_STATUS_PROCESS) &buf;
-			BOOL res;
-			LONG err;
-			DWORD i;
+			BOOL res = FALSE;
+			LONG err = 0;
+			DWORD i = 0;
 
 			while(TRUE)
 			{
@@ -699,23 +699,23 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 		info += d;
 	}
 
-	GetProcessExecutableName( pi.spi.InheritedFromProcessId, szBuf, SIZEOF_ARRAY(szBuf) );
-	d.Format( _T("Parent process:\t\t\tPID = %d, \"%s\"\n"), pi.spi.InheritedFromProcessId, szBuf );
+	GetProcessExecutableName((DWORD)pi.spi.InheritedFromProcessId, szBuf, SIZEOF_ARRAY(szBuf));
+	d.Format( _T("Parent process:\t\t\tPID = %Id, \"%s\"\n"), pi.spi.InheritedFromProcessId, szBuf );
 	info += d;
 
 	d.Format( _T("Base priority:\t\t\t%d; priority boost: %s\n"), pi.spi.BasePriority,
 		(pi.bDisablePriorityBoost ? _T("Disabled") : _T("Enabled") ) );
 	info += d;
 
-	d.Format( _T("CPU affinity mask:\t\t0x%X; system CPU affinity mask: 0x%X\n"),
-		pi.dwProcessAffinity, pi.dwSystemAffinity );
+	d.Format( _T("CPU affinity mask:\t\t0x%IX; system CPU affinity mask: 0x%IX\n"),
+		pi.nProcessAffinity, pi.nSystemAffinity );
 	info += d;
 
 	d.Format( _T("Image version:\t\t\t%d.%d\n"),
 		HIWORD(pi.dwVersion), LOWORD(pi.dwVersion) );
 	info += d;
 
-	d.Format( _T("Working set:\t\t\t%d, min = %d, max = %d\n"),
+	d.Format( _T("Working set:\t\t\t%Id, min = %Id, max = %Id\n"),
 		pi.pmc.WorkingSetSize, pi.minWorkSet, pi.maxWorkSet );
 	info += d;
 

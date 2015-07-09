@@ -10,6 +10,13 @@ BOOL WINAPI SetMenuHooked(
 	HMENU hMenu // handle to menu
 )
 {
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::SetMenuHooked: wnd = 0x%IX;\n"), hWnd);
+	}
+
 	if ( hWnd == theApp.hwndTaskManager )
 	{
 //		TRACE( _T("SetMenuHooked\n") );
@@ -33,7 +40,7 @@ BOOL HookImportedFunctions()
 	pUser32APIHooks[HOOKSETMENU].szFunc = "SetMenu";
 
 	HookImportFunctionsByName( 
-						(HINSTANCE)GetWindowLong( theApp.hwndTaskManager, GWL_HINSTANCE ),
+						(HINSTANCE)GetWindowLongPtr( theApp.hwndTaskManager, GWLP_HINSTANCE ),
 						"user32.dll",
 						USER32APIHOOKCOUNT, 
 						pUser32APIHooks, 

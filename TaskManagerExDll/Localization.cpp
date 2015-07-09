@@ -17,7 +17,7 @@
 // #pragmas are used here to insure that the structure's
 // packing in memory matches the packing of the EXE or DLL.
 #pragma pack( push )
-#pragma pack( 2 )
+#pragma pack( 1 )
 typedef struct
 {
    BYTE   bWidth;               // Width, in pixels, of the image
@@ -26,13 +26,10 @@ typedef struct
    BYTE   bReserved;            // Reserved
    WORD   wPlanes;              // Color Planes
    WORD   wBitCount;            // Bits per pixel
-   DWORD   dwBytesInRes;         // how many bytes in this resource?
+   DWORD  dwBytesInRes;         // how many bytes in this resource?
    WORD   nID;                  // the ID
 } GRPICONDIRENTRY, *LPGRPICONDIRENTRY;
-#pragma pack( pop )
 
-#pragma pack( push )
-#pragma pack( 2 )
 typedef struct 
 {
    WORD            idReserved;   // Reserved (must be 0)
@@ -111,7 +108,7 @@ void SetThreadNativeLanguage()
 
 LPVOID LoadResource( LPCTSTR id, LPCTSTR type, DWORD* lpSize = NULL )
 {
-	UINT uID = (UINT)(PVOID)id;
+	UINT_PTR uID = (UINT_PTR)(PVOID)id;
 	uID;
 
 #ifdef TASKMANEX_EXE
@@ -129,13 +126,13 @@ LPVOID LoadResource( LPCTSTR id, LPCTSTR type, DWORD* lpSize = NULL )
 
 	if( hRsrc == NULL )
 	{
-		TRACE( _T("FindResourceEx: try #2 (%d)\n"), uID );
+		TRACE( _T("FindResourceEx: try #2 (%Id)\n"), uID );
 		hRsrc = FindResourceEx( hMod, type, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL) );
 	}
 
 	if( hRsrc == NULL )
 	{
-		TRACE( _T("FindResource: try #3 (%d)\n"), uID );
+		TRACE( _T("FindResource: try #3 (%Id)\n"), uID );
 		hRsrc = FindResource( hMod, id, type );
 	}
 
@@ -256,7 +253,7 @@ CString	LocLoadString		( LPCTSTR id )
 	DWORD dwSize = (*str);
 
 	int nChars = dwSize;
-	WCHAR* p = new WCHAR[ nChars + 1 ];
+	WCHAR* p = new WCHAR[ nChars + 1 ]();
 	if( p == NULL )
 		return _T("");
 
@@ -318,7 +315,7 @@ HACCEL  LocLoadAccelerators	( LPCTSTR id )
 		return NULL;
 	ACCELTABLEENTRY* pSrc = (ACCELTABLEENTRY*)pRsrc;
 	int n = dwSize/sizeof(ACCELTABLEENTRY);
-	ACCEL* pDest = new ACCEL[n];
+	ACCEL* pDest = new ACCEL[n]();
 	if( pDest == NULL )
 		return NULL;
 

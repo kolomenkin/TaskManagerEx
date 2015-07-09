@@ -46,7 +46,7 @@ CSecurityInformation* CSecurityInformation::CreateInstance(ObjectInformation Inf
 
 CSecurityInformation::CSecurityInformation(ObjectInformation Info, BOOL fBinary)
 {
-	TRACE( _T("CSecurityInformation::CSecurityInformation (0x%X)...\n"), this );
+	TRACE( _T("CSecurityInformation::CSecurityInformation (0x%IX)...\n"), this );
 	GetWinObjectTypeInfo( Info.m_objInternalType, m_Type );
 	m_Info = Info;
 #ifdef UNICODE
@@ -69,7 +69,7 @@ CSecurityInformation::CSecurityInformation(ObjectInformation Info, BOOL fBinary)
 
 CSecurityInformation::~CSecurityInformation()
 {
-	TRACE( _T("CSecurityInformation::~CSecurityInformation (0x%X)...\n"), this );
+	TRACE( _T("CSecurityInformation::~CSecurityInformation (0x%IX)...\n"), this );
 
 }
 
@@ -77,7 +77,7 @@ CSecurityInformation::~CSecurityInformation()
 
 BOOL CSecurityInformation::EditSecurity( HWND hwnd )
 {
-	TRACE( _T("Enter CSecurityInformation::EditSecurity (0x%X)...\n"), this );
+	TRACE( _T("Enter CSecurityInformation::EditSecurity (0x%IX)...\n"), this );
 	BOOL bRes = TRUE;
 	if( this == NULL )
 	{
@@ -126,7 +126,7 @@ BOOL CSecurityInformation::EditSecurity( HWND hwnd )
 		bRes = ::EditSecurity( hwnd, this );
 	}
 
-	TRACE( _T("Leave CSecurityInformation::EditSecurity (0x%X) (ret = %d)...\n"), this, bRes );
+	TRACE( _T("Leave CSecurityInformation::EditSecurity (0x%IX) (ret = %d)...\n"), this, bRes );
 	return bRes != FALSE;
 }
 
@@ -148,7 +148,7 @@ HRESULT CSecurityInformation::QueryInterface(REFIID riid, PVOID* ppvObj)
 
 ULONG CSecurityInformation::AddRef()
 {
-	TRACE( _T("CSecurityInformation::AddRef (0x%X)...\n"), this );
+	TRACE( _T("CSecurityInformation::AddRef (0x%IX)...\n"), this );
 	m_nRef++;
 	return(m_nRef);
 }
@@ -157,7 +157,7 @@ ULONG CSecurityInformation::AddRef()
 
 ULONG CSecurityInformation::Release()
 {
-	TRACE( _T("CSecurityInformation::Release (0x%X)...\n"), this );
+	TRACE( _T("CSecurityInformation::Release (0x%IX)...\n"), this );
 	ULONG nRef = --m_nRef;
 	if (m_nRef == 0)
 		delete this;

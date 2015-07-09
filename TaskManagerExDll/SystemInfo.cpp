@@ -26,6 +26,12 @@
 
 #include "SystemInfo.h"
 
+#include <memory>
+
+//#include <ntstatus.h>
+#define STATUS_INFO_LENGTH_MISMATCH      ((NTSTATUS)0xC0000004L)
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 // This is for GetLongPathName function on Windows NT4 SP3 and less:
 #define		COMPILE_NEWAPIS_STUBS
@@ -278,7 +284,7 @@ void SystemInfoUtils::LPCWSTR2CString( LPCWSTR strW, CString& str )
 //#else
 //
 //	ULONG len = wcslen(strW) + 1;
-//	TCHAR* pBuffer = new TCHAR[ len ];
+//	TCHAR* pBuffer = new TCHAR[ len ]();
 //	if( pBuffer == NULL )
 //	{
 //		ASSERT( FALSE );
@@ -483,43 +489,13 @@ CString SystemInfoUtils::DecodeModuleName( const CString& strFullName )
 	return s;
 }
 
-//Get NT version
-OSVERSIONINFO SystemInfoUtils::GetNTVersion()
-{
-	OSVERSIONINFO osvi;
-	ZeroMemory( &osvi, sizeof(osvi) );
-	osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-	BOOL res = GetVersionEx( &osvi );
-	if( !res )
-	{
-		DWORD dwVersion = GetVersion();
- 		osvi.dwMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
-		osvi.dwMinorVersion =  (DWORD)(HIBYTE(LOWORD(dwVersion)));
-
-		if (dwVersion < 0x80000000)				// Windows NT/2000, Whistler
-			osvi.dwBuildNumber = (DWORD)(HIWORD(dwVersion));
-		else if (osvi.dwMajorVersion < 4)		// Win32s
-			osvi.dwBuildNumber = (DWORD)(HIWORD(dwVersion) & ~0x8000);
-		else									// Windows 95/98/Me
-			osvi.dwBuildNumber =  0;
-	}
-	return osvi;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
-
-OSVERSIONINFO	NTVersion = SystemInfoUtils::GetNTVersion();
-DWORD			dwNTMajorVersion = NTVersion.dwMajorVersion;
-DWORD			dwNTMinorVersion = NTVersion.dwMinorVersion;
-DWORD			dwNTVersion = MAKELONG( dwNTMinorVersion, dwNTMajorVersion ); //  0x00050000 - Win2000, 0x00050001 - WinXP
-
 //////////////////////////////////////////////////////////////////////////////////////
 
 PVOID Alloc( PVOID pStartAddress, DWORD dwBytes )
 {
 	pStartAddress = pStartAddress;
 	PVOID pAddr = NULL;
-	pAddr = new PBYTE[dwBytes];
+	pAddr = new PBYTE[dwBytes]();
 //	pAddr = VirtualAlloc( NULL, dwBytes, MEM_COMMIT, PAGE_READWRITE );
 //	pAddr = VirtualAlloc( pStartAddress, dwBytes, MEM_COMMIT, PAGE_READWRITE );
 	return pAddr;
@@ -545,18 +521,13 @@ SystemProcessInformation::SystemProcessInformation( DWORD processId, BOOL bAddit
 	m_processId = processId;
 	m_bAdditionalInfo = bAdditionalInfo;
 
-//	m_pBuffer = (PUCHAR) Alloc( (void*)0x100000, BufferSize ); // (void*)0x100000 is a bug! There were crashes because of it!
-	m_pBuffer = (PUCHAR) Alloc( NULL, BufferSize );
-
-	ASSERT( m_pBuffer != NULL );
-
 	if ( bRefresh )
 		Refresh();
 }
 
 SystemProcessInformation::~SystemProcessInformation()
 {
-	DWORD pID;
+	DWORD pID = 0;
 	PROCESS_INFO process_info;
 
 	for ( POSITION pos = m_ProcessInfos.GetStartPosition(); pos != NULL; )
@@ -565,17 +536,14 @@ SystemProcessInformation::~SystemProcessInformation()
 		if( process_info.pThreads != NULL )
 		{
 			delete[] process_info.pThreads;
+			process_info.pThreads = nullptr;
 		}
-	}
-	if( m_pBuffer != NULL )
-	{
-		Free( m_pBuffer );
 	}
 }
 
 BOOL SystemProcessInformation::GetAdditionalInfo( PROCESS_INFO& info )
 {
-	BOOL res;
+	BOOL res = FALSE;
 
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, info.processId );
 	if( hProcess != NULL )
@@ -600,7 +568,7 @@ BOOL SystemProcessInformation::GetAdditionalInfo( PROCESS_INFO& info )
 
 		//res = GetProcessIoCounters( hProcess, &info.ioc ); // Windows 2000+
 		res = GetProcessPriorityBoost( hProcess, &info.bDisablePriorityBoost );
-		res = GetProcessAffinityMask( hProcess, &info.dwProcessAffinity, &info.dwSystemAffinity );
+		res = GetProcessAffinityMask( hProcess, &info.nProcessAffinity, &info.nSystemAffinity );
 		//res = GetProcessDefaultLayout( hProcess, &info.dwDefaultLayout ); // Windows 2000+
 		res = GetProcessTimes( hProcess, &info.ftCreation, &info.ftExit, &info.ftKernel, &info.ftUser );
 		res = GetProcessWorkingSetSize( hProcess, &info.minWorkSet, &info.maxWorkSet );
@@ -615,7 +583,7 @@ BOOL SystemProcessInformation::GetAdditionalInfo( PROCESS_INFO& info )
 BOOL SystemProcessInformation::Refresh()
 {
 	{ // Free used memory before m_ProcessInfos.RemoveAll(); :
-		DWORD pID;
+		DWORD pID = 0;
 		PROCESS_INFO process_info;
 
 		for ( POSITION pos = m_ProcessInfos.GetStartPosition(); pos != NULL; )
@@ -624,6 +592,7 @@ BOOL SystemProcessInformation::Refresh()
 			if( process_info.pThreads != NULL )
 			{
 				delete[] process_info.pThreads;
+				process_info.pThreads = nullptr;
 			}
 		}
 	}
@@ -632,15 +601,42 @@ BOOL SystemProcessInformation::Refresh()
 	if ( !INtDll::bStatus )
 		return FALSE;
 
-	if ( m_pBuffer == NULL )
-		return FALSE;
-	
-	// query the process information
-	NTSTATUS status = INtDll::NtQuerySystemInformation( _SystemProcessInformation, m_pBuffer, BufferSize, NULL );
-	if ( !NT_SUCCESS(status) )
+	ULONG size = 64 * 1024;
+	ULONG needed = 0;
+
+	std::unique_ptr<UCHAR[]> ptrBuf(new UCHAR[size]());
+	SYSTEM_PROCESS_INFORMATION* pSysProcess = (SYSTEM_PROCESS_INFORMATION*)ptrBuf.get();
+	if (pSysProcess == NULL)
 		return FALSE;
 
-	SYSTEM_PROCESS_INFORMATION* pSysProcess = (SYSTEM_PROCESS_INFORMATION*)m_pBuffer;
+	// query the process information
+	NTSTATUS status = INtDll::NtQuerySystemInformation(_SystemProcessInformation, pSysProcess, size, &needed);
+	if (!NT_SUCCESS(status))
+	{
+		if (status != STATUS_INFO_LENGTH_MISMATCH)
+		{
+			TRACE(_T("SystemProcessInformation::Refresh: NtQuerySystemInformation(SystemProcessInformation) failed (#1): 0x%08X!\n"), status);
+			return FALSE;
+		}
+
+		// The size was not enough
+		size = needed + 1024 * sizeof(SYSTEM_PROCESS_INFORMATION);
+
+		ptrBuf.reset(new UCHAR[size]());
+		pSysProcess = (SYSTEM_PROCESS_INFORMATION*)ptrBuf.get();
+
+		if (pSysProcess == NULL)
+			return FALSE;
+
+		// Query the objects ( system wide )
+		status = INtDll::NtQuerySystemInformation(_SystemProcessInformation, pSysProcess, size, &needed);
+		if (!NT_SUCCESS(status))
+		{
+			TRACE(_T("SystemProcessInformation::Refresh: NtQuerySystemInformation(SystemProcessInformation) failed (#2): 0x%08X!\n"), status);
+			return FALSE;
+		}
+	}
+
 	do
 	{
 		if( pSysProcess->ProcessId == m_processId || m_processId == ALL_PROCESSES )
@@ -648,11 +644,21 @@ BOOL SystemProcessInformation::Refresh()
 			// fill the process information map
 			PROCESS_INFO new_info;
 			ZeroMemory( &new_info, sizeof(new_info) );
-			new_info.processId = pSysProcess->ProcessId;
+			new_info.processId = (DWORD)pSysProcess->ProcessId;
 			new_info.spi = *pSysProcess;
-			new_info.pThreads = new SYSTEM_THREAD_INFORMATION[pSysProcess->ThreadCount];
+			new_info.pThreads = nullptr;
+			if (pSysProcess->ThreadCount > 0)
+			{
+				new_info.pThreads = new SYSTEM_THREAD_INFORMATION[pSysProcess->ThreadCount]();
+			}
 			if( new_info.pThreads != NULL )
 			{
+				static bool bFirst = true;
+				if (bFirst && pSysProcess->Threads[0].ClientId.UniqueProcess != pSysProcess->ProcessId)
+				{
+					bFirst = false;
+					TRACE( _T("SystemProcessInformation::Refresh(): ERROR! SYSTEM_PROCESS_INFORMATION or IO_COUNTERS has incorrect definition for current OS!\n") );
+				}
 				memcpy( new_info.pThreads, &pSysProcess->Threads,
 					pSysProcess->ThreadCount * sizeof(SYSTEM_THREAD_INFORMATION) );
 			}
@@ -672,8 +678,8 @@ BOOL SystemProcessInformation::Refresh()
 				// Check new pointer for valid range:
 				ULONG_PTR p = (ULONG_PTR)((UCHAR*)pSysProcess + pSysProcess->NextEntryDelta );
 				ULONG_PTR sz = sizeof(SYSTEM_PROCESS_INFORMATION);
-				ULONG_PTR a = (ULONG_PTR) m_pBuffer;
-				ULONG_PTR b = (ULONG_PTR) ((UCHAR*)m_pBuffer + BufferSize);
+				ULONG_PTR a = (ULONG_PTR) ptrBuf.get();
+				ULONG_PTR b = (ULONG_PTR)((UCHAR*)ptrBuf.get() + size);
 
 				ASSERT( a <= p && p+sz <= b );
 			}
@@ -710,26 +716,25 @@ BOOL SystemThreadInformation::ModuleFromAddressEx( DWORD processId, PVOID pv, LP
 	if( !IPsapi::bStatus )
 		return FALSE;
 
-	//TRACE( _T("ModuleFromAddressEx( PID = %d, addr = 0x%X\n"), processId, pv );
+	//TRACE( _T("ModuleFromAddressEx( PID = %d, addr = 0x%IX\n"), processId, pv );
 
 	BOOL result = FALSE;
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId );
 	MEMORY_BASIC_INFORMATION mbi;
 	ZeroMemory( &mbi, sizeof(mbi) );
-	DWORD dwRet;
 
 	if ( hProcess == NULL )
 		goto cleanup;
 	//TRACE( _T("ModuleFromAddressEx: process opened!\n") );
 
-	dwRet = VirtualQueryEx( hProcess, pv, &mbi, sizeof(mbi));
-	if( dwRet != sizeof(mbi) )
+	const SIZE_T nReadBytes = VirtualQueryEx(hProcess, pv, &mbi, sizeof(mbi));
+	if (nReadBytes != sizeof(mbi))
 		goto cleanup;
 
-	//TRACE( _T("ModuleFromAddressEx: module address: 0x%X\n"), mbi.AllocationBase );
-	dwRet = IPsapi::GetModuleFileNameEx( hProcess, (HMODULE) mbi.AllocationBase, szModuleName, cbSize );
-	szModuleName[dwRet] = _T('\0');
-	if( dwRet == 0 )
+	//TRACE( _T("ModuleFromAddressEx: module address: 0x%IX\n"), mbi.AllocationBase );
+	DWORD nRet = IPsapi::GetModuleFileNameEx( hProcess, (HMODULE) mbi.AllocationBase, szModuleName, cbSize );
+	szModuleName[nRet] = _T('\0');
+	if( nRet == 0 )
 		goto cleanup;
 
 	result = TRUE;
@@ -747,10 +752,10 @@ BOOL SystemThreadInformation::Refresh()
 	POSITION pos;
 	m_ThreadInfos.RemoveAll();
 
-	// Get teh process list
+	// Get the process list
 	SystemProcessInformation pi( m_processId, FALSE, TRUE );
 
-	DWORD pID;
+	DWORD pID = 0;
 	SystemProcessInformation::PROCESS_INFO process_info;
 
 	// Iterating through the processes and get the module list
@@ -786,13 +791,13 @@ BOOL SystemThreadInformation::Refresh()
 				int cbSize = SIZEOF_ARRAY(ti.Module);
 
 				SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION kmBest;
-				int BestFuncOffset = LONG_MAX;
+				ptrdiff_t BestFuncOffset = PTRDIFF_T_MAX;
 
 				for ( POSITION pos = kmi.m_KernelModuleInfos.GetHeadPosition(); pos != NULL; )
 				{
 					SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION& km = kmi.m_KernelModuleInfos.GetNext(pos);
 
-					int iFuncOffset = (PBYTE)pv - (PBYTE)km.pBaseAddress;
+					ptrdiff_t iFuncOffset = (PBYTE)pv - (PBYTE)km.pBaseAddress;
 					if( iFuncOffset >= 0 && iFuncOffset < BestFuncOffset )
 					{
 						BestFuncOffset = iFuncOffset;
@@ -800,7 +805,7 @@ BOOL SystemThreadInformation::Refresh()
 					}
 				}
 
-				if( BestFuncOffset == LONG_MAX )
+				if (BestFuncOffset == PTRDIFF_T_MAX)
 				{
 					szModuleName[0] = _T('\0');
 				}
@@ -823,7 +828,7 @@ BOOL SystemThreadInformation::Refresh()
 	// Get the Thread objects ( set the filter to "Thread" )
 	SystemHandleInformation hi( ALL_PROCESSES, TRUE, _T("Thread") );
 
-	//TRACE( _T("SystemThreadInformation> SystemHandleInformation found %d threads\n"), hi.m_HandleInfos.GetCount() );
+	//TRACE( _T("SystemThreadInformation> SystemHandleInformation found %Id threads\n"), hi.m_HandleInfos.GetCount() );
 
 	// Iterating through the found Thread objects
 	for ( pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
@@ -832,9 +837,9 @@ BOOL SystemThreadInformation::Refresh()
 		DWORD ThreadId = 0;
 
 		// This is one of the threads we are looking for
-		BOOL res = SystemHandleInformation::GetThreadId( (HANDLE)h.sh.HandleNumber, ThreadId, h.sh.ProcessID );
+		BOOL res = SystemHandleInformation::GetThreadId(h.sh.HandleValue, ThreadId, h.sh.GetPid());
 
-		if( h.sh.ProcessID == m_processId || m_processId == ALL_PROCESSES )
+		if (h.sh.GetPid() == m_processId || m_processId == ALL_PROCESSES)
 		{
 			//TRACE( _T("PID %d: Thread ID: 0x%X\n"), m_processId, ThreadId );
 		}
@@ -845,15 +850,15 @@ BOOL SystemThreadInformation::Refresh()
 			{
 				POSITION LastPos = pos2;
 				THREAD_INFORMATION ti = m_ThreadInfos.GetNext(pos2);
-				if( ti.sti.ClientId.UniqueThread == ThreadId )
+				if (ti.sti.ClientId.GetTid() == ThreadId)
 				{
 					if( ti.HandleProcessId == ti.ProcessId )
 					{
 						break; // We have found the handle for this thread and it belongs to the thread's process.
 						// If it doesn't belongs, then we will continue searching such (best) handles...
 					}
-					ti.HandleProcessId = h.sh.ProcessID;
-					ti.ThreadHandle = (HANDLE)h.sh.HandleNumber;
+					ti.HandleProcessId = h.sh.GetPid();
+					ti.ThreadHandle = h.sh.HandleValue;
 					m_ThreadInfos.SetAt( LastPos, ti );
 
 					break;
@@ -896,21 +901,6 @@ const CString& SystemHandleInformation::GetFilter()
 	return m_strTypeFilter;
 }
 
-BOOL SystemHandleInformation::IsSupportedHandle( SYSTEM_HANDLE& handle )
-{
-	//Here you can filter the handles you don't want in the Handle list
-
-	// Windows 2000 supports everything :)
-	if ( dwNTMajorVersion >= 5 )
-		return TRUE;
-
-	//NT4 System process doesn't like if we bother his internal security :)
-	if ( handle.ProcessID == PID_SYSTEM_WIN_NT4 && handle.HandleType == 16 )
-		return FALSE;
-
-	return TRUE;
-}
-
 BOOL SystemHandleInformation::Refresh()
 {
 	DWORD size = 0x2000;
@@ -925,53 +915,53 @@ BOOL SystemHandleInformation::Refresh()
 		return FALSE;
 
 	// Allocate the memory for the buffer
-	SYSTEM_HANDLE_INFORMATION* pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION*)
+	SYSTEM_HANDLE_INFORMATION_EX* pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION_EX*)
 				Alloc( NULL, size );
 
 	if ( pSysHandleInformation == NULL )
 		return FALSE;
 
 	// Query the needed buffer size for the objects ( system wide )
-	NTSTATUS status = INtDll::NtQuerySystemInformation( _SystemHandleInformation, pSysHandleInformation, size, &needed );
+	NTSTATUS status = INtDll::NtQuerySystemInformation(SystemExtendedHandleInformation, pSysHandleInformation, size, &needed);
 	if ( !NT_SUCCESS(status) )
 	{
-		if ( needed == 0 )
+		if (status != STATUS_INFO_LENGTH_MISMATCH)
 		{
 			ret = FALSE;
+			TRACE(_T("SystemHandleInformation::Refresh: NtQuerySystemInformation failed (#1): 0x%08X!\n"), status);
 			goto cleanup;
 		}
 
 		// The size was not enough
 		Free( pSysHandleInformation );
 
-		size = needed + 1024 * sizeof(SYSTEM_HANDLE);
+		size = needed + 2048 * sizeof(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX);
 
-		pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION*)
+		pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION_EX*)
 				Alloc( NULL, size );
-	}
 
-	if ( pSysHandleInformation == NULL )
-		return FALSE;
+		if (pSysHandleInformation == NULL)
+			return FALSE;
 
-	// Query the objects ( system wide )
-	status = INtDll::NtQuerySystemInformation( _SystemHandleInformation, pSysHandleInformation, size, NULL );
-	if ( !NT_SUCCESS(status) )
-	{
-		ret = FALSE;
-		goto cleanup;
+		// Query the objects ( system wide )
+		status = INtDll::NtQuerySystemInformation(SystemExtendedHandleInformation, pSysHandleInformation, size, &needed);
+		if (!NT_SUCCESS(status))
+		{
+			ret = FALSE;
+			TRACE(_T("SystemHandleInformation::Refresh: NtQuerySystemInformation failed (#2): 0x%08X!\n"), status);
+			goto cleanup;
+		}
 	}
 
 	//TRACE( _T("SystemHandleInformation::Refresh got %d handles!\n"), pSysHandleInformation->Count );
 
 	// Iterating through the objects
-	for ( i = 0; i < pSysHandleInformation->Count; i++ )
+	for ( i = 0; i < pSysHandleInformation->NumberOfHandles; i++ )
 	{
-		SYSTEM_HANDLE& sh = pSysHandleInformation->Handles[i];
-		if ( !IsSupportedHandle( sh ) )
-			continue;
+		SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX& sh = pSysHandleInformation->Handles[i];
 
 		// ProcessId filtering check
-		if ( sh.ProcessID == m_processId || m_processId == ALL_PROCESSES )
+		if (sh.GetPid() == m_processId || m_processId == ALL_PROCESSES)
 		{
 			BOOL bAdd = FALSE;
 
@@ -980,7 +970,7 @@ BOOL SystemHandleInformation::Refresh()
 			else
 			{
 				// Type filtering
-				GetTypeToken( (HANDLE)sh.HandleNumber, strType, sh.ProcessID  );
+				GetTypeToken(sh.HandleValue, strType, sh.GetPid());
 
 				bAdd = strType == m_strTypeFilter;
 			}
@@ -998,7 +988,7 @@ BOOL SystemHandleInformation::Refresh()
 		}
 	}
 
-	//TRACE( _T("SystemHandleInformation::Refresh selected %d handles!\n"), m_HandleInfos.GetCount() );
+	//TRACE( _T("SystemHandleInformation::Refresh selected %Id handles!\n"), m_HandleInfos.GetCount() );
 
 cleanup:
 
@@ -1069,7 +1059,7 @@ BOOL SystemHandleInformation::GetTypeToken( HANDLE h, CString& str, DWORD proces
 	status = MyNtQueryObject( handle, ObjectTypeInformation, NULL, 0, &size );
 	//TRACE( _T("INtDll::NtQueryObject leave ObjectTypeInformation size = %d\n"), size );
 
-	lpBuffer = (POBJECT_TYPE_INFORMATION) new UCHAR[size];
+	lpBuffer = (POBJECT_TYPE_INFORMATION) new UCHAR[size]();
 	if( lpBuffer == NULL )
 	{
 		goto cleanup;
@@ -1194,7 +1184,7 @@ BOOL SystemHandleInformation::GetNameByType( HANDLE h, OB_TYPE_ENUM type, CStrin
 	if ( size == 0 )
 		size = 0x2000;
 
-	lpBuffer = (POBJECT_NAME_INFORMATION) new UCHAR[size];
+	lpBuffer = (POBJECT_NAME_INFORMATION) new UCHAR[size]();
 	if( lpBuffer == NULL )
 	{
 		goto cleanup;
@@ -1227,7 +1217,7 @@ cleanup:
 BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD processId )
 {
 	BASIC_THREAD_INFORMATION ti;
-	HANDLE handle;
+	HANDLE handle = nullptr;
 	BOOL remote = processId != GetCurrentProcessId();
 
 	if ( !INtDll::bStatus )
@@ -1244,7 +1234,7 @@ BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD proc
 	// Get the thread information
 	NTSTATUS status = INtDll::NtQueryInformationThread( handle, ThreadBasicInformation, &ti, sizeof(ti), NULL );
 	if ( NT_SUCCESS(status) )
-		threadID = ti.ThreadId;
+		threadID = ti.ClientID.GetTid();
 
 	if ( remote )
 	{
@@ -1268,7 +1258,7 @@ BOOL SystemHandleInformation::GetProcessPath( HANDLE h, CString& strPath, DWORD 
 BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD remoteProcessId )
 {
 	BOOL ret = FALSE;
-	HANDLE handle;
+	HANDLE handle = nullptr;
 	BOOL remote = remoteProcessId != GetCurrentProcessId();
 	PROCESS_BASIC_INFORMATION pi;
 
@@ -1290,7 +1280,7 @@ BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD re
 	NTSTATUS status = INtDll::NtQueryInformationProcess( handle, ProcessBasicInformation, &pi, sizeof(pi), NULL);
 	if ( NT_SUCCESS(status) )
 	{
-		processId = pi.UniqueProcessId;
+		processId = pi.GetPid();
 		ret = TRUE;
 	}
 
@@ -1365,7 +1355,7 @@ BOOL SystemHandleInformation::GetFileName( HANDLE h, CString& str, DWORD process
 	// Wait for finishing the thread
 	if ( WaitForSingleObject( hThread, 100 ) == WAIT_TIMEOUT )
 	{
-		TRACE( _T("TerminateThread( 0x%X, 0 ) - Access denied!\n"), hThread );
+		TRACE(_T("TerminateThread( 0x%IX, 0 ) - Access denied getting file name for handle 0x%08IX from PID %d (local handle 0x%08IX)!\n"), hThread, h, processId, handle);
 		// Access denied
 		// Terminate the thread
 		TerminateThread( hThread, 0 );
@@ -1427,7 +1417,7 @@ void SystemModuleInformation::GetModuleListForProcess( DWORD processID )
 		goto cleanup;
 
 	cbNeeded += 50 * sizeof( HMODULE ); // extra
-	hModules = new HMODULE[ cbNeeded / sizeof( HMODULE ) ];
+	hModules = new HMODULE[cbNeeded / sizeof(HMODULE)]();
 	if( hModules == NULL )
 		goto cleanup;
 
@@ -1450,9 +1440,10 @@ void SystemModuleInformation::GetModuleListForProcess( DWORD processID )
 		moduleInfo.ProcessId = processID;
 		moduleInfo.Handle = hModules[i];
 
-		DWORD dwRet1, dwRet2, dwRet3;
-		BOOL res;
-		dwRet1 = VirtualQueryEx( hProcess, hModules[i], &moduleInfo.mbi, sizeof(moduleInfo.mbi) );
+		SIZE_T nReadBytes = 0;
+		DWORD dwRet2 = 0, dwRet3 = 0;
+		BOOL res = FALSE;
+		nReadBytes = VirtualQueryEx(hProcess, hModules[i], &moduleInfo.mbi, sizeof(moduleInfo.mbi));
 		res = IPsapi::GetModuleInformation( hProcess, hModules[i], &moduleInfo.info, sizeof(moduleInfo.info) );
 		dwRet3 = IPsapi::GetModuleBaseName( hProcess, hModules[i], moduleInfo.Name, SIZEOF_ARRAY(moduleInfo.Name) );
 		moduleInfo.Name[dwRet3] = _T('\0');
@@ -1512,9 +1503,9 @@ BOOL SystemModuleInformation::Refresh()
 		GetModuleListForProcess( m_processId );
 	else
 	{
-/* I think this is not the simpliest way: (Sergey Kolomenkin)
-		// Get teh process list
-		DWORD pID;
+/* I think this is not the most simple way: (Sergey Kolomenkin)
+		// Get the process list
+		DWORD pID = 0;
 		SystemProcessInformation::PROCESS_INFO process_info;
 		SystemProcessInformation pi( TRUE );
 
@@ -1541,7 +1532,7 @@ BOOL SystemModuleInformation::Refresh()
 
 		cbNeeded += 50 * sizeof( DWORD ); // extra
 
-		pProcesses = new DWORD[ cbNeeded / sizeof( DWORD ) ];
+		pProcesses = new DWORD[cbNeeded / sizeof(DWORD)]();
 		if( pProcesses == NULL )
 			return FALSE;
 
@@ -1595,7 +1586,7 @@ BOOL SystemKernelModuleInformation::Refresh()
 
 	cbNeeded += 50 * sizeof( LPVOID ); // extra
 
-	pBaseAddresses = new LPVOID[ cbNeeded / sizeof( LPVOID ) ];
+	pBaseAddresses = new LPVOID[ cbNeeded / sizeof( LPVOID ) ]();
 	if( pBaseAddresses == NULL )
 		return FALSE;
 
@@ -1647,7 +1638,7 @@ BOOL SystemMemoryMapInformation::FileFromAddress( DWORD processId, PVOID pv, LPT
 	if( !IPsapi::bStatus )
 		return FALSE;
 
-	//TRACE( _T("FileFromAddress( PID = %d, addr = 0x%X\n"), processId, pv );
+	//TRACE( _T("FileFromAddress( PID = %d, addr = 0x%IX\n"), processId, pv );
 
 	BOOL result = FALSE;
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId );
@@ -1655,7 +1646,7 @@ BOOL SystemMemoryMapInformation::FileFromAddress( DWORD processId, PVOID pv, LPT
 	CString fsFileName;
 	IPsapi::MODULEINFO info;
 	MEMORY_BASIC_INFORMATION mbi;
-	BOOL res;
+	BOOL res = FALSE;
 
 	if ( hProcess == NULL )
 		goto cleanup;
@@ -1669,20 +1660,20 @@ BOOL SystemMemoryMapInformation::FileFromAddress( DWORD processId, PVOID pv, LPT
 		if( !res )
 			goto cleanup;
 
-		dwRet = VirtualQueryEx( hProcess, info.EntryPoint, &mbi, sizeof(mbi));
-		if( dwRet != sizeof(mbi) )
+		const SIZE_T nReadBytes = VirtualQueryEx(hProcess, info.EntryPoint, &mbi, sizeof(mbi));
+		if (nReadBytes != sizeof(mbi))
 			goto cleanup;
 
 		pv = mbi.AllocationBase;
 	}
 
-	TRACE( _T("FileFromAddress - 0x%X\n"), pv );
+	TRACE( _T("FileFromAddress - 0x%IX\n"), pv );
 
 	dwRet = IPsapi::GetMappedFileName( hProcess, pv,
 		szFileName, cbSize );
 	szFileName[dwRet] = _T('\0');
 
-	TRACE( _T("FileFromAddress - 0x%X - GetMappedFileName returned %d, err = %d\n"), pv, dwRet, GetLastError() );
+	TRACE( _T("FileFromAddress - 0x%IX - GetMappedFileName returned %d, err = %d\n"), pv, dwRet, GetLastError() );
 
 #if 0
 	ERROR_UNEXP_NET_ERR

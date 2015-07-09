@@ -207,11 +207,6 @@ BOOL TaskManagerExDllApp::InitInstance()
 	if ( bInitialized )
 		return FALSE;
 
-	dwWindowsNTMajorVersion = IsWindowsNT();
-
-	if ( dwWindowsNTMajorVersion < 4 )
-		return FALSE;
-
 	//hMainIconSmall = hMainIconBig = LocLoadIcon( IDI_SYSTEM_INFO_ICON );
 
 	hMainIconSmall = LocLoadIcon( IDI_SYSTEM_INFO_ICON, 16, 16 );
@@ -225,10 +220,10 @@ BOOL TaskManagerExDllApp::InitInstance()
 int TaskManagerExDllApp::ExitInstance()
 {  
 	if ( fnOriginFakeWndProc != NULL )
-		SetWindowLong(
+		SetWindowLongPtr(
 				m_hwndFakeWindow,
-				GWL_WNDPROC,
-				(LONG)fnOriginFakeWndProc );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginFakeWndProc );
 
 	if( m_hwndFakeWindow != NULL )
 	{
@@ -290,30 +285,30 @@ BOOL TaskManagerExDllApp::Initialize()
 		  hwndApplicationsList == NULL )
 		return FALSE;
 
-	fnOriginTaskManagerWndProc = (WNDPROC)SetWindowLong( 
+	fnOriginTaskManagerWndProc = (WNDPROC)SetWindowLongPtr(
 			hwndTaskManager,
-			GWL_WNDPROC,
-			(LONG)TaskManagerWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)TaskManagerWndProc );
 
-	fnOriginProcessesList = (WNDPROC)SetWindowLong( 
+	fnOriginProcessesList = (WNDPROC)SetWindowLongPtr(
 			hwndProcessesList,
-			GWL_WNDPROC,
-			(LONG)ProcessesListWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ProcessesListWndProc);
 
-	fnOriginProcessesTab = (WNDPROC)SetWindowLong( 
+	fnOriginProcessesTab = (WNDPROC)SetWindowLongPtr(
 			GetParent(hwndProcessesList),
-			GWL_WNDPROC,
-			(LONG)ProcessesTabWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ProcessesTabWndProc);
 
-	fnOriginApplicationsList = (WNDPROC)SetWindowLong( 
+	fnOriginApplicationsList = (WNDPROC)SetWindowLongPtr(
 			hwndApplicationsList,
-			GWL_WNDPROC,
-			(LONG)ApplicationsListWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ApplicationsListWndProc);
 
-	fnOriginApplicationsTab = (WNDPROC)SetWindowLong( 
+	fnOriginApplicationsTab = (WNDPROC)SetWindowLongPtr(
 			GetParent(hwndApplicationsList),
-			GWL_WNDPROC,
-			(LONG)ApplicationsTabWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)ApplicationsTabWndProc);
 
 	if ( fnOriginProcessesList == NULL || 
 		 fnOriginTaskManagerWndProc == NULL ||
@@ -351,34 +346,34 @@ BOOL TaskManagerExDllApp::Initialize()
 BOOL TaskManagerExDllApp::Deinitialize()
 {
 	if ( fnOriginTaskManagerWndProc != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr( 
 				hwndTaskManager,	
-				GWL_WNDPROC, 
-				(LONG)fnOriginTaskManagerWndProc );
+				GWLP_WNDPROC, 
+				(LONG_PTR)fnOriginTaskManagerWndProc );
 
 	if ( fnOriginProcessesList != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				hwndProcessesList,	
-				GWL_WNDPROC, 
-				(LONG)fnOriginProcessesList );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginProcessesList);
 
 	if ( fnOriginProcessesTab != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				GetParent(hwndProcessesList),	
-				GWL_WNDPROC, 
-				(LONG)fnOriginProcessesTab );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginProcessesTab);
 
 	if ( fnOriginApplicationsList != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				hwndApplicationsList,	
-				GWL_WNDPROC, 
-				(LONG)fnOriginApplicationsList );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginApplicationsList);
 
 	if ( fnOriginApplicationsTab != NULL )
-		SetWindowLong( 
+		SetWindowLongPtr(
 				GetParent(hwndApplicationsList),	
-				GWL_WNDPROC, 
-				(LONG)fnOriginApplicationsTab );
+				GWLP_WNDPROC,
+				(LONG_PTR)fnOriginApplicationsTab);
 
 	return TRUE;
 }
@@ -541,12 +536,12 @@ BOOL TaskManagerExDllApp::CreateFakeWindow()
     if (!hwnd) 
         return FALSE; 
  
-	fnOriginFakeWndProc = (WNDPROC)SetWindowLong( 
+	fnOriginFakeWndProc = (WNDPROC)SetWindowLongPtr( 
 			hwnd,
-			GWL_WNDPROC,
-			(LONG)FakeWndProc );
+			GWLP_WNDPROC,
+			(LONG_PTR)FakeWndProc );
 
-	SetWindowLong( hwnd, GWL_USERDATA, TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE );
+	SetWindowLongPtr( hwnd, GWLP_USERDATA, TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE );
 
     // Show the window and send a WM_PAINT message to the window 
     // procedure. 
@@ -583,7 +578,7 @@ BOOL CALLBACK UpdateWndZorderProc2( HWND hwnd, LPARAM lParam )
 				}
 				//TCHAR szCaption[200] = _T("");
 				//::GetWindowText( hwnd, szCaption, SIZEOF_ARRAY(szCaption) );
-				//TRACE( _T("UpdateWndZorderProc2(): window 0x%08X (%s), bTopLevel = %d\n"),
+				//TRACE( _T("UpdateWndZorderProc2(): window 0x%08IX (%s), bTopLevel = %d\n"),
 				//	hwnd, szCaption, bTopLevel );
 			}
 		}
@@ -631,7 +626,14 @@ LRESULT CALLBACK TaskManagerExDllApp::TaskManagerWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-	switch( uMsg )
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::TaskManagerWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
+	switch (uMsg)
 	{
 	case WM_TASKMAN_SET_FOREGROUND:
 		TRACE( _T("TaskManagerExDllApp::TaskManagerWndProc: WM_TASKMAN_SET_FOREGROUND\n") );
@@ -771,22 +773,6 @@ LRESULT CALLBACK TaskManagerExDllApp::TaskManagerWndProc(
 				wParam, 
 				lParam );
 
-	switch( uMsg )
-	{
-	case WM_SIZE:
-		if( dwNTVersion < OSVERSION_XP ) // 2000 and earlier
-		{
-			int iStatus	= ListView_GetColumnWidth( theApp.hwndApplicationsList, 1 );
-			int iPid	= DEFAULT_PID_WIDTH;
-			RECT rectClient = {0,0,0,0};
-			GetClientRect( theApp.hwndApplicationsList, &rectClient );
-			ListView_SetColumnWidth( theApp.hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus - iPid );
-			ListView_SetColumnWidth( theApp.hwndApplicationsList, 1, iStatus );
-			ListView_SetColumnWidth( theApp.hwndApplicationsList, 2, iPid );
-		}
-		break;
-	}
-
 	return result;
 }
 
@@ -797,7 +783,14 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesListWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-	switch( uMsg )
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ProcessesListWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
+	switch (uMsg)
 	{
 	case LVM_SETITEMA:
 	case LVM_SETITEMW:
@@ -901,8 +894,15 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-   LRESULT rc;
-   
+	LRESULT rc = 0;
+
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ProcessesTabWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
 	switch( uMsg )
 	{
 /*
@@ -1106,7 +1106,12 @@ LRESULT CALLBACK TaskManagerExDllApp::ProcessesTabWndProc(
       break;
 
 	case WM_INITMENUPOPUP:
-		if ( GetMenuItemID( (HMENU)wParam, 0 ) == TASKMGR_END_PROCESS_CMD )
+		if (g_bMoreLogging)
+		{
+			TRACE(_T("TaskManagerEx.dll> WM_INITMENUPOPUP: first item id: %d\n"), GetMenuItemID((HMENU)wParam, 0));
+		}
+		const UINT nFirstMenuItemId = GetMenuItemID((HMENU)wParam, 0);
+		if (nFirstMenuItemId == TASKMGR_END_PROCESS_CMD || nFirstMenuItemId == TASKMGR_OPEN_FILE_LOCATION_CMD)
 		{
 			ProcessesItemData* pData = theApp.GetSelectedProcessData();
 			if ( pData != NULL && pData->processId != 0 )
@@ -1212,6 +1217,13 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsListWndProc(
   LPARAM lParam   // second message parameter
 )
 {
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ApplicationsListWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
 	switch( uMsg )
 	{
 	case LVM_SETCOLUMNWIDTH:
@@ -1229,11 +1241,8 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsListWndProc(
 			}
 			else
 			{
-				if( dwNTVersion >= OSVERSION_XP ) // Windows XP+
-				{
-					width = (short) max( 0, width - DEFAULT_PID_WIDTH - TASKMAN_CORRECTION );
-					lParam = MAKELPARAM( width, 0 );
-				}
+				width = (short) max( 0, width - DEFAULT_PID_WIDTH - TASKMAN_CORRECTION );
+				lParam = MAKELPARAM( width, 0 );
 			}
 		}
 		break;
@@ -1270,7 +1279,14 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsTabWndProc(
   LPARAM lParam   // second message parameter
 )
 {
-	LRESULT rc = CallWindowProc( 
+	static bool bFirst = true;
+	if (bFirst && g_bMoreLogging)
+	{
+		bFirst = false;
+		TRACE(_T("TaskManagerEx.dll> TaskManagerExDllApp::ApplicationsTabWndProc: wnd = 0x%IX; uMsg = %d; wParam = %d; lParam = 0x%IX;\n"), hwnd, uMsg, wParam, lParam);
+	}
+
+	LRESULT rc = CallWindowProc(
 					theApp.fnOriginApplicationsTab, 
 					hwnd, 
 					uMsg, 
@@ -1297,7 +1313,7 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsTabWndProc(
 								{
 									ApplicationsItemData* pData =
 										theApp.GetApplicationsData( pDispInfo->item.iItem );
-									DWORD pID;
+									DWORD pID = 0;
 									GetWindowThreadProcessId( pData->hWnd, &pID );
 									wsprintfW( (wchar_t*)pDispInfo->item.pszText, L"%d", pID );
 								}
@@ -1319,6 +1335,53 @@ TASKMANAGEREXDLL_API BOOL WINAPI Initialize()
 	BOOL res = theApp.Initialize();
 	TRACE( _T("TaskManagerEx.dll> Initialize() returned %d\n"), res );
 
+	return res;
+}
+
+TASKMANAGEREXDLL_API BOOL WINAPI TestProc()
+{
+	BOOL res = TRUE;
+	TRACE(_T("TaskManagerEx.dll> TestProc() enter\n"));
+
+	{
+		SystemThreadInformation ti(GetCurrentProcessId(), TRUE);
+
+		size_t iItem = 0;
+		size_t iItemCount = ti.m_ThreadInfos.GetCount();
+
+		std::vector<SystemThreadInformation::THREAD_INFORMATION> v;
+		v.reserve(iItemCount);
+
+		for (POSITION pos = ti.m_ThreadInfos.GetHeadPosition(); pos != NULL;)
+		{
+			SystemThreadInformation::THREAD_INFORMATION& t = ti.m_ThreadInfos.GetNext(pos);
+
+			v.push_back(t);
+			//t.Insert(m_SystemInfoList, FALSE, iItem, iItemCount);
+			iItem++;
+		}
+	}
+
+	{
+		SystemHandleInformation hi(ALL_PROCESSES, TRUE, NULL);
+
+		size_t iItem = 0;
+		size_t iItemCount = hi.m_HandleInfos.GetCount();
+
+		std::vector<SystemHandleInformation::HANDLE_INFORMATION> v;
+		v.reserve(iItemCount);
+
+		for (POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL;)
+		{
+			SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
+
+			v.push_back(h);
+			//h.Insert(m_SystemInfoList, TRUE, iItem, iItemCount);
+			iItem++;
+		}
+	}
+
+	TRACE(_T("TaskManagerEx.dll> TestProc() returned %d\n"), res);
 	return res;
 }
 
@@ -1405,20 +1468,10 @@ void TaskManagerExDllApp::UpdateApplicationsListView()
          LVS_EX_FULLROWSELECT ) ;
 
 	int iStatus	= ListView_GetColumnWidth( hwndApplicationsList, 1 );
-	int iPid	= DEFAULT_PID_WIDTH;
 	RECT rectClient = {0,0,0,0};
 	GetClientRect( hwndApplicationsList, &rectClient );
-	if( dwNTVersion >= OSVERSION_XP ) // Windows XP+
-	{
-		ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus + TASKMAN_CORRECTION );
-	}
-	else // 2000 and earlier:
-	{
-		//ListView_SetColumnWidth( hwndApplicationsList, 0, LVSCW_AUTOSIZE );
-		ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus - iPid );
-		ListView_SetColumnWidth( hwndApplicationsList, 1, iStatus );
-		ListView_SetColumnWidth( hwndApplicationsList, 2, iPid );
-	}
+
+	ListView_SetColumnWidth( hwndApplicationsList, 0, rectClient.right - rectClient.left - iStatus + TASKMAN_CORRECTION );
 
 	UpdateWindow( hwndApplicationsList );
 }
@@ -1429,11 +1482,11 @@ TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetSelectedProcessD
    return GetProcessData( ListView_GetNextItem( hwndProcessesList, -1, LVNI_SELECTED ) );
 }
 
-TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData( int nItem )
+TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData(INT_PTR nItem)
 {
 	LVITEM lvi;
 	ZeroMemory(&lvi, sizeof(lvi));
-	lvi.iItem = nItem;
+	lvi.iItem = (int)nItem;
 	lvi.mask = LVIF_PARAM;
 
 	::SendMessage( hwndProcessesList, LVM_GETITEM, 0, (LPARAM)&lvi );
@@ -1441,11 +1494,11 @@ TaskManagerExDllApp::ProcessesItemData* TaskManagerExDllApp::GetProcessData( int
 	return (ProcessesItemData*)lvi.lParam;
 }
 
-TaskManagerExDllApp::ApplicationsItemData* TaskManagerExDllApp::GetApplicationsData( int nItem )
+TaskManagerExDllApp::ApplicationsItemData* TaskManagerExDllApp::GetApplicationsData(INT_PTR nItem)
 {
 	LVITEM lvi;
 	ZeroMemory(&lvi, sizeof(lvi));
-	lvi.iItem = nItem;
+	lvi.iItem = (int)nItem;
 	lvi.mask = LVIF_PARAM;
 
 	::SendMessage( hwndApplicationsList, LVM_GETITEM, 0, (LPARAM)&lvi );

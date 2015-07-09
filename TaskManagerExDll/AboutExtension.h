@@ -23,7 +23,7 @@
 class CAboutExtensionThread
 {
 public:
-	static TASKMANAGEREXDLL_DEBUG_API int Start( CWnd* pParent );
+	static TASKMANAGEREXDLL_DEBUG_API INT_PTR Start(CWnd* pParent);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -46,11 +46,11 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAboutExtension)
-	public:
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual int DoModal();
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+	virtual INT_PTR DoModal() override;
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -60,7 +60,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CAboutExtension)
 	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

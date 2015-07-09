@@ -7,7 +7,7 @@
 #define AFX_STDAFX_H__8659E6B5_4DF1_4F4C_BF70_FF0A41A38CA8__INCLUDED_
 
 //#define WINVER	0x0500
-#define WINVER	0x0400
+#define WINVER	0x0501
 
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_NON_CONFORMING_SWPRINTFS
@@ -70,6 +70,10 @@ inline void MyTrace( LPCTSTR szFormat, ... )
 
 //////////////////////////////////////////////////////////////////////////
 
+static bool g_bMoreLogging = true;
+
+#define DO_TRACE_ALWAYS
+
 #undef TRACE
 #ifdef _DEBUG
 #define TRACE	MyTrace
@@ -77,12 +81,17 @@ inline void MyTrace( LPCTSTR szFormat, ... )
 #define TRACE	1 ? (void)0 : MyTrace
 #endif
 
+#ifdef DO_TRACE_ALWAYS
+#undef TRACE
+#define TRACE	MyTrace
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 
-inline void my_memset( void* ptr, unsigned char ch, int bytes )
+inline void my_memset(void* ptr, unsigned char ch, size_t bytes)
 {
 	unsigned char* p = (unsigned char*)ptr;
-	for( int i=0; i<bytes; i++ )
+	for (size_t i = 0; i<bytes; i++)
 	{
 		*p = ch;
 		p++;

@@ -16,6 +16,14 @@
 #include "resource.h"
 #include "Localization.h"
 
+//------------------------------------------------------
+
+#ifdef _WIN64
+#define FMT_REAL_DYN_PTR _T("0x%016IX")
+#else
+#define FMT_REAL_DYN_PTR _T("0x%08IX")
+#endif
+
 //////////////////////////////////////////////////////////////
 //
 // SystemModuleInformation::MODULE_INFO
@@ -55,10 +63,10 @@ void SystemModuleInformation::MODULE_INFO::InsertColumns( CSystemInfoListCtrl& l
 }
 
 int SystemModuleInformation::MODULE_INFO::Insert( CSystemInfoListCtrl& list, BOOL bPid,
-												 int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strPID, strProcesName;
 	CString strBase, strLength, strUsage, strFileSize, strVersion, strFilePath;
@@ -73,7 +81,7 @@ int SystemModuleInformation::MODULE_INFO::Insert( CSystemInfoListCtrl& list, BOO
 		file.Close();
 	}
 
-	strBase.Format( _T("0x%08X"), Handle );
+	strBase.Format( _T("0x%08IX"), Handle );
 	strLength.Format( _T("%d"), info.SizeOfImage );
 
 	if( me32.GlblcntUsage == 0 )
@@ -142,14 +150,15 @@ void SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION::InsertColumns( CS
 }
 
 int SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION::Insert( CSystemInfoListCtrl& list,
-														int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strBaseAddress, strBaseName, strFullPath, strExtension, strFileSize, strFullFileName;
 
-	strBaseAddress.Format( _T("0x%08X"), pBaseAddress );
+	strBaseAddress.Format(FMT_REAL_DYN_PTR, pBaseAddress);
+
 	strBaseName = Name;
 	strFullPath = FullPath;
 	int pos = strBaseName.ReverseFind( _T('.') );
@@ -258,16 +267,16 @@ void AppendString( CString& s, LPCTSTR szAdd )
 }
 
 int SystemMemoryMapInformation::MEMORY_INFORMATION::Insert( CSystemInfoListCtrl& list,
-							int iItem, int iItemCount, BOOL bExpandRegions ) const
+	size_t iItem, size_t iItemCount, BOOL bExpandRegions) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strBaseAddress, strSize, strType, strBlockCount, strProtect, strDescription;
 
-	strBaseAddress.Format( _T("0x%08X"),
+	strBaseAddress.Format(FMT_REAL_DYN_PTR,
 		(bRegion ? vmq.pvRgnBaseAddress : vmq.pvBlkBaseAddress ) );
-	strSize.Format( _T("%d"),
+	strSize.Format( _T("%Id"),
 		(bRegion ? vmq.RgnSize : vmq.BlkSize ) );
 	strType = GetMemStorageText( (bRegion ? vmq.dwRgnStorage : vmq.dwBlkStorage ) );
 
@@ -340,10 +349,10 @@ void SystemThreadInformation::THREAD_INFORMATION::InsertColumns( CSystemInfoList
 }
 
 int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& list, BOOL bPid,
-														int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	bPid = bPid;
 	ASSERT( bPid == FALSE && "Not Implemented!" );
@@ -353,7 +362,7 @@ int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& li
 
 	if( ThreadHandle != NULL )
 	{
-		strHandle.Format( _T("0x%08X"), ThreadHandle );
+		strHandle.Format( _T("0x%08IX"), ThreadHandle );
 		strHandlePid.Format( _T("%d"), HandleProcessId );
 	}
 	else
@@ -362,9 +371,9 @@ int SystemThreadInformation::THREAD_INFORMATION::Insert( CSystemInfoListCtrl& li
 		strHandlePid.Empty();
 	}
 
-	strThreadId.Format( _T("0x%08X"), sti.ClientId.UniqueThread );
+	strThreadId.Format(_T("0x%08X"), sti.ClientId.GetTid());
 	strPriority.Format( _T("%d / %d"), sti.Priority, sti.BasePriority );
-	strStartAddress.Format( _T("0x%08X"), sti.StartAddress );
+	strStartAddress.Format(FMT_REAL_DYN_PTR, sti.StartAddress);
 	strModule = Module;
 	int pos = strModule.ReverseFind( _T('\\') );
 	strModule = strModule.Mid( pos+1 );
@@ -426,27 +435,26 @@ void SystemHandleInformation::HANDLE_INFORMATION::InsertColumns( CSystemInfoList
 }
 
 int SystemHandleInformation::HANDLE_INFORMATION::Insert( CSystemInfoListCtrl& list, BOOL bPid,
-														int iItem, int iItemCount ) const
+	size_t iItem, size_t iItemCount) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strPID, strProcesName;
 	CString strHandle, strAccess, strType, strTypeNum, strName;
 
-	strHandle.Format( _T("0x%08X"), sh.HandleNumber );
-	strAccess.Format( _T("0x%08X"), sh.Flags );
+	strHandle.Format(_T("0x%08IX"), sh.HandleValue);
+	strAccess.Format( _T("0x%08X"), sh.GrantedAccess );
 
-	SystemHandleInformation::GetTypeToken( (HANDLE)sh.HandleNumber, strType, sh.ProcessID );
-	SystemHandleInformation::GetName( (HANDLE)sh.HandleNumber, strName, sh.ProcessID );
+	SystemHandleInformation::GetTypeToken(sh.HandleValue, strType, sh.GetPid());
+	SystemHandleInformation::GetName(sh.HandleValue, strName, sh.GetPid());
 
-	const DWORD typeMask = 0xFF;
-	DWORD typeFlags = sh.HandleType & (~typeMask);	// In fact I don't know what it means in Windows internals
-	strTypeNum.Format( _T("%d"), (sh.HandleType & typeMask) );
+	const DWORD typeFlags = 0;	// In fact I don't know what it means in Windows internals
+	strTypeNum.Format(_T("%d"), sh.ObjectTypeIndex);
 	if( typeFlags != 0 )
 	{
 		CString d;
-		d.Format( _T("0x%X + "), typeFlags );
+		d.Format( _T("0x%X | "), typeFlags );
 		strTypeNum = d + strTypeNum;
 	}
 
@@ -459,11 +467,11 @@ int SystemHandleInformation::HANDLE_INFORMATION::Insert( CSystemInfoListCtrl& li
 
 	if( bPid )
 	{
-		strPID.Format( _T("%d"), sh.ProcessID );
+		strPID.Format( _T("%d"), sh.GetPid() );
 		list.SetItemText( nPos, sub+1, strPID );
 		sub++;
 
-		strProcesName = GetProcessName( sh.ProcessID );
+		strProcesName = GetProcessName(sh.GetPid());
 		list.SetItemText( nPos, sub+1, strProcesName );
 		sub++;
 	}
@@ -510,15 +518,15 @@ void SystemHandleInformation::HANDLE_INFORMATION::InsertFileColumns( CSystemInfo
 }
 
 int SystemHandleInformation::HANDLE_INFORMATION::InsertFile( CSystemInfoListCtrl& list, BOOL bPid,
-										int iItem, int iItemCount, LPCTSTR szDevice, LPCTSTR szPath ) const
+	size_t iItem, size_t iItemCount, LPCTSTR szDevice, LPCTSTR szPath) const
 {
-	iItem = iItem;
-	iItemCount = iItemCount;
+	iItem;	// use var
+	iItemCount;	// use var
 
 	CString strPID, strProcesName;
 	CString strHandle, strName, strPath, strDevice;
 
-	strHandle.Format( _T("0x%08X"), sh.HandleNumber );
+	strHandle.Format(_T("0x%08IX"), sh.HandleValue);
 
 	strPath = szPath;
 	strDevice = szDevice;
@@ -535,11 +543,11 @@ int SystemHandleInformation::HANDLE_INFORMATION::InsertFile( CSystemInfoListCtrl
 
 	if( bPid )
 	{
-		strPID.Format( _T("%d"), sh.ProcessID );
+		strPID.Format(_T("%d"), sh.GetPid());
 		list.SetItemText( nPos, sub+1, strPID );
 		sub++;
 
-		strProcesName = GetProcessName( sh.ProcessID );
+		strProcesName = GetProcessName(sh.GetPid());
 		list.SetItemText( nPos, sub+1, strProcesName );
 		sub++;
 	}

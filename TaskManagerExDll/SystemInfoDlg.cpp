@@ -360,7 +360,7 @@ void CSystemInfoDlg::OnDestroy()
 	m_ImageList.DeleteImageList();
 }
 
-int CSystemInfoDlg::DoModal() 
+INT_PTR CSystemInfoDlg::DoModal()
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )
@@ -387,15 +387,15 @@ BOOL CSystemInfoDlg::OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pRe
 
 	NMHDR* pNMHDR = pTTTStruct;
     TOOLTIPTEXT *pTTT = (TOOLTIPTEXT *)pNMHDR;
-    UINT nID = pNMHDR->idFrom;
+    UINT_PTR nID = pNMHDR->idFrom;
 
-	//TRACE( _T("OnToolTipNotify> id = %d, from = %d (0x%X) \n"), id, nID, nID );
+	//TRACE( _T("OnToolTipNotify> id = %d, from = %Id (0x%IX) \n"), id, nID, nID );
 
-	//TRACE( _T("OnToolTipNotify> m_fileNameStaticCtrl: 0x%X\n"), m_fileNameStaticCtrl.GetSafeHwnd() );
-	//TRACE( _T("OnToolTipNotify> m_fileNameCtrl: 0x%X\n"), m_fileNameCtrl.GetSafeHwnd() );
-	//TRACE( _T("OnToolTipNotify> m_wndToolBar: 0x%X\n"), m_wndToolBar.GetSafeHwnd() );
-	//TRACE( _T("OnToolTipNotify> m_wndStatusBar: 0x%X\n"), m_wndStatusBar.GetSafeHwnd() );
-	//TRACE( _T("OnToolTipNotify> m_SystemInfoList: 0x%X\n"), m_SystemInfoList.GetSafeHwnd() );
+	//TRACE( _T("OnToolTipNotify> m_fileNameStaticCtrl: 0x%IX\n"), m_fileNameStaticCtrl.GetSafeHwnd() );
+	//TRACE( _T("OnToolTipNotify> m_fileNameCtrl: 0x%IX\n"), m_fileNameCtrl.GetSafeHwnd() );
+	//TRACE( _T("OnToolTipNotify> m_wndToolBar: 0x%IX\n"), m_wndToolBar.GetSafeHwnd() );
+	//TRACE( _T("OnToolTipNotify> m_wndStatusBar: 0x%IX\n"), m_wndStatusBar.GetSafeHwnd() );
+	//TRACE( _T("OnToolTipNotify> m_SystemInfoList: 0x%IX\n"), m_SystemInfoList.GetSafeHwnd() );
 
 	if (pTTT->uFlags & TTF_IDISHWND)
     {
@@ -489,12 +489,13 @@ BOOL CSystemInfoDlg::OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pRe
 	if(nID != 0)
 	{
 		CString s;
-		s.LoadString(nID);
+		ASSERT(nID <= UINT_MAX);
+		s.LoadString((UINT)nID);
 		if( nID < 41000 )
 		{
-			s = LocLoadString(nID);
+			s = LocLoadString((UINT)nID);
 		}
-		TRACE( _T("Load string #%d = \"%s\"\n"), nID, s );
+		TRACE(_T("Load string #%Id = \"%s\"\n"), nID, s);
 		s = s.Left( SIZEOF_ARRAY(pTTT->szText)-1 );
 		_tcsncpy( pTTT->szText, s, SIZEOF_ARRAY(pTTT->szText) );
 		pTTT->lpszText = pTTT->szText;
@@ -507,7 +508,7 @@ BOOL CSystemInfoDlg::OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pRe
 
 BOOL CSystemInfoDlg::CreateToolbar()
 {
-	BOOL res;
+	BOOL res = FALSE;
 	CRect rcClientStart(0,0,0,0);
 	GetClientRect(rcClientStart);
 
@@ -858,14 +859,14 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemHandleInformation hi( GetInitProcessId(), TRUE, _T("File") );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for ( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
 
 				CString strDevice, strPath;
-				SystemHandleInformation::GetName( (HANDLE)h.sh.HandleNumber, strDevice, h.sh.ProcessID );
+				SystemHandleInformation::GetName(h.sh.HandleValue, strDevice, h.sh.GetPid());
 				SystemInfoUtils::GetFsFileName( strDevice, strPath );
 
 				h.InsertFile( m_SystemInfoList, FALSE, iItem, iItemCount, strDevice, strPath );
@@ -878,8 +879,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemModuleInformation mi( GetInitProcessId(), TRUE );
 
-			int iItem = 0;
-			int iItemCount = mi.m_ModuleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = mi.m_ModuleInfos.GetCount();
 			for ( POSITION pos = mi.m_ModuleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemModuleInformation::MODULE_INFO& m = mi.m_ModuleInfos.GetNext(pos);
@@ -900,7 +901,7 @@ void CSystemInfoDlg::RefreshList()
 				CString strItem;
 				SystemWindowInformation::WINDOW_INFO& w = wi.m_WindowInfos.GetNext(pos);
 
-				strItem.Format( _T("0x%08X"), w.hWnd );
+				strItem.Format( _T("0x%08IX"), w.hWnd );
 
 				int iItemCount = m_SystemInfoList.GetItemCount();
 				int nPos = m_SystemInfoList.InsertItem( iItemCount, strItem );
@@ -935,8 +936,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemHandleInformation hi( GetInitProcessId(), TRUE, NULL );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for ( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
@@ -951,8 +952,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemThreadInformation ti( GetInitProcessId(), TRUE );
 
-			int iItem = 0;
-			int iItemCount = ti.m_ThreadInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = ti.m_ThreadInfos.GetCount();
 			for ( POSITION pos = ti.m_ThreadInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemThreadInformation::THREAD_INFORMATION& t = ti.m_ThreadInfos.GetNext(pos);
@@ -967,9 +968,9 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemMemoryMapInformation smi( GetInitProcessId(), m_bExpandRegions, TRUE );
 
-			int iItem = 0;
-			int iItemCount = smi.m_MemoryInfos.GetCount();
-			//TRACE( _T("Got %d memory blocks\n"), smi.m_MemoryInfos.GetCount() );
+			size_t iItem = 0;
+			size_t iItemCount = smi.m_MemoryInfos.GetCount();
+			//TRACE( _T("Got %Id memory blocks\n"), smi.m_MemoryInfos.GetCount() );
 			for ( POSITION pos = smi.m_MemoryInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemMemoryMapInformation::MEMORY_INFORMATION& mi = smi.m_MemoryInfos.GetNext(pos);
@@ -996,14 +997,14 @@ void CSystemInfoDlg::RefreshList()
 
 			SystemHandleInformation hi( ALL_PROCESSES, TRUE, _T("File") );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
 
 				CString strDevice, strPath;
-				SystemHandleInformation::GetName( (HANDLE)h.sh.HandleNumber, strDevice, h.sh.ProcessID );
+				SystemHandleInformation::GetName(h.sh.HandleValue, strDevice, h.sh.GetPid());
 				SystemInfoUtils::GetFsFileName( strDevice, strPath );
 
 
@@ -1041,8 +1042,8 @@ void CSystemInfoDlg::RefreshList()
 
 			SystemModuleInformation mi( ALL_PROCESSES, TRUE );
 
-			int iItem = 0;
-			int iItemCount = mi.m_ModuleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = mi.m_ModuleInfos.GetCount();
 			for( POSITION pos = mi.m_ModuleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemModuleInformation::MODULE_INFO& m = mi.m_ModuleInfos.GetNext(pos);
@@ -1068,8 +1069,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemHandleInformation hi( ALL_PROCESSES, TRUE, NULL );
 
-			int iItem = 0;
-			int iItemCount = hi.m_HandleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = hi.m_HandleInfos.GetCount();
 			for ( POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
@@ -1084,8 +1085,8 @@ void CSystemInfoDlg::RefreshList()
 		{
 			SystemKernelModuleInformation kmi( TRUE );
 
-			int iItem = 0;
-			int iItemCount = kmi.m_KernelModuleInfos.GetCount();
+			size_t iItem = 0;
+			size_t iItemCount = kmi.m_KernelModuleInfos.GetCount();
 			for ( POSITION pos = kmi.m_KernelModuleInfos.GetHeadPosition(); pos != NULL; )
 			{
 				SystemKernelModuleInformation::KERNEL_MODULE_INFORMATION& km = kmi.m_KernelModuleInfos.GetNext(pos);
@@ -1390,7 +1391,7 @@ HANDLE CSystemInfoDlg::GetSelectedHandle()
    if ( !m_SystemInfoList.GetSelectedSubItemText( COLUMN_HANDLE, subItemText ) )
       return 0;
 
-   _stscanf( (LPCTSTR)subItemText, _T("0x%X"), &handle );
+   _stscanf( (LPCTSTR)subItemText, _T("0x%IX"), &handle );
 
    return handle;
 }
@@ -1447,7 +1448,7 @@ void CSystemInfoDlg::OnItemchangedListview(NMHDR* pNMHDR, LRESULT* pResult)
 void CSystemInfoDlg::OnFindText() 
 {
 	CFindTextDlg m_FindDlg;
-	int res = m_FindDlg.DoModal();
+	INT_PTR res = m_FindDlg.DoModal();
 	if( res == IDOK )
 	{
 		m_FindOptions = m_FindDlg.m_options;
@@ -1890,10 +1891,10 @@ void CSystemInfoDlg::OnHandlesThreadTerminate()
 	if ( !bOK && handle != NULL && processID != 0 )
 	{
 		const DWORD dwArgumentCount = 2;
-		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle, 0 };
+		DWORD_PTR dwArguments[dwArgumentCount] = { (DWORD_PTR)handle, 0 };
 
 		TRACE( _T("TerminateThread #2\n") );
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
 		using namespace RemoteExecute;
@@ -1916,7 +1917,7 @@ void CSystemInfoDlg::OnHandlesThreadTerminate()
 			HANDLE hLocalHandle = SystemHandleInformation::DuplicateHandle( processID, handle );
 			if( hLocalHandle != NULL )
 			{
-				TRACE( _T("TerminateThread #3 (0x%X)\n"), hLocalHandle );
+				TRACE( _T("TerminateThread #3 (0x%IX)\n"), hLocalHandle );
 				BOOL res = TerminateThread( hLocalHandle, 0 );
 				TRACE( _T("TerminateThread #3... err = %d\n"), GetLastError() );
 				CloseHandle( hLocalHandle );
@@ -1931,7 +1932,7 @@ void CSystemInfoDlg::OnHandlesThreadTerminate()
 				AfxMessageBox( LocLoadString(IDS_CANT_OPEN_PROCESS) );
 			}
 		}
-		//TRACE( _T("LoadDllForRemoteThread> TerminateThread: PID = %d, dwRet = 0x%X, dwFuncRetVal = %d, LastError = %d\n"),
+		//TRACE( _T("LoadDllForRemoteThread> TerminateThread: PID = %d, dwRet = 0x%X, dwFuncRetVal = %Id, LastError = %d\n"),
 		//	processID, dwRet, dwFuncRetVal, LastError );
 	}
 
@@ -1955,9 +1956,9 @@ void CSystemInfoDlg::OnHandlesWindowstationAssigntoprocess()
 	if ( handle != NULL )
 	{
 		const DWORD dwArgumentCount = 1;
-		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle };
+		DWORD_PTR dwArguments[dwArgumentCount] = { (DWORD_PTR)handle };
 
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
 		using namespace RemoteExecute;
@@ -1990,9 +1991,9 @@ void CSystemInfoDlg::OnHandlesDesktopSwithto()
 	if ( handle != NULL )
 	{
 		const DWORD dwArgumentCount = 1;
-		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle };
+		DWORD_PTR dwArguments[dwArgumentCount] = { (DWORD_PTR)handle };
 
-		DWORD dwFuncRetVal = FALSE;
+		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
 
 		using namespace RemoteExecute;

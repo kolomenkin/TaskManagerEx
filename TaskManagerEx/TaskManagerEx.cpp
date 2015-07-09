@@ -81,10 +81,10 @@ TCHAR szDllPath[_MAX_PATH] = _T(""); // TaskManagerEx.dll name
 BOOL IsHookedTaskManagerWindow( HWND hwnd )
 {
 	#ifdef _DEBUG
-//	OutputDebugString( _T("TaskManagerEx: GetWindowLong( hwnd, GWL_USERDATA );\n") );
+//	OutputDebugString( _T("TaskManagerEx: GetWindowLongPtr( hwnd, GWLP_USERDATA );\n") );
 	#endif
 
-	LONG lUserData = GetWindowLong( hwnd, GWL_USERDATA );
+	LONG_PTR lUserData = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if( lUserData == TASKMANAGEREX_WINDOW_LONG_USER_MAGIC_VALUE )
 	{
 		return TRUE;
@@ -107,6 +107,10 @@ BOOL IsHookedTaskManagerWindow( HWND hwnd )
 
 BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 {
+//#ifdef _DEBUG
+	//TRACE(_T("TaskManagerEx> LoadDllToRemoteTaskManager, hwnd = %08IX\n"), hwnd);
+//#endif
+
 	// Check if window has already been hooked:
 	BOOL bIsHooked = IsHookedTaskManagerWindow( hwnd );
 	if( bIsHooked )
@@ -115,12 +119,7 @@ BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 	}
 
 	DWORD processId = GetTaskManagerProcessID( hwnd );
-	#ifdef _DEBUG
-	TCHAR s[200] = _T("");
-	wsprintf( s, _T("TaskManagerEx> LoadDllForRemoteThread for PID = %d\n"),
-		processId );
-	OutputDebugString( s );
-	#endif
+	TRACE(_T("TaskManagerEx> LoadDllForRemoteThread for PID = %d, hwnd = %08IX\n"), processId, hwnd);
 
 	using namespace RemoteExecute;
 	DWORD dwRet = LoadDllForRemoteThread( processId, 
@@ -134,12 +133,8 @@ BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 
 	if( !bOK )
 	{
-		#ifdef _DEBUG
-		TCHAR s[200] = _T("");
-		wsprintf( s, _T("TaskManagerEx> LoadDllForRemoteThread for PID = %d returned %d (0x%X)\n"),
-			processId, dwRet, dwRet );
-		OutputDebugString( s );
-		#endif
+		TRACE(_T("TaskManagerEx> LoadDllForRemoteThread for PID = %d returned %d (0x%X)\n"),
+			processId, dwRet, dwRet);
 	}
 
 	BOOL bRunOnceOnly = FALSE;
@@ -148,8 +143,8 @@ BOOL LoadDllToRemoteTaskManager( HWND hwnd )
 		HKEY hKey = NULL;
 		DWORD dwType = REG_DWORD;
 		DWORD dwSize = sizeof(DWORD);
-		LONG lRes;
-		DWORD dwValue;
+		LONG lRes = 0;
+		DWORD dwValue = 0;
 
 		::RegOpenKey( REG_ROOT, REG_KEY, &hKey );
 
@@ -208,7 +203,7 @@ exit:
 VOID CALLBACK ThreadTimerProc(
 	HWND hwnd,
     UINT uMsg,
-    UINT idEvent,
+	UINT_PTR idEvent,
     DWORD dwTime
 )
 {
@@ -244,8 +239,8 @@ int MainFunction()
 {
 //	g_szLocale = _tsetlocale( LC_ALL, _T("") ); // it is commented because CRT was reduced from this project
 												// so there is no need in localization of CRT library
-	BOOL res;
-	DWORD dwBufSize;
+	BOOL res = FALSE;
+	DWORD dwBufSize = 0;
 
 	TCHAR szCaption[200] = _T("");
 	TCHAR szRequireNT[200] = _T("");
@@ -273,6 +268,19 @@ int MainFunction()
 		MessageBox( NULL, szRequireNT, szCaption, MB_OK | MB_ICONERROR );
 		return -1;
 	}
+
+#if 0
+	//void RemoteDllThread_NextProc();
+	//PVOID GetFuncAddress(PVOID addr);
+	//const ptrdiff_t nFuncSize = SIZE_T(PBYTE(GetFuncAddress(RemoteDllThread_NextProc)) - PBYTE(GetFuncAddress(RemoteDllThread)));
+#pragma comment(lib, "TaskManagerExDll.lib")
+	res = TestProc();
+	if (res != 999)
+		return 0;
+#endif
+
+	LPCTSTR pszOriginalCaption = GetTaskManagerCaption();
+	TRACE(_T("TaskManagerEx> Local task manager caption is \"%s\"\n"), pszOriginalCaption);
 
 	BOOL bAnother	= FALSE;
 
@@ -382,15 +390,6 @@ int MainFunction()
 		ASSERT(FALSE);
 		return -1;
 	}
-
-	dwWindowsNTMajorVersion = IsWindowsNT();
-
-	if ( dwWindowsNTMajorVersion < 4 )
-	{
-		MessageBox( NULL, szRequireNT, szCaption, MB_OK | MB_ICONERROR );
-		return -1;
-	}
-
 
 	res = GetModuleFileName( NULL, szDllPath, _MAX_PATH );
 	if ( !res )

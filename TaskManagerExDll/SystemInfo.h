@@ -32,7 +32,7 @@
 
 #define PID_SYSTEM_WIN_NT4		2
 #define PID_SYSTEM_WIN_2K		4
-#define PID_SYSTEM_WIN_XP		8
+#define PID_SYSTEM_WIN_XP		8	// 8??? Win XP SP3 uses PID 4 for this
 
 #define IS_PID_SYSTEM(pid)		((pid) == PID_SYSTEM_WIN_NT4 || \
 								 (pid) == PID_SYSTEM_WIN_2K || \
@@ -71,22 +71,7 @@ public:
 	static BOOL GetFsFileName( LPCTSTR, CString& );
 
 	static CString DecodeModuleName( const CString& strFullName );
-
-	//////////////////////////////////////////////////////////////////////////////////
-	// Information functions
-
-	static OSVERSIONINFO GetNTVersion();
 };
-
-//////////////////////////////////////////////////////////////////////////////////////
-
-extern OSVERSIONINFO	NTVersion;
-extern DWORD			dwNTMajorVersion;
-extern DWORD			dwNTMinorVersion;
-extern DWORD			dwNTVersion; //  0x00050000 - Win2000, 0x00050001 - WinXP
-
-#define	OSVERSION_2000		0x00050000
-#define	OSVERSION_XP		0x00050001
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
@@ -121,8 +106,8 @@ public:
 		//IO_COUNTERS				ioc;		// Windows 2000+ (GetProcessIoCounters), see also SYSTEM_PROCESS_INFORMATION
 
 		BOOL		bDisablePriorityBoost;		// GetProcessPriorityBoost
-		DWORD		dwProcessAffinity;			// GetProcessAffinityMask
-		DWORD		dwSystemAffinity;			// GetProcessAffinityMask
+		DWORD_PTR	nProcessAffinity;			// GetProcessAffinityMask
+		DWORD_PTR	nSystemAffinity;			// GetProcessAffinityMask
 		//DWORD		dwDefaultLayout;			// Windows 2000+ (GetProcessDefaultLayout)
 		FILETIME	ftCreation;					// GetProcessTimes, see also SYSTEM_PROCESS_INFORMATION
 		FILETIME	ftExit;						// GetProcessTimes
@@ -134,8 +119,6 @@ public:
 
 		TCHAR		szExe[MAX_PATH];			// IPsapi::GetModuleFileNameEx( NULL )
 	};
-
-	enum { BufferSize = 0x10000 };
 
 public:
 	SystemProcessInformation( DWORD processId, BOOL bAdditionalInfo, BOOL bRefresh );
@@ -151,7 +134,6 @@ public:
 protected:
 	DWORD		m_processId;
 	BOOL		m_bAdditionalInfo;
-	UCHAR*		m_pBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +158,7 @@ public:
 		TCHAR		Module[MAX_PATH];
 
 		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount) const;
 	};
 
 public:
@@ -205,13 +187,13 @@ public:
 
 	struct HANDLE_INFORMATION
 	{
-		SYSTEM_HANDLE sh;
+		SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sh;
 
 		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount) const;
 
 		static void InsertFileColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int InsertFile( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount,
+		int InsertFile(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount,
 			LPCTSTR szDevice, LPCTSTR szPath ) const;
 	};
 
@@ -300,7 +282,7 @@ public:
 		MODULEENTRY32 me32;
 
 		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
-		int Insert( CSystemInfoListCtrl& list, BOOL bPid, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount) const;
 	} MODULE_INFO;
 
 public:
@@ -335,7 +317,7 @@ public:
 		TCHAR	Name[MAX_PATH];
 
 		static void InsertColumns( CSystemInfoListCtrl& list );
-		int Insert( CSystemInfoListCtrl& list, int iItem, int iItemCount ) const;
+		int Insert(CSystemInfoListCtrl& list, size_t iItem, size_t iItemCount) const;
 	};
 
 public:
@@ -366,7 +348,7 @@ public:
 		TCHAR		MappedFile[MAX_PATH];
 
 		static void InsertColumns( CSystemInfoListCtrl& list );
-		int Insert( CSystemInfoListCtrl& list, int iItem, int iItemCount, BOOL bExpandRegions ) const;
+		int Insert(CSystemInfoListCtrl& list, size_t iItem, size_t iItemCount, BOOL bExpandRegions) const;
 	};
 
 public:

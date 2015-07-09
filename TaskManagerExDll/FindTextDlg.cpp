@@ -129,9 +129,9 @@ BOOL CFindTextDlg::LoadHistory()
 	::RegOpenKey( REG_ROOT, key, &hKey );
 
 	CString	strFind;
-	BOOL	bMatchCase = FALSE;
-	BOOL	bMatchWholeWordOnly = FALSE;
-	BOOL	bForward = TRUE; // Down
+	DWORD	bMatchCase = FALSE;
+	DWORD	bMatchWholeWordOnly = FALSE;
+	DWORD	bForward = TRUE; // Down
 
 	if( hKey != NULL )
 	{
@@ -190,7 +190,7 @@ BOOL CFindTextDlg::SaveHistory()
 {
 	HKEY hKey = NULL;
 
-	int i;
+	ptrdiff_t i = 0;
 	for( i=0; i<m_FindHistory.GetSize(); i++ )
 	{
 		CString s = m_FindHistory.GetAt( i );
@@ -202,35 +202,40 @@ BOOL CFindTextDlg::SaveHistory()
 	}
 	m_FindHistory.InsertAt( 0, m_options.m_strFind );
 
+	DWORD dwRegVal = 0;
 	CString key;
 	key.Format( _T("%s\\Find"), REG_KEY );
 	::RegCreateKey( REG_ROOT, key, &hKey );
 
 	if( hKey != NULL )
 	{
+		dwRegVal = m_options.m_bMatchCase;
 		::RegSetValueEx( hKey, _T("MatchCase"), NULL, REG_DWORD, 
-				   (const BYTE*)&m_options.m_bMatchCase, sizeof(DWORD) );
+			(const BYTE*)&dwRegVal, sizeof(DWORD));
 
-		::RegSetValueEx( hKey, _T("MatchWholeWordOnly"), NULL, REG_DWORD, 
-				   (const BYTE*)&m_options.m_bMatchWholeWordOnly, sizeof(DWORD) );
+		dwRegVal = m_options.m_bMatchWholeWordOnly;
+		::RegSetValueEx(hKey, _T("MatchWholeWordOnly"), NULL, REG_DWORD,
+			(const BYTE*)&dwRegVal, sizeof(DWORD));
 
-		::RegSetValueEx( hKey, _T("FindForward"), NULL, REG_DWORD, 
-				   (const BYTE*)&m_options.m_bForward, sizeof(DWORD) );
+		dwRegVal = m_options.m_bForward;
+		::RegSetValueEx(hKey, _T("FindForward"), NULL, REG_DWORD,
+			(const BYTE*)&dwRegVal, sizeof(DWORD));
 
-		int n = m_FindHistory.GetSize();
+		ptrdiff_t n = m_FindHistory.GetSize();
 
 		for( i=0; i<n && i<MAX_HISTORY_DEPTH; i++ )
 		{
 			CString s = m_FindHistory.GetAt( i );
 			CString value;
-			value.Format( _T("Text_%02d"), i+1 );
+			value.Format( _T("Text_%02Id"), i+1 );
 
 			::RegSetValueEx( hKey, value, NULL, REG_SZ,
 					   (const BYTE*)(LPCTSTR)s, (s.GetLength()+1)*sizeof(TCHAR) );
 		}
 
+		dwRegVal = (DWORD) n;
 		::RegSetValueEx( hKey, _T("HistoryDepth"), NULL, REG_DWORD,
-				   (const BYTE*)&n, sizeof(DWORD) );
+			(const BYTE*)&dwRegVal, sizeof(DWORD));
 
 		::RegCloseKey( hKey );
 	}
@@ -263,7 +268,7 @@ BOOL CFindTextDlg::OnHelpInfo(HELPINFO* pHelpInfo)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CFindTextDlg::DoModal() 
+INT_PTR CFindTextDlg::DoModal()
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )

@@ -30,8 +30,8 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(COptionsPropertySheet)
-	public:
-	virtual int DoModal();
+public:
+	virtual INT_PTR DoModal() override;
 	//}}AFX_VIRTUAL
 
 // Implementation

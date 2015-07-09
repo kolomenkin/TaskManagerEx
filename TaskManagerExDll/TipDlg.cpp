@@ -238,7 +238,7 @@ void CTipDlg::OnPaint()
 }
 
 
-int CTipDlg::DoModal() 
+INT_PTR CTipDlg::DoModal() 
 {
 	// load resource as necessary
 	if( m_lpszTemplateName != NULL && m_lpDialogTemplate == NULL )

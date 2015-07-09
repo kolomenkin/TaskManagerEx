@@ -10,7 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define WINVER 0x0400
+#define WINVER 0x0501
 //#define WINVER 0x0500 // for multimonitor support
 
 #define _CRT_SECURE_NO_DEPRECATE
@@ -34,6 +34,12 @@ void MyTrace( LPCTSTR szFormat, ... );
 #include <assert.h>
 #define ASSERT assert
 
+//////////////////////////////////////////////////////////////////////////
+
+static bool g_bMoreLogging = true;
+
+#define DO_TRACE_ALWAYS
+
 #undef TRACE
 #ifdef _DEBUG
 #define TRACE	MyTrace
@@ -41,16 +47,23 @@ void MyTrace( LPCTSTR szFormat, ... );
 #define TRACE	1 ? (void)0 : MyTrace
 #endif
 
+#ifdef DO_TRACE_ALWAYS
+#undef TRACE
+#define TRACE	MyTrace
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+
 //#include <atlbase.h>
 //#define TRACE	ATLTRACE
 //#define ASSERT	ATLASSERT
 
 //////////////////////////////////////////////////////////////////////////
 
-inline void my_memset( void* ptr, unsigned char ch, int bytes )
+inline void my_memset(void* ptr, unsigned char ch, size_t bytes)
 {
 	unsigned char* p = (unsigned char*)ptr;
-	for( int i=0; i<bytes; i++ )
+	for (size_t i = 0; i<bytes; i++)
 	{
 		*p = ch;
 		p++;

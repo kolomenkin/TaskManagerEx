@@ -1,0 +1,49 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Auto-generated compiler files:
+ipch/*
+Bin/*
+Intermediate/*
+Debug/*
+Debug-x86/*
+Debug-x64/*
+Release/*
+Release-x86/*
+Release-x64/*
+TaskManagerEx/x64/*
+TaskManagerExDll/x64/*
+
+*.suo
+*.vxproj.user
+*.vcxproj.user
+*.sdf
+*.opensdf
+*.ilk
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app

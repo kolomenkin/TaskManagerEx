@@ -58,6 +58,14 @@
 	DEFINE_OBJ_TYPE( OB_TYPE_WMI_GUID,		_T("WmiGuid"),		_T("Wmi Guid"),			SE_WMIGUID_OBJECT,	FALSE,	FALSE )
 	DEFINE_OBJ_TYPE( OB_TYPE_JOB,			_T("Job"),			_T("Job"),				SE_KERNEL_OBJECT,	FALSE,	FALSE )
 
+	DEFINE_OBJ_TYPE( OB_TYPE_TP_WORKER_FACT,_T("TpWorkerFactory"),	_T("TpWorkerFactory"),	SE_KERNEL_OBJECT,	FALSE,	FALSE )
+	DEFINE_OBJ_TYPE( OB_TYPE_ALPC_PORT,		_T("ALPC Port"),		_T("ALPC Port"),		SE_KERNEL_OBJECT,	FALSE,	FALSE )
+	DEFINE_OBJ_TYPE( OB_TYPE_ETW_REGISTR,	_T("EtwRegistration"),	_T("EtwRegistration"),	SE_KERNEL_OBJECT,	FALSE,	FALSE )
+	DEFINE_OBJ_TYPE( OB_TYPE_TM_EN,			_T("TmEn"),				_T("TmEn"),				SE_KERNEL_OBJECT,	FALSE,	FALSE )
+	DEFINE_OBJ_TYPE( OB_TYPE_TM_RM,			_T("TmRm"),				_T("TmRm"),				SE_KERNEL_OBJECT,	FALSE,	FALSE )
+	DEFINE_OBJ_TYPE( OB_TYPE_TM_TM,			_T("TmTm"),				_T("TmTm"),				SE_KERNEL_OBJECT,	FALSE,	FALSE )
+	DEFINE_OBJ_TYPE( OB_TYPE_TM_TX,			_T("TmTx"),				_T("TmTx"),				SE_KERNEL_OBJECT,	FALSE,	FALSE )
+
 	DEFINE_OBJ_TYPE( OB_TYPE_CONTROLLER,	_T("Controller"),	_T("Controller"),		SE_KERNEL_OBJECT,	FALSE,	FALSE ) // I've never seen such object
 	DEFINE_OBJ_TYPE( OB_TYPE_DEVICE,		_T("Device"),		_T("Device"),			SE_KERNEL_OBJECT,	FALSE,	FALSE ) // I've never seen such object
 	DEFINE_OBJ_TYPE( OB_TYPE_DRIVER,		_T("Driver"),		_T("Driver"),			SE_KERNEL_OBJECT,	FALSE,	FALSE ) // I've never seen such object

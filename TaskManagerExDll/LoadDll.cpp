@@ -20,50 +20,32 @@
 
 #include "WindowsCore.h"
 
+//------------------------------------------------------
+
+#ifdef _WIN64
+const DWORD MAXINJECTSIZE = 8192;
+#else
 const DWORD MAXINJECTSIZE = 4096;
+#endif
 
+void RemoteDllThread_NextProc();
 
-DWORD IsWindowsNT()
-{
-   OSVERSIONINFOEX osvi;
-   BOOL bOsVersionInfoEx;
-   
-   // Try calling GetVersionEx using the OSVERSIONINFOEX structure,
-   // which is supported on Windows 2000.
-   //
-   // If that fails, try using the OSVERSIONINFO structure.
-
-   my_memset(&osvi, 0, sizeof(OSVERSIONINFOEX));
-   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
-   bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi);
-
-   if( bOsVersionInfoEx == 0 )
-   {
-      // If OSVERSIONINFOEX doesn't work, try OSVERSIONINFO.
-
-      osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-      if (! GetVersionEx ( (OSVERSIONINFO *) &osvi) ) 
-         return FALSE;
-   }
-
-   return ( osvi.dwPlatformId == VER_PLATFORM_WIN32_NT ? osvi.dwMajorVersion : 0 );
-}
+//------------------------------------------------------
 
 PVOID GetFuncAddress(PVOID addr)
 {
 #ifdef _DEBUG
 	//check if instruction is relative jump (E9)
 	if (0xE9 != *((UCHAR*)addr))
-	return addr;
+		return addr;
 
 	// calculate base of relative jump
-	ULONG base = (ULONG)((UCHAR*)addr + 5);
+	const ULONG_PTR base = (ULONG_PTR)((UCHAR*)addr + 5);
 
 	// calculate offset 
-	ULONG *offset = (ULONG*)((UCHAR*)addr + 1);
+	const LONG *offset = (LONG*)((UCHAR*)addr + 1);
 
-	return (PVOID)(base + *offset);
+	return (PVOID)(base + (LONG_PTR)*offset);
 #else
 	// in release, don't have to mess with jumps
 	return addr;
@@ -78,14 +60,14 @@ DWORD LoadDllForRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		)
 {
 	DWORD rc = (DWORD)-2;
@@ -144,14 +126,14 @@ DWORD ExecuteRemoteThread(
 		RemoteExecute::eSpecialMode SpecialMode,
 		LPCTSTR	lpModuleName,
 		LPCSTR	lpFunctionName,
-		DWORD*	pReturnCodeForFunction,
-		DWORD*	pReturnCodeForFunctionSpecial,
+		DWORD_PTR*	pReturnCodeForFunction,
+		DWORD_PTR*	pReturnCodeForFunctionSpecial,
 		LONG*	pLastError,
 		DWORD*	pErrorLoad,
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		)
 {
 	HANDLE ht = 0;
@@ -160,9 +142,9 @@ DWORD ExecuteRemoteThread(
 	DWORD rc = (DWORD)-1;
 	HMODULE hKernel32 = 0;
 	RemoteDllThreadBlock localCopy;
-	DWORD i;
+	DWORD i = 0;
 	DWORD ThreadId = 0;
-	DWORD dwReadBytes = 0;
+	SIZE_T nReadBytes = 0;
 	DWORD WaitObjectRes = 0;
 	BYTE* pSpecialBuffer = NULL;
 
@@ -173,17 +155,36 @@ DWORD ExecuteRemoteThread(
 	// allocate memory for injected code
 	p = VirtualAllocEx( hProcess, 0, MAXINJECTSIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE );
 	if ( p == 0 )
+	{
+		rc = (DWORD)-101;
+		TRACE(_T("ExecuteRemoteThread: VirtualAllocEx failed: %d\n"), GetLastError());
 		goto cleanup;
+	}
 
 	// allocate memory for parameter block
 	c = (RemoteDllThreadBlock*) VirtualAllocEx( hProcess, 0, sizeof(RemoteDllThreadBlock), MEM_COMMIT, PAGE_READWRITE );
 	if ( c == 0 )
+	{
+		rc = (DWORD)-102;
 		goto cleanup;
+	}
+
+	const ptrdiff_t nFuncSize = SIZE_T(PBYTE(GetFuncAddress(RemoteDllThread_NextProc)) - PBYTE(GetFuncAddress(RemoteDllThread)));
+	if (g_bMoreLogging)
+	{
+		TRACE(_T("ExecuteRemoteThread: RemoteDllThread function size: %Id\n"), nFuncSize);
+	}
+	ASSERT(MAXINJECTSIZE >= nFuncSize);
+	RemoteDllThread_NextProc();	// it does nothing, put here just to prevent optimizers to do any optimization
 
 	// copy function there, we will execute this piece of code
 	if ( ! WriteProcessMemory( hProcess, p, GetFuncAddress(RemoteDllThread), MAXINJECTSIZE, 0 ) )
+	{
+		rc = (DWORD)-103;
+		TRACE(_T("ExecuteRemoteThread: WriteProcessMemory failed: %d\n"), GetLastError());
 		goto cleanup;
-	
+	}
+
 	// copy dll path to parameter block
 	lstrcpyn( localCopy.lpModulePath, lpModuleName, SIZEOF_ARRAY(localCopy.lpModulePath) );
 //#ifdef _UNICODE
@@ -207,8 +208,11 @@ DWORD ExecuteRemoteThread(
 	hKernel32 = GetModuleHandle( _T("kernel32.dll") );
 
 	if ( hKernel32 == NULL )
+	{
+		rc = (DWORD)-104;
 		goto cleanup;
-	
+	}
+
 	// get the addresses for the functions, what we will use in the remote thread
 
 	localCopy.fnLoadLibrary = (PLoadLibrary)GetProcAddress( hKernel32, "LoadLibrary" FUNC_SUFFIX );
@@ -226,11 +230,13 @@ DWORD ExecuteRemoteThread(
 
 	if( dwArgumentCount > REMOTE_MAX_ARGUMENTS )
 	{
+		rc = (DWORD)-105;
 		goto cleanup;
 	}
 
 	if( pdwArguments == NULL && dwArgumentCount != 0 )
 	{
+		rc = (DWORD)-106;
 		goto cleanup;
 	}
 
@@ -242,36 +248,49 @@ DWORD ExecuteRemoteThread(
 
 	// copy the parameterblock to the other process adress space
 	if ( ! WriteProcessMemory( hProcess, c, &localCopy, sizeof localCopy, 0 ) )
+	{
+		rc = (DWORD)-107;
 		goto cleanup;
+	}
 
 	// CreateRemoteThread()
 	ht = CreateRemoteThread( hProcess, 0, 0, (DWORD (__stdcall *)( void *)) p, c, 0, &ThreadId );
 	if ( ht == NULL )
+	{
+		rc = (DWORD)-108;
+		TRACE(_T("ExecuteRemoteThread: CreateRemoteThread failed: %d\n"), GetLastError());
 		goto cleanup;
+	}
 
 	WaitObjectRes = WaitForSingleObject( ht, INFINITE );
 	switch ( WaitObjectRes )
 	{
 	case WAIT_TIMEOUT:
+	{
+		rc = (DWORD)-109;
 		goto cleanup;
+	}
 
 	case WAIT_FAILED:
+	{
+		rc = (DWORD)-110;
 		goto cleanup;
+	}
 
 	case WAIT_OBJECT_0:
 		// this might just have worked, pick up the result!
-		// rad back the prameter block, it has the error code
+		// rad back the parameter block, it has the error code
 
 		// clear the parameter block
 		my_memset( &localCopy, 0, sizeof(localCopy) );
 
-		if ( ! ReadProcessMemory( hProcess, c, &localCopy, sizeof(localCopy), &dwReadBytes ) )
+		if ( ! ReadProcessMemory( hProcess, c, &localCopy, sizeof(localCopy), &nReadBytes ) )
 		{
 			rc = 0x100;
 			goto cleanup;
 		}
 
-		if( dwReadBytes != sizeof(localCopy) )
+		if( nReadBytes != sizeof(localCopy) )
 		{
 			rc = 0x200;
 			goto cleanup;
@@ -321,24 +340,24 @@ DWORD ExecuteRemoteThread(
 				LPCVOID pRemoteBuffer = (LPCVOID) localCopy.ReturnCodeForFunction;
 				if( pRemoteBuffer != NULL )
 				{
-					DWORD n = localCopy.ReturnCodeForFunctionSpecial;
+					size_t n = localCopy.ReturnCodeForFunctionSpecial;
 					pSpecialBuffer = (PBYTE) LocalAlloc( LMEM_FIXED, n );
 					if( pSpecialBuffer != NULL )
 					{
 						my_memset( pSpecialBuffer, 0, n );
-						if ( ! ReadProcessMemory( hProcess, pRemoteBuffer, pSpecialBuffer, n, &dwReadBytes ) )
+						if ( ! ReadProcessMemory( hProcess, pRemoteBuffer, pSpecialBuffer, n, &nReadBytes ) )
 						{
 							rc = 0x500;
 							goto cleanup;
 						}
 
-						if( dwReadBytes != n )
+						if( nReadBytes != n )
 						{
 							rc = 0x600;
 							goto cleanup;
 						}
 
-						*pReturnCodeForFunction = (DWORD) pSpecialBuffer;
+						*pReturnCodeForFunction = (DWORD_PTR) pSpecialBuffer;
 						*pReturnCodeForFunctionSpecial = n;
 						pSpecialBuffer = NULL;
 					}
@@ -384,7 +403,7 @@ cleanup:
 	return rc;
 }
 
-void FreeSpecialBuffer( DWORD pReturnCodeForFunction )
+void FreeSpecialBuffer(DWORD_PTR pReturnCodeForFunction)
 {
 	if( pReturnCodeForFunction )
 	{
@@ -566,14 +585,14 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 	// and this is the code we are injecting
 
 	typedef DWORD (WINAPI *PFN)();
-	typedef DWORD (WINAPI *PFN1)(DWORD);
-	typedef DWORD (WINAPI *PFN2)(DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN3)(DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN4)(DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN5)(DWORD,DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN6)(DWORD,DWORD,DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN7)(DWORD,DWORD,DWORD,DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN8)(DWORD,DWORD,DWORD,DWORD,DWORD,DWORD,DWORD,DWORD);
+	typedef DWORD (WINAPI *PFN1)(DWORD_PTR);
+	typedef DWORD (WINAPI *PFN2)(DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN3)(DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN4)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN5)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN6)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN7)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN8)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
 
 	HMODULE hModule = NULL;
 
@@ -606,8 +625,8 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 		// execute the function, and get the result
 		if ( pfn != NULL )
 		{
-			DWORD ret = 0;
-			DWORD* p = execBlock->Arguments;
+			DWORD_PTR ret = 0;
+			DWORD_PTR* p = execBlock->Arguments;
 			execBlock->ErrorFunction = 0;
 
 			execBlock->LastError = 0;
@@ -659,7 +678,7 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 				TCHAR* p = (TCHAR*)ret;
 				if( p != NULL )
 				{
-					int n = 0;
+					size_t n = 0;
 					while( *p )
 					{
 						n++;
@@ -673,7 +692,7 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 				TCHAR* p = (TCHAR*)ret;
 				if( p != NULL )
 				{
-					int n = 0;
+					size_t n = 0;
 					while( *p )
 					{
 						while( *p )
@@ -702,6 +721,10 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 	execBlock->hModule = hModule;
 	
 	return 0;
+}
+
+void RemoteDllThread_NextProc()
+{
 }
 
 /*

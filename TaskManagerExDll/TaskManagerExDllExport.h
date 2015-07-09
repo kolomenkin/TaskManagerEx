@@ -8,7 +8,8 @@
 // TASKMANAGEREXDLL_API functions as being imported from a DLL, wheras this DLL sees symbols
 // defined with this macro as being exported.
 #ifdef TASKMANAGEREXDLL_EXPORTS
-#define TASKMANAGEREXDLL_API __declspec(dllexport)
+//#define TASKMANAGEREXDLL_API __declspec(dllexport)
+#define TASKMANAGEREXDLL_API	// no need to specify dllexport once we specified the same functions in .def file (and are using extern "C")
 #else
 #define TASKMANAGEREXDLL_API __declspec(dllimport)
 #endif
@@ -30,6 +31,7 @@
 extern "C"
 {
 	TASKMANAGEREXDLL_API BOOL WINAPI Initialize();
+	TASKMANAGEREXDLL_API BOOL WINAPI TestProc();
 }
 
 TASKMANAGEREXDLL_DEBUG_API void EnableDebugPriv( void );

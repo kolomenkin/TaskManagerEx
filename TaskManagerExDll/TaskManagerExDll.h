@@ -131,8 +131,8 @@ public:
 	void RefreshProcessList();
 
 	ProcessesItemData* GetSelectedProcessData();
-	ProcessesItemData* GetProcessData( int );
-	ApplicationsItemData* GetApplicationsData( int nItem );
+	ProcessesItemData* GetProcessData( INT_PTR );
+	ApplicationsItemData* GetApplicationsData(INT_PTR nItem);
 
 	BOOL IsProcessService( DWORD );
 

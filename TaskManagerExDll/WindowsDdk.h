@@ -15,7 +15,9 @@ typedef NTSTATUS *PNTSTATUS;
 
 #define STATUS_SUCCESS							((NTSTATUS)0x00000000L) // ntsubauth
 
+#ifndef _WIN64
 typedef unsigned long ULONG_PTR, *PULONG_PTR;
+#endif
 
 typedef struct _IO_STATUS_BLOCK {
     union {
@@ -36,17 +38,18 @@ typedef struct _UNICODE_STRING
 
 typedef LONG KPRIORITY;
 
-#pragma pack(4)
 typedef struct _PEB_LDR_DATA
 {
 	ULONG Length;
-	BOOLEAN Initialized;
+	union {
+		BOOLEAN Initialized;
+		DWORD dwDummy;		// added to remove x64 warning: warning C4121: '_PEB_LDR_DATA' : alignment of a member was sensitive to packing
+	};
 	PVOID SsHandle;
 	LIST_ENTRY InLoadOrderModuleList;
 	LIST_ENTRY InMemoryOrderModuleList;
 	LIST_ENTRY InInitializationOrderModuleList;
 } PEB_LDR_DATA, *PPEB_LDR_DATA;
-#pragma pack() 
 
 typedef struct _RTL_DRIVE_LETTER_CURDIR {
 	USHORT Flags;
@@ -200,11 +203,23 @@ typedef struct _VM_COUNTERS
 	SIZE_T        QuotaNonPagedPoolUsage;
 	SIZE_T        PagefileUsage;
 	SIZE_T        PeakPagefileUsage;
+	SIZE_T        PrivatePageCount;				// Which OS has added this value first time?
 	} VM_COUNTERS;
 
 typedef struct _CLIENT_ID {
-	DWORD         UniqueProcess;
-	DWORD         UniqueThread;
+	DWORD_PTR	UniqueProcess;
+	DWORD_PTR	UniqueThread;
+
+	DWORD GetPid() const
+	{
+		return (DWORD)UniqueProcess;
+	}
+
+	DWORD GetTid() const
+	{
+		return (DWORD)UniqueThread;
+	}
+
 } CLIENT_ID;
 
 //////////////////////////////////////////////////////////////////////////////////////

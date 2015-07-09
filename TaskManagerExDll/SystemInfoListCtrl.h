@@ -147,18 +147,18 @@ public:
 	{
 	public:
 		virtual  ~CSortItem();
-		CSortItem(DWORD _dw, int indent, const CString &_txt);
+		CSortItem(DWORD_PTR _dw, int indent, const CString &_txt);
 		CString	txt;	// item text
 		int		indent;	// item indent
-		DWORD	dw;		// old user item User Data
+		DWORD_PTR	dw;		// old user item User Data
 	};
 	class CSortItemInt
 	{
 	public:
-		CSortItemInt(DWORD _dw, int indent, const CString &_txt);
+		CSortItemInt(DWORD_PTR _dw, int indent, const CString &_txt);
 		int		iInt;	// item value
 		int		indent;	// item indent
-		DWORD	dw;		// old user item User Data
+		DWORD_PTR	dw;		// old user item User Data
 	};
 };
 

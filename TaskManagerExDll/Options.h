@@ -45,7 +45,8 @@ protected:
 
 	TYPE Load()
 	{
-		TYPE result = DefaultValue;
+		ASSERT(sizeof(TYPE) == sizeof(DWORD));
+		DWORD result = DefaultValue;
 		LPCTSTR strRegValue = COptions::m_szRegValues[nID];
 		HKEY hKey = NULL;
 		DWORD dwType = REG_DWORD;
@@ -73,8 +74,9 @@ protected:
 			REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL );
 		if( hKey != NULL )
 		{
+			DWORD dwRegVal = a;
 			::RegSetValueEx( hKey, strRegValue, NULL, REG_DWORD, 
-					   (const BYTE*)&a, sizeof(a) );
+				(const BYTE*)&dwRegVal, sizeof(DWORD));
 			::RegCloseKey( hKey );
 		}
 	}

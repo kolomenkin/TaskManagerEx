@@ -34,7 +34,9 @@ int GetLanguagePos( LANGANDCODEPAGE* lpTranslate, DWORD dwBytesLen )
 	LANGID DefaultLang = MAKELANGID( LANG_NEUTRAL, SUBLANG_NEUTRAL );
 	CString strLandId = LocLoadString( IDS_LANGID );
 
-	_stscanf( (LPCTSTR)strLandId, _T("0x%X"), &DefaultLang );
+	DWORD dwValue = DefaultLang;
+	_stscanf( (LPCTSTR)strLandId, _T("0x%X"), &dwValue );
+	DefaultLang = (LANGID)dwValue;
 
 	BOOL bNative = FALSE;
 
