@@ -26,6 +26,8 @@
 
 #include "SystemInfo.h"
 
+#include <memory>
+
 //#include <ntstatus.h>
 #define STATUS_INFO_LENGTH_MISMATCH      ((NTSTATUS)0xC0000004L)
 
@@ -519,11 +521,6 @@ SystemProcessInformation::SystemProcessInformation( DWORD processId, BOOL bAddit
 	m_processId = processId;
 	m_bAdditionalInfo = bAdditionalInfo;
 
-//	m_pBuffer = (PUCHAR) Alloc( (void*)0x100000, BufferSize ); // (void*)0x100000 is a bug! There were crashes because of it!
-	m_pBuffer = (PUCHAR) Alloc( NULL, BufferSize );
-
-	ASSERT( m_pBuffer != NULL );
-
 	if ( bRefresh )
 		Refresh();
 }
@@ -541,10 +538,6 @@ SystemProcessInformation::~SystemProcessInformation()
 			delete[] process_info.pThreads;
 			process_info.pThreads = nullptr;
 		}
-	}
-	if( m_pBuffer != NULL )
-	{
-		Free( m_pBuffer );
 	}
 }
 
@@ -608,15 +601,42 @@ BOOL SystemProcessInformation::Refresh()
 	if ( !INtDll::bStatus )
 		return FALSE;
 
-	if ( m_pBuffer == NULL )
-		return FALSE;
-	
-	// query the process information
-	NTSTATUS status = INtDll::NtQuerySystemInformation( _SystemProcessInformation, m_pBuffer, BufferSize, NULL );
-	if ( !NT_SUCCESS(status) )
+	ULONG size = 64 * 1024;
+	ULONG needed = 0;
+
+	std::unique_ptr<UCHAR[]> ptrBuf(new UCHAR[size]());
+	SYSTEM_PROCESS_INFORMATION* pSysProcess = (SYSTEM_PROCESS_INFORMATION*)ptrBuf.get();
+	if (pSysProcess == NULL)
 		return FALSE;
 
-	SYSTEM_PROCESS_INFORMATION* pSysProcess = (SYSTEM_PROCESS_INFORMATION*)m_pBuffer;
+	// query the process information
+	NTSTATUS status = INtDll::NtQuerySystemInformation(_SystemProcessInformation, pSysProcess, size, &needed);
+	if (!NT_SUCCESS(status))
+	{
+		if (status != STATUS_INFO_LENGTH_MISMATCH)
+		{
+			TRACE(_T("SystemProcessInformation::Refresh: NtQuerySystemInformation(SystemProcessInformation) failed (#1): 0x%08X!\n"), status);
+			return FALSE;
+		}
+
+		// The size was not enough
+		size = needed + 1024 * sizeof(SYSTEM_PROCESS_INFORMATION);
+
+		ptrBuf.reset(new UCHAR[size]());
+		pSysProcess = (SYSTEM_PROCESS_INFORMATION*)ptrBuf.get();
+
+		if (pSysProcess == NULL)
+			return FALSE;
+
+		// Query the objects ( system wide )
+		status = INtDll::NtQuerySystemInformation(_SystemProcessInformation, pSysProcess, size, &needed);
+		if (!NT_SUCCESS(status))
+		{
+			TRACE(_T("SystemProcessInformation::Refresh: NtQuerySystemInformation(SystemProcessInformation) failed (#2): 0x%08X!\n"), status);
+			return FALSE;
+		}
+	}
+
 	do
 	{
 		if( pSysProcess->ProcessId == m_processId || m_processId == ALL_PROCESSES )
@@ -626,9 +646,19 @@ BOOL SystemProcessInformation::Refresh()
 			ZeroMemory( &new_info, sizeof(new_info) );
 			new_info.processId = (DWORD)pSysProcess->ProcessId;
 			new_info.spi = *pSysProcess;
-			new_info.pThreads = new SYSTEM_THREAD_INFORMATION[pSysProcess->ThreadCount];
+			new_info.pThreads = nullptr;
+			if (pSysProcess->ThreadCount > 0)
+			{
+				new_info.pThreads = new SYSTEM_THREAD_INFORMATION[pSysProcess->ThreadCount]();
+			}
 			if( new_info.pThreads != NULL )
 			{
+				static bool bFirst = true;
+				if (bFirst && pSysProcess->Threads[0].ClientId.UniqueProcess != pSysProcess->ProcessId)
+				{
+					bFirst = false;
+					TRACE( _T("SystemProcessInformation::Refresh(): ERROR! SYSTEM_PROCESS_INFORMATION or IO_COUNTERS has incorrect definition for current OS!\n") );
+				}
 				memcpy( new_info.pThreads, &pSysProcess->Threads,
 					pSysProcess->ThreadCount * sizeof(SYSTEM_THREAD_INFORMATION) );
 			}
@@ -648,8 +678,8 @@ BOOL SystemProcessInformation::Refresh()
 				// Check new pointer for valid range:
 				ULONG_PTR p = (ULONG_PTR)((UCHAR*)pSysProcess + pSysProcess->NextEntryDelta );
 				ULONG_PTR sz = sizeof(SYSTEM_PROCESS_INFORMATION);
-				ULONG_PTR a = (ULONG_PTR) m_pBuffer;
-				ULONG_PTR b = (ULONG_PTR) ((UCHAR*)m_pBuffer + BufferSize);
+				ULONG_PTR a = (ULONG_PTR) ptrBuf.get();
+				ULONG_PTR b = (ULONG_PTR)((UCHAR*)ptrBuf.get() + size);
 
 				ASSERT( a <= p && p+sz <= b );
 			}

@@ -120,8 +120,6 @@ public:
 		TCHAR		szExe[MAX_PATH];			// IPsapi::GetModuleFileNameEx( NULL )
 	};
 
-	enum { BufferSize = 0x10000 };
-
 public:
 	SystemProcessInformation( DWORD processId, BOOL bAdditionalInfo, BOOL bRefresh );
 	virtual ~SystemProcessInformation();
@@ -136,7 +134,6 @@ public:
 protected:
 	DWORD		m_processId;
 	BOOL		m_bAdditionalInfo;
-	UCHAR*		m_pBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////
