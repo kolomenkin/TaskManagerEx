@@ -435,18 +435,17 @@ int SystemHandleInformation::HANDLE_INFORMATION::Insert( CSystemInfoListCtrl& li
 	CString strHandle, strAccess, strType, strTypeNum, strName;
 
 	strHandle.Format( _T("0x%08X"), sh.HandleNumber );
-	strAccess.Format( _T("0x%08X"), sh.Flags );
+	strAccess.Format( _T("0x%08X"), sh.GrantedAccess );
 
 	SystemHandleInformation::GetTypeToken( (HANDLE)sh.HandleNumber, strType, sh.ProcessID );
 	SystemHandleInformation::GetName( (HANDLE)sh.HandleNumber, strName, sh.ProcessID );
 
-	const DWORD typeMask = 0xFF;
-	DWORD typeFlags = sh.HandleType & (~typeMask);	// In fact I don't know what it means in Windows internals
-	strTypeNum.Format( _T("%d"), (sh.HandleType & typeMask) );
+	const DWORD typeFlags = sh.Flags ;	// In fact I don't know what it means in Windows internals
+	strTypeNum.Format( _T("%d"), sh.ObjectTypeNumber );
 	if( typeFlags != 0 )
 	{
 		CString d;
-		d.Format( _T("0x%X + "), typeFlags );
+		d.Format( _T("0x%X | "), typeFlags );
 		strTypeNum = d + strTypeNum;
 	}
 

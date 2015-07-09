@@ -228,10 +228,11 @@ class INtDll
 	typedef struct _SYSTEM_HANDLE
 	{
 		DWORD		ProcessID;
-		WORD		HandleType;
+		BYTE		ObjectTypeNumber;
+		BYTE		Flags;
 		WORD		HandleNumber;
 		DWORD_PTR	KernelAddress;
-		DWORD		Flags;
+		ACCESS_MASK	GrantedAccess;
 	} SYSTEM_HANDLE;
 
 	typedef struct _SYSTEM_HANDLE_INFORMATION
