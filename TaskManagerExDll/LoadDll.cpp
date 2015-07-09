@@ -67,7 +67,7 @@ DWORD LoadDllForRemoteThread(
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		)
 {
 	DWORD rc = (DWORD)-2;
@@ -133,7 +133,7 @@ DWORD ExecuteRemoteThread(
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		)
 {
 	HANDLE ht = 0;
@@ -585,14 +585,14 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 	// and this is the code we are injecting
 
 	typedef DWORD (WINAPI *PFN)();
-	typedef DWORD (WINAPI *PFN1)(DWORD);
-	typedef DWORD (WINAPI *PFN2)(DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN3)(DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN4)(DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN5)(DWORD,DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN6)(DWORD,DWORD,DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN7)(DWORD,DWORD,DWORD,DWORD,DWORD,DWORD,DWORD);
-	typedef DWORD (WINAPI *PFN8)(DWORD,DWORD,DWORD,DWORD,DWORD,DWORD,DWORD,DWORD);
+	typedef DWORD (WINAPI *PFN1)(DWORD_PTR);
+	typedef DWORD (WINAPI *PFN2)(DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN3)(DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN4)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN5)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN6)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN7)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+	typedef DWORD (WINAPI *PFN8)(DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR, DWORD_PTR);
 
 	HMODULE hModule = NULL;
 
@@ -626,7 +626,7 @@ DWORD __stdcall RemoteDllThread( RemoteDllThreadBlock* execBlock )
 		if ( pfn != NULL )
 		{
 			DWORD_PTR ret = 0;
-			DWORD* p = execBlock->Arguments;
+			DWORD_PTR* p = execBlock->Arguments;
 			execBlock->ErrorFunction = 0;
 
 			execBlock->LastError = 0;

@@ -33,7 +33,7 @@ namespace RemoteExecute
 	static DWORD* const NoErrorFunction = NULL;
 	static DWORD* const NoErrorFree = NULL;
 	static DWORD  ZeroArguments = 0;
-	static DWORD* const NoArguments = NULL;
+	static DWORD_PTR* const NoArguments = NULL;
 
 #define DONT_RETURN_REMOTE_API_ERRORS	NoErrorLoad, NoErrorFunction, NoErrorFree
 }
@@ -66,7 +66,7 @@ struct RemoteDllThreadBlock
 	BOOL				bLoadLibrary;
 	BOOL				bFreeLibrary;
 	DWORD				dwArgumentCount; // 0..8
-	DWORD				Arguments[REMOTE_MAX_ARGUMENTS];
+	DWORD_PTR			Arguments[REMOTE_MAX_ARGUMENTS];
 
 	PLoadLibrary		fnLoadLibrary;
 	PGetModuleHandle	fnGetModuleHandle;
@@ -105,7 +105,7 @@ DWORD ExecuteRemoteThread(
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		);
 
 // and this is the code we are injecting
@@ -137,7 +137,7 @@ DWORD LoadDllForRemoteThread(
 		DWORD*	pErrorFunction,
 		DWORD*	pErrorFree,
 		DWORD	dwArgumentCount,
-		DWORD*	pdwArguments
+		DWORD_PTR*	pdwArguments
 		);
 
 void FreeSpecialBuffer( DWORD_PTR pReturnCodeForFunction );

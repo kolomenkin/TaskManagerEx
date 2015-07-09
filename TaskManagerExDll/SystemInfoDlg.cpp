@@ -1891,7 +1891,7 @@ void CSystemInfoDlg::OnHandlesThreadTerminate()
 	if ( !bOK && handle != NULL && processID != 0 )
 	{
 		const DWORD dwArgumentCount = 2;
-		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle, 0 };
+		DWORD_PTR dwArguments[dwArgumentCount] = { (DWORD_PTR)handle, 0 };
 
 		TRACE( _T("TerminateThread #2\n") );
 		DWORD_PTR dwFuncRetVal = FALSE;
@@ -1956,7 +1956,7 @@ void CSystemInfoDlg::OnHandlesWindowstationAssigntoprocess()
 	if ( handle != NULL )
 	{
 		const DWORD dwArgumentCount = 1;
-		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle };
+		DWORD_PTR dwArguments[dwArgumentCount] = { (DWORD_PTR)handle };
 
 		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
@@ -1991,7 +1991,7 @@ void CSystemInfoDlg::OnHandlesDesktopSwithto()
 	if ( handle != NULL )
 	{
 		const DWORD dwArgumentCount = 1;
-		DWORD dwArguments[dwArgumentCount] = { (DWORD)handle };
+		DWORD_PTR dwArguments[dwArgumentCount] = { (DWORD_PTR)handle };
 
 		DWORD_PTR dwFuncRetVal = FALSE;
 		LONG LastError = 0;
