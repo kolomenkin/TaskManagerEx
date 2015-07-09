@@ -210,6 +210,17 @@ typedef struct _VM_COUNTERS
 typedef struct _CLIENT_ID {
 	DWORD_PTR	UniqueProcess;
 	DWORD_PTR	UniqueThread;
+
+	DWORD GetPid() const
+	{
+		return (DWORD)UniqueProcess;
+	}
+
+	DWORD GetTid() const
+	{
+		return (DWORD)UniqueThread;
+	}
+
 } CLIENT_ID;
 
 //////////////////////////////////////////////////////////////////////////////////////

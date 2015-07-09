@@ -814,7 +814,7 @@ BOOL SystemThreadInformation::Refresh()
 			{
 				POSITION LastPos = pos2;
 				THREAD_INFORMATION ti = m_ThreadInfos.GetNext(pos2);
-				if( ti.sti.ClientId.UniqueThread == ThreadId )
+				if (ti.sti.ClientId.GetTid() == ThreadId)
 				{
 					if( ti.HandleProcessId == ti.ProcessId )
 					{
@@ -1196,7 +1196,7 @@ BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD proc
 	// Get the thread information
 	NTSTATUS status = INtDll::NtQueryInformationThread( handle, ThreadBasicInformation, &ti, sizeof(ti), NULL );
 	if ( NT_SUCCESS(status) )
-		threadID = (DWORD)ti.ClientID.UniqueThread;
+		threadID = ti.ClientID.GetTid();
 
 	if ( remote )
 	{
@@ -1242,7 +1242,7 @@ BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD re
 	NTSTATUS status = INtDll::NtQueryInformationProcess( handle, ProcessBasicInformation, &pi, sizeof(pi), NULL);
 	if ( NT_SUCCESS(status) )
 	{
-		processId = (DWORD)pi.UniqueProcessId;
+		processId = pi.GetPid();
 		ret = TRUE;
 	}
 

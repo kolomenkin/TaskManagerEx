@@ -83,8 +83,14 @@ class INtDll
 			DWORD_PTR	BasePriority;
 			DWORD_PTR	UniqueProcessId;
 			DWORD_PTR	InheritedFromUniqueProcessId;
+
+			DWORD GetPid() const
+			{
+				return (DWORD)UniqueProcessId;
+			}
+
 		} PROCESS_BASIC_INFORMATION;
-	
+
 	//////////////////////////////////////////////////////////////////
 	// Process Information: (SystemProcessInformation)
 
