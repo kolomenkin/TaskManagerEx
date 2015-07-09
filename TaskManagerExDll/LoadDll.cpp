@@ -28,15 +28,15 @@ PVOID GetFuncAddress(PVOID addr)
 #ifdef _DEBUG
 	//check if instruction is relative jump (E9)
 	if (0xE9 != *((UCHAR*)addr))
-	return addr;
+		return addr;
 
 	// calculate base of relative jump
-	ULONG base = (ULONG)((UCHAR*)addr + 5);
+	const ULONG_PTR base = (ULONG_PTR)((UCHAR*)addr + 5);
 
 	// calculate offset 
-	ULONG *offset = (ULONG*)((UCHAR*)addr + 1);
+	const LONG *offset = (LONG*)((UCHAR*)addr + 1);
 
-	return (PVOID)(base + *offset);
+	return (PVOID)(base + (LONG_PTR)*offset);
 #else
 	// in release, don't have to mess with jumps
 	return addr;
