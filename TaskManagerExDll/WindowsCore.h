@@ -63,7 +63,8 @@ class INtDll
 		SystemInterruptInformation = 23,
 		SystemExceptionInformation = 33,
 		SystemRegistryQuotaInformation = 37,
-		SystemLookasideInformation = 45
+		SystemLookasideInformation = 45,
+		SystemExtendedHandleInformation = 0x40,
 	} SYSTEM_INFORMATION_CLASS;
 
 	typedef LARGE_INTEGER   QWORD;
@@ -225,6 +226,9 @@ class INtDll
 	//////////////////////////////////////////////////////////////////
 	// Handle Information: (SystemHandleInformation)
 
+	// NOTE! The following structures are returning 16 bit handles only.
+	// 16bit handles are not actual since at least WinXP.
+
 	typedef struct _SYSTEM_HANDLE
 	{
 		DWORD		ProcessID;
@@ -240,6 +244,34 @@ class INtDll
 		DWORD			Count;
 		SYSTEM_HANDLE	Handles[1];
 	} SYSTEM_HANDLE_INFORMATION;
+
+	//////////////////////////////////////////////////////////////////
+	// Since Windows XP we can use:
+
+	typedef struct _SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
+	{
+		PVOID	Object;
+		HANDLE	UniqueProcessId;
+		HANDLE	HandleValue;
+		ULONG	GrantedAccess;
+		USHORT	CreatorBackTraceIndex;
+		USHORT	ObjectTypeIndex;
+		ULONG	HandleAttributes;
+		ULONG	Reserved;
+
+		DWORD GetPid() const
+		{
+			return (DWORD)UniqueProcessId;
+		}
+
+	} SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX, *PSYSTEM_HANDLE_TABLE_ENTRY_INFO_EX;
+
+	typedef struct _SYSTEM_HANDLE_INFORMATION_EX
+	{
+		ULONG_PTR	NumberOfHandles;
+		ULONG_PTR	Reserved;
+		SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX Handles[1];
+	} SYSTEM_HANDLE_INFORMATION_EX, *PSYSTEM_HANDLE_INFORMATION_EX;
 
 	//////////////////////////////////////////////////////////////////
 	// File Information: (NtQueryInformationFile)

@@ -434,14 +434,14 @@ int SystemHandleInformation::HANDLE_INFORMATION::Insert( CSystemInfoListCtrl& li
 	CString strPID, strProcesName;
 	CString strHandle, strAccess, strType, strTypeNum, strName;
 
-	strHandle.Format( _T("0x%08X"), sh.HandleNumber );
+	strHandle.Format(_T("0x%08IX"), sh.HandleValue);
 	strAccess.Format( _T("0x%08X"), sh.GrantedAccess );
 
-	SystemHandleInformation::GetTypeToken( (HANDLE)sh.HandleNumber, strType, sh.ProcessID );
-	SystemHandleInformation::GetName( (HANDLE)sh.HandleNumber, strName, sh.ProcessID );
+	SystemHandleInformation::GetTypeToken(sh.HandleValue, strType, sh.GetPid());
+	SystemHandleInformation::GetName(sh.HandleValue, strName, sh.GetPid());
 
-	const DWORD typeFlags = sh.Flags ;	// In fact I don't know what it means in Windows internals
-	strTypeNum.Format( _T("%d"), sh.ObjectTypeNumber );
+	const DWORD typeFlags = 0;	// In fact I don't know what it means in Windows internals
+	strTypeNum.Format(_T("%d"), sh.ObjectTypeIndex);
 	if( typeFlags != 0 )
 	{
 		CString d;
@@ -458,11 +458,11 @@ int SystemHandleInformation::HANDLE_INFORMATION::Insert( CSystemInfoListCtrl& li
 
 	if( bPid )
 	{
-		strPID.Format( _T("%d"), sh.ProcessID );
+		strPID.Format( _T("%d"), sh.GetPid() );
 		list.SetItemText( nPos, sub+1, strPID );
 		sub++;
 
-		strProcesName = GetProcessName( sh.ProcessID );
+		strProcesName = GetProcessName(sh.GetPid());
 		list.SetItemText( nPos, sub+1, strProcesName );
 		sub++;
 	}
@@ -517,7 +517,7 @@ int SystemHandleInformation::HANDLE_INFORMATION::InsertFile( CSystemInfoListCtrl
 	CString strPID, strProcesName;
 	CString strHandle, strName, strPath, strDevice;
 
-	strHandle.Format( _T("0x%08X"), sh.HandleNumber );
+	strHandle.Format(_T("0x%08IX"), sh.HandleValue);
 
 	strPath = szPath;
 	strDevice = szDevice;
@@ -534,11 +534,11 @@ int SystemHandleInformation::HANDLE_INFORMATION::InsertFile( CSystemInfoListCtrl
 
 	if( bPid )
 	{
-		strPID.Format( _T("%d"), sh.ProcessID );
+		strPID.Format(_T("%d"), sh.GetPid());
 		list.SetItemText( nPos, sub+1, strPID );
 		sub++;
 
-		strProcesName = GetProcessName( sh.ProcessID );
+		strProcesName = GetProcessName(sh.GetPid());
 		list.SetItemText( nPos, sub+1, strProcesName );
 		sub++;
 	}

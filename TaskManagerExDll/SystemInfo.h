@@ -190,7 +190,7 @@ public:
 
 	struct HANDLE_INFORMATION
 	{
-		SYSTEM_HANDLE sh;
+		SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sh;
 
 		static void InsertColumns( CSystemInfoListCtrl& list, BOOL bPid );
 		int Insert(CSystemInfoListCtrl& list, BOOL bPid, size_t iItem, size_t iItemCount) const;

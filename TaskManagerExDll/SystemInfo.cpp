@@ -801,9 +801,9 @@ BOOL SystemThreadInformation::Refresh()
 		DWORD ThreadId = 0;
 
 		// This is one of the threads we are looking for
-		BOOL res = SystemHandleInformation::GetThreadId( (HANDLE)h.sh.HandleNumber, ThreadId, h.sh.ProcessID );
+		BOOL res = SystemHandleInformation::GetThreadId(h.sh.HandleValue, ThreadId, h.sh.GetPid());
 
-		if( h.sh.ProcessID == m_processId || m_processId == ALL_PROCESSES )
+		if (h.sh.GetPid() == m_processId || m_processId == ALL_PROCESSES)
 		{
 			//TRACE( _T("PID %d: Thread ID: 0x%X\n"), m_processId, ThreadId );
 		}
@@ -821,8 +821,8 @@ BOOL SystemThreadInformation::Refresh()
 						break; // We have found the handle for this thread and it belongs to the thread's process.
 						// If it doesn't belongs, then we will continue searching such (best) handles...
 					}
-					ti.HandleProcessId = h.sh.ProcessID;
-					ti.ThreadHandle = (HANDLE)h.sh.HandleNumber;
+					ti.HandleProcessId = h.sh.GetPid();
+					ti.ThreadHandle = h.sh.HandleValue;
 					m_ThreadInfos.SetAt( LastPos, ti );
 
 					break;
@@ -865,16 +865,6 @@ const CString& SystemHandleInformation::GetFilter()
 	return m_strTypeFilter;
 }
 
-BOOL SystemHandleInformation::IsSupportedHandle( SYSTEM_HANDLE& handle )
-{
-	//Here you can filter the handles you don't want in the Handle list
-
-	handle; // use variable
-
-	// Windows 2000 supports everything :)
-	return TRUE;
-}
-
 BOOL SystemHandleInformation::Refresh()
 {
 	DWORD size = 0x2000;
@@ -889,14 +879,14 @@ BOOL SystemHandleInformation::Refresh()
 		return FALSE;
 
 	// Allocate the memory for the buffer
-	SYSTEM_HANDLE_INFORMATION* pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION*)
+	SYSTEM_HANDLE_INFORMATION_EX* pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION_EX*)
 				Alloc( NULL, size );
 
 	if ( pSysHandleInformation == NULL )
 		return FALSE;
 
 	// Query the needed buffer size for the objects ( system wide )
-	NTSTATUS status = INtDll::NtQuerySystemInformation( _SystemHandleInformation, pSysHandleInformation, size, &needed );
+	NTSTATUS status = INtDll::NtQuerySystemInformation(SystemExtendedHandleInformation, pSysHandleInformation, size, &needed);
 	if ( !NT_SUCCESS(status) )
 	{
 		if ( needed == 0 )
@@ -908,9 +898,9 @@ BOOL SystemHandleInformation::Refresh()
 		// The size was not enough
 		Free( pSysHandleInformation );
 
-		size = needed + 1024 * sizeof(SYSTEM_HANDLE);
+		size = needed + 2048 * sizeof(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX);
 
-		pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION*)
+		pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION_EX*)
 				Alloc( NULL, size );
 	}
 
@@ -928,14 +918,12 @@ BOOL SystemHandleInformation::Refresh()
 	//TRACE( _T("SystemHandleInformation::Refresh got %d handles!\n"), pSysHandleInformation->Count );
 
 	// Iterating through the objects
-	for ( i = 0; i < pSysHandleInformation->Count; i++ )
+	for ( i = 0; i < pSysHandleInformation->NumberOfHandles; i++ )
 	{
-		SYSTEM_HANDLE& sh = pSysHandleInformation->Handles[i];
-		if ( !IsSupportedHandle( sh ) )
-			continue;
+		SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX& sh = pSysHandleInformation->Handles[i];
 
 		// ProcessId filtering check
-		if ( sh.ProcessID == m_processId || m_processId == ALL_PROCESSES )
+		if (sh.GetPid() == m_processId || m_processId == ALL_PROCESSES)
 		{
 			BOOL bAdd = FALSE;
 
@@ -944,7 +932,7 @@ BOOL SystemHandleInformation::Refresh()
 			else
 			{
 				// Type filtering
-				GetTypeToken( (HANDLE)sh.HandleNumber, strType, sh.ProcessID  );
+				GetTypeToken(sh.HandleValue, strType, sh.GetPid());
 
 				bAdd = strType == m_strTypeFilter;
 			}

@@ -866,7 +866,7 @@ void CSystemInfoDlg::RefreshList()
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
 
 				CString strDevice, strPath;
-				SystemHandleInformation::GetName( (HANDLE)h.sh.HandleNumber, strDevice, h.sh.ProcessID );
+				SystemHandleInformation::GetName(h.sh.HandleValue, strDevice, h.sh.GetPid());
 				SystemInfoUtils::GetFsFileName( strDevice, strPath );
 
 				h.InsertFile( m_SystemInfoList, FALSE, iItem, iItemCount, strDevice, strPath );
@@ -1004,7 +1004,7 @@ void CSystemInfoDlg::RefreshList()
 				SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
 
 				CString strDevice, strPath;
-				SystemHandleInformation::GetName( (HANDLE)h.sh.HandleNumber, strDevice, h.sh.ProcessID );
+				SystemHandleInformation::GetName(h.sh.HandleValue, strDevice, h.sh.GetPid());
 				SystemInfoUtils::GetFsFileName( strDevice, strPath );
 
 
