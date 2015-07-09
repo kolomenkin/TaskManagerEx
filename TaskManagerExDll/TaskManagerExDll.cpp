@@ -1342,22 +1342,43 @@ TASKMANAGEREXDLL_API BOOL WINAPI TestProc()
 {
 	BOOL res = TRUE;
 	TRACE(_T("TaskManagerEx.dll> TestProc() enter\n"));
-	SystemHandleInformation hi(ALL_PROCESSES, TRUE, NULL);
 
-
-	size_t iItem = 0;
-	size_t iItemCount = hi.m_HandleInfos.GetCount();
-
-	std::vector<SystemHandleInformation::HANDLE_INFORMATION> v;
-	v.reserve(iItemCount);
-
-	for (POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL;)
 	{
-		SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
+		SystemThreadInformation ti(GetCurrentProcessId(), TRUE);
 
-		v.push_back(h);
-		//h.Insert(m_SystemInfoList, TRUE, iItem, iItemCount);
-		iItem++;
+		size_t iItem = 0;
+		size_t iItemCount = ti.m_ThreadInfos.GetCount();
+
+		std::vector<SystemThreadInformation::THREAD_INFORMATION> v;
+		v.reserve(iItemCount);
+
+		for (POSITION pos = ti.m_ThreadInfos.GetHeadPosition(); pos != NULL;)
+		{
+			SystemThreadInformation::THREAD_INFORMATION& t = ti.m_ThreadInfos.GetNext(pos);
+
+			v.push_back(t);
+			//t.Insert(m_SystemInfoList, FALSE, iItem, iItemCount);
+			iItem++;
+		}
+	}
+
+	{
+		SystemHandleInformation hi(ALL_PROCESSES, TRUE, NULL);
+
+		size_t iItem = 0;
+		size_t iItemCount = hi.m_HandleInfos.GetCount();
+
+		std::vector<SystemHandleInformation::HANDLE_INFORMATION> v;
+		v.reserve(iItemCount);
+
+		for (POSITION pos = hi.m_HandleInfos.GetHeadPosition(); pos != NULL;)
+		{
+			SystemHandleInformation::HANDLE_INFORMATION& h = hi.m_HandleInfos.GetNext(pos);
+
+			v.push_back(h);
+			//h.Insert(m_SystemInfoList, TRUE, iItem, iItemCount);
+			iItem++;
+		}
 	}
 
 	TRACE(_T("TaskManagerEx.dll> TestProc() returned %d\n"), res);
