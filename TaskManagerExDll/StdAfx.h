@@ -70,11 +70,18 @@ inline void MyTrace( LPCTSTR szFormat, ... )
 
 //////////////////////////////////////////////////////////////////////////
 
+#define DO_TRACE_ALWAYS
+
 #undef TRACE
 #ifdef _DEBUG
 #define TRACE	MyTrace
 #else
 #define TRACE	1 ? (void)0 : MyTrace
+#endif
+
+#ifdef DO_TRACE_ALWAYS
+#undef TRACE
+#define TRACE	MyTrace
 #endif
 
 //////////////////////////////////////////////////////////////////////////

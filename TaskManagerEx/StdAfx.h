@@ -34,12 +34,23 @@ void MyTrace( LPCTSTR szFormat, ... );
 #include <assert.h>
 #define ASSERT assert
 
+//////////////////////////////////////////////////////////////////////////
+
+#define DO_TRACE_ALWAYS
+
 #undef TRACE
 #ifdef _DEBUG
 #define TRACE	MyTrace
 #else
 #define TRACE	1 ? (void)0 : MyTrace
 #endif
+
+#ifdef DO_TRACE_ALWAYS
+#undef TRACE
+#define TRACE	MyTrace
+#endif
+
+//////////////////////////////////////////////////////////////////////////
 
 //#include <atlbase.h>
 //#define TRACE	ATLTRACE
