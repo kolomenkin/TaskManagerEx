@@ -1313,7 +1313,7 @@ LRESULT CALLBACK TaskManagerExDllApp::ApplicationsTabWndProc(
 								{
 									ApplicationsItemData* pData =
 										theApp.GetApplicationsData( pDispInfo->item.iItem );
-									DWORD pID;
+									DWORD pID = 0;
 									GetWindowThreadProcessId( pData->hWnd, &pID );
 									wsprintfW( (wchar_t*)pDispInfo->item.pszText, L"%d", pID );
 								}

@@ -517,7 +517,7 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 	// Get teh process list
 	SystemProcessInformation spi( pThread->m_processID, TRUE, TRUE );
 
-	DWORD pID;
+	DWORD pID = 0;
 	SystemProcessInformation::PROCESS_INFO pi;
 	ZeroMemory( &pi, sizeof(pi) );
 
@@ -627,9 +627,9 @@ BOOL CInformationDlg::GetProcessInformation( CString& info )
 			BYTE buf[64*1024];
 			const DWORD dwSize = sizeof(buf);
 			IAdvapi32::LPENUM_SERVICE_STATUS_PROCESS pEnum = (IAdvapi32::LPENUM_SERVICE_STATUS_PROCESS) &buf;
-			BOOL res;
-			LONG err;
-			DWORD i;
+			BOOL res = FALSE;
+			LONG err = 0;
+			DWORD i = 0;
 
 			while(TRUE)
 			{

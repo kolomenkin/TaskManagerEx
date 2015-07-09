@@ -32,7 +32,7 @@
 
 #define PID_SYSTEM_WIN_NT4		2
 #define PID_SYSTEM_WIN_2K		4
-#define PID_SYSTEM_WIN_XP		8
+#define PID_SYSTEM_WIN_XP		8	// 8??? Win XP SP3 uses PID 4 for this
 
 #define IS_PID_SYSTEM(pid)		((pid) == PID_SYSTEM_WIN_NT4 || \
 								 (pid) == PID_SYSTEM_WIN_2K || \

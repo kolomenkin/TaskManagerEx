@@ -256,7 +256,7 @@ CString	LocLoadString		( LPCTSTR id )
 	DWORD dwSize = (*str);
 
 	int nChars = dwSize;
-	WCHAR* p = new WCHAR[ nChars + 1 ];
+	WCHAR* p = new WCHAR[ nChars + 1 ]();
 	if( p == NULL )
 		return _T("");
 
@@ -318,7 +318,7 @@ HACCEL  LocLoadAccelerators	( LPCTSTR id )
 		return NULL;
 	ACCELTABLEENTRY* pSrc = (ACCELTABLEENTRY*)pRsrc;
 	int n = dwSize/sizeof(ACCELTABLEENTRY);
-	ACCEL* pDest = new ACCEL[n];
+	ACCEL* pDest = new ACCEL[n]();
 	if( pDest == NULL )
 		return NULL;
 

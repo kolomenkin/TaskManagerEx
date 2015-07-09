@@ -282,7 +282,7 @@ void SystemInfoUtils::LPCWSTR2CString( LPCWSTR strW, CString& str )
 //#else
 //
 //	ULONG len = wcslen(strW) + 1;
-//	TCHAR* pBuffer = new TCHAR[ len ];
+//	TCHAR* pBuffer = new TCHAR[ len ]();
 //	if( pBuffer == NULL )
 //	{
 //		ASSERT( FALSE );
@@ -493,7 +493,7 @@ PVOID Alloc( PVOID pStartAddress, DWORD dwBytes )
 {
 	pStartAddress = pStartAddress;
 	PVOID pAddr = NULL;
-	pAddr = new PBYTE[dwBytes];
+	pAddr = new PBYTE[dwBytes]();
 //	pAddr = VirtualAlloc( NULL, dwBytes, MEM_COMMIT, PAGE_READWRITE );
 //	pAddr = VirtualAlloc( pStartAddress, dwBytes, MEM_COMMIT, PAGE_READWRITE );
 	return pAddr;
@@ -530,7 +530,7 @@ SystemProcessInformation::SystemProcessInformation( DWORD processId, BOOL bAddit
 
 SystemProcessInformation::~SystemProcessInformation()
 {
-	DWORD pID;
+	DWORD pID = 0;
 	PROCESS_INFO process_info;
 
 	for ( POSITION pos = m_ProcessInfos.GetStartPosition(); pos != NULL; )
@@ -539,6 +539,7 @@ SystemProcessInformation::~SystemProcessInformation()
 		if( process_info.pThreads != NULL )
 		{
 			delete[] process_info.pThreads;
+			process_info.pThreads = nullptr;
 		}
 	}
 	if( m_pBuffer != NULL )
@@ -549,7 +550,7 @@ SystemProcessInformation::~SystemProcessInformation()
 
 BOOL SystemProcessInformation::GetAdditionalInfo( PROCESS_INFO& info )
 {
-	BOOL res;
+	BOOL res = FALSE;
 
 	HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, info.processId );
 	if( hProcess != NULL )
@@ -589,7 +590,7 @@ BOOL SystemProcessInformation::GetAdditionalInfo( PROCESS_INFO& info )
 BOOL SystemProcessInformation::Refresh()
 {
 	{ // Free used memory before m_ProcessInfos.RemoveAll(); :
-		DWORD pID;
+		DWORD pID = 0;
 		PROCESS_INFO process_info;
 
 		for ( POSITION pos = m_ProcessInfos.GetStartPosition(); pos != NULL; )
@@ -598,6 +599,7 @@ BOOL SystemProcessInformation::Refresh()
 			if( process_info.pThreads != NULL )
 			{
 				delete[] process_info.pThreads;
+				process_info.pThreads = nullptr;
 			}
 		}
 	}
@@ -723,7 +725,7 @@ BOOL SystemThreadInformation::Refresh()
 	// Get the process list
 	SystemProcessInformation pi( m_processId, FALSE, TRUE );
 
-	DWORD pID;
+	DWORD pID = 0;
 	SystemProcessInformation::PROCESS_INFO process_info;
 
 	// Iterating through the processes and get the module list
@@ -1027,7 +1029,7 @@ BOOL SystemHandleInformation::GetTypeToken( HANDLE h, CString& str, DWORD proces
 	status = MyNtQueryObject( handle, ObjectTypeInformation, NULL, 0, &size );
 	//TRACE( _T("INtDll::NtQueryObject leave ObjectTypeInformation size = %d\n"), size );
 
-	lpBuffer = (POBJECT_TYPE_INFORMATION) new UCHAR[size];
+	lpBuffer = (POBJECT_TYPE_INFORMATION) new UCHAR[size]();
 	if( lpBuffer == NULL )
 	{
 		goto cleanup;
@@ -1152,7 +1154,7 @@ BOOL SystemHandleInformation::GetNameByType( HANDLE h, OB_TYPE_ENUM type, CStrin
 	if ( size == 0 )
 		size = 0x2000;
 
-	lpBuffer = (POBJECT_NAME_INFORMATION) new UCHAR[size];
+	lpBuffer = (POBJECT_NAME_INFORMATION) new UCHAR[size]();
 	if( lpBuffer == NULL )
 	{
 		goto cleanup;
@@ -1323,7 +1325,7 @@ BOOL SystemHandleInformation::GetFileName( HANDLE h, CString& str, DWORD process
 	// Wait for finishing the thread
 	if ( WaitForSingleObject( hThread, 100 ) == WAIT_TIMEOUT )
 	{
-		TRACE( _T("TerminateThread( 0x%X, 0 ) - Access denied!\n"), hThread );
+		TRACE( _T("TerminateThread( 0x%X, 0 ) - Access denied getting file name for handle 0x%08IX from PID %d!\n"), hThread, h, processId );
 		// Access denied
 		// Terminate the thread
 		TerminateThread( hThread, 0 );
@@ -1385,7 +1387,7 @@ void SystemModuleInformation::GetModuleListForProcess( DWORD processID )
 		goto cleanup;
 
 	cbNeeded += 50 * sizeof( HMODULE ); // extra
-	hModules = new HMODULE[ cbNeeded / sizeof( HMODULE ) ];
+	hModules = new HMODULE[cbNeeded / sizeof(HMODULE)]();
 	if( hModules == NULL )
 		goto cleanup;
 
@@ -1471,9 +1473,9 @@ BOOL SystemModuleInformation::Refresh()
 		GetModuleListForProcess( m_processId );
 	else
 	{
-/* I think this is not the simpliest way: (Sergey Kolomenkin)
-		// Get teh process list
-		DWORD pID;
+/* I think this is not the most simple way: (Sergey Kolomenkin)
+		// Get the process list
+		DWORD pID = 0;
 		SystemProcessInformation::PROCESS_INFO process_info;
 		SystemProcessInformation pi( TRUE );
 
@@ -1500,7 +1502,7 @@ BOOL SystemModuleInformation::Refresh()
 
 		cbNeeded += 50 * sizeof( DWORD ); // extra
 
-		pProcesses = new DWORD[ cbNeeded / sizeof( DWORD ) ];
+		pProcesses = new DWORD[cbNeeded / sizeof(DWORD)]();
 		if( pProcesses == NULL )
 			return FALSE;
 
@@ -1554,7 +1556,7 @@ BOOL SystemKernelModuleInformation::Refresh()
 
 	cbNeeded += 50 * sizeof( LPVOID ); // extra
 
-	pBaseAddresses = new LPVOID[ cbNeeded / sizeof( LPVOID ) ];
+	pBaseAddresses = new LPVOID[ cbNeeded / sizeof( LPVOID ) ]();
 	if( pBaseAddresses == NULL )
 		return FALSE;
 
@@ -1614,7 +1616,7 @@ BOOL SystemMemoryMapInformation::FileFromAddress( DWORD processId, PVOID pv, LPT
 	CString fsFileName;
 	IPsapi::MODULEINFO info;
 	MEMORY_BASIC_INFORMATION mbi;
-	BOOL res;
+	BOOL res = FALSE;
 
 	if ( hProcess == NULL )
 		goto cleanup;

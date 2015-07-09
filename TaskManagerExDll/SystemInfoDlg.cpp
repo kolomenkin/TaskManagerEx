@@ -508,7 +508,7 @@ BOOL CSystemInfoDlg::OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pRe
 
 BOOL CSystemInfoDlg::CreateToolbar()
 {
-	BOOL res;
+	BOOL res = FALSE;
 	CRect rcClientStart(0,0,0,0);
 	GetClientRect(rcClientStart);
 

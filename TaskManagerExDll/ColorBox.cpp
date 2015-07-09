@@ -271,7 +271,7 @@ BOOL CColorBox::SelectColor()
 {
 	BOOL ret = FALSE;
 
-	CColorDialog *dlg = new CColorDialog;
+	CColorDialog *dlg = new CColorDialog();
 
 	if(m_CustomColors != NULL)
 		dlg->m_cc.lpCustColors = m_CustomColors;
