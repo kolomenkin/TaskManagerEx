@@ -2,7 +2,8 @@
 
 #pragma once
 
-#define TASKMGR_END_PROCESS_CMD				40028	// first element of Task Manager default process popup menu
+#define TASKMGR_END_PROCESS_CMD				40028	// first element of Task Manager default process popup menu: "End Process"
+#define TASKMGR_OPEN_FILE_LOCATION_CMD		50127	// first element of Task Manager default process popup menu (starting from Vista): "Open File Location"
 #define TASKMGR_ALWAYS_ON_TOP_CMD			40006
 
 #define TASKMGR_LIBRARY						_T("taskmgr.exe")
